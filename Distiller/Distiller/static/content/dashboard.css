@@ -1,0 +1,229 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-image: url('../img/Background.jpg');
+}
+
+
+#page {
+    width: 900px;
+    padding: 0;
+    margin: 0 auto;
+    background-color: rgba(255,255,255,0.7);
+}
+
+#header {
+    padding-bottom: 1px;
+    padding-top: 1px;
+    text-align: center;
+    text-transform: uppercase; /* Заглавные буквы */
+    background-color: rgba(255,255,255,0.4);
+}
+
+/*********** engrave **********/
+.engrave {
+    font-size: 1em;
+    text-shadow: -1px -1px rgba(0,0,0,0.3), 1px 1px #FFF;
+}
+/******************************/
+
+/**********Hiden text**********/
+h1.c0 {
+    display: none;
+}
+
+/****** Display *******/
+.Display {
+    width: 880px;
+    height: 240px;
+    background: rgb(50,80,50);
+    border: 2px solid #dddddd;
+    box-shadow: 0px 5px 5px 3px rgba(0,0,0,0.3);
+    margin: 8px;
+    border-radius: 2px;
+}
+/****** Display_Net *******/
+.Display_cover {
+    width: inherit;
+    height: inherit;
+    position: absolute;
+    z-index: 2;
+    background-image: url('../img/Net.png');
+}
+/****** Display_Text *******/
+.Display_text {
+    padding-left: 10px;
+    overflow: hidden;
+    width: inherit;
+    height: inherit;
+    font-family: 'Courier New';
+    font-size: 64px;
+    line-height: 56px;
+    font-weight: bold;
+    color: #00ff00;
+    position: absolute;
+    z-index: 1;
+}
+
+div.Display_up {
+    background-color: rgba(50, 80, 50, 0.80);
+    font-size: 28px;
+    position: relative;
+    margin: 10px;
+    float: left;
+    color: #00ff00;
+}
+/******************************/
+/******** Thermometers ********/
+#Thermometers {
+    border: groove;
+    border-radius: 7px;
+    margin: 5px;
+}
+/******************************/
+/*********** Power ************/
+#Power {
+    float: left;
+    position: relative;
+    margin-left: 5px;
+    border: groove;
+    border-radius: 7px;
+}
+/******************************/
+/******** Mode buttons ********/
+#ModeButtons {
+    float: left;
+    position: relative;
+    margin-left: 10px;
+    border-radius: 7px;
+}
+
+    #ModeButtons p {
+        padding: 0 30px 0 24px;
+    }
+/******************************/
+/******** right panel *********/
+.right_content {
+    float: right;
+    position: relative;
+    margin-left: auto;
+    margin-right: 5px;
+    display: inline-block;
+}
+/******************************/
+/******** Cools *********/
+#Cools {
+    border: groove;
+    border-radius: 7px;
+    font-weight: bold;
+    color: #3E8282;
+    text-align: center;
+    color: darkcyan;
+    font-weight: 700;
+}
+.round {
+    width: 20px;
+    height: 20px;
+    background: rgb(50,80,50);
+    border: 1px solid #939393;
+    line-height: 20px;
+    text-align: center;
+    font-size: 10px;
+    color: blue;
+    border-radius: 10px;
+    border-color: darkgreen;
+    position: relative;
+    margin: 0 auto;
+}
+
+/******************************/
+/******* Buttons panel ********/
+#Buttons {
+    float: right;
+    position: relative;
+}
+/******************************/
+/******** Buttons *********/
+.knopka {
+    display: inline-block;
+    height: 50px;
+    line-height: 50px;
+    font-size: 20px;
+    text-align: center;
+    text-decoration: none;
+    text-shadow: 0 1px rgba(255,255,255,.2), 0 -1px rgba(0,0,0,.8);
+    outline: none;
+    border: none;
+    border-radius: 100px;
+    background: rgb(28,107,114) radial-gradient(150% 100% at 50% 5px, rgba(255,255,255,.2), rgba(0,0,0,0));
+    box-shadow: inset rgba(0,0,0,.6) 0 -2px 5px, inset rgba(252,255,255,.7) 0 2px 5px, rgba(0,0,0,.8) 0 2px 5px -1px;
+    color: rgb(0,79,86);
+    user-select: none;
+    margin: 5px;
+}
+
+    .knopka:hover {
+        color: rgb(0,59,66);
+        cursor: pointer;
+    }
+
+    .knopka:active {
+        padding-bottom: 1px;
+        box-shadow: inset rgba(0,0,0,1) 0 1px 3px, inset rgba(0,0,0,.6) 0 -2px 5px, inset rgba(252,255,255,.7) 0 2px 5px, 0 1px rgba(255,255,255,.08);
+        color: rgb(128,207,214);
+    }
+
+#Shutdown {
+    font-size: 30px;
+    color: lawngreen;
+    width: 60px;
+    margin-left: auto;
+    margin-right: 0;
+}
+
+    #Shutdown:hover {
+        color: limegreen;
+        cursor: pointer;
+    }
+    #Shutdown:active {
+        padding-bottom: 1px;
+        box-shadow: inset rgba(0,0,0,1) 0 1px 3px, inset rgba(0,0,0,.6) 0 -2px 5px, inset rgba(252,255,255,.7) 0 2px 5px, 0 1px rgba(255,255,255,.08);
+        color: darkgreen;
+    }
+
+
+/******************************/
+/******** IcoButtons *********/
+    @font-face {
+        font-family: 'icooon';
+        src: url('../fonts/icomoon.woff?d1taiw') format('woff');
+    }
+
+.icon-switch {
+    font-family: 'icooon' !important;
+}
+
+    .icon-switch:before {
+        content: "\e9b6";
+    }
+/******************************/
+/********** footer ************/
+#footer {
+    clear: both;
+    margin: 0;
+    padding: 50px 0 0 0;
+    width: 900px;
+    color: #469999;
+}
+
+#footer p {
+    font: 10px verdana, arial, helvetica, sans-serif;
+    text-align: center;
+}
+.center {
+    text-align: center;
+    width: 200px;
+    position: relative;
+}
+
+/******************************/

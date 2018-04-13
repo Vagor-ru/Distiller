@@ -1,0 +1,221 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Distiller</title>
+    <link href="../static/content/dashboard.css" rel="stylesheet" />
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="../static/scripts/gauge.min.js"></script>
+    <script src="../static/scripts/socket.io.js"></script>
+    <script src="/static/scripts/jquery-1.10.2.js"></script>
+
+    <script type="text/javascript" charset="utf-8">
+        // Загрузка пакета gauge
+        google.charts.load('current', { 'packages': ['gauge'] });
+
+        // Функция отображения данных, поступивших от сервера, на html странице
+        function ShowDeviceData(msg) {
+            //Отображение значений температур
+            if ('Thermometers' in msg) {
+                drawGauge.ShowThermometers(msg.Thermometers);
+            }
+            //Отображение мощности нагрева
+            if ('Power' in msg) {
+                //alert(msg.Power);
+                drawGauge.ShowPower(msg.Power);
+            }
+            //Отображение надписи на дисплее-табло
+            if (msg.Display) {
+                $('.Display_text').html(msg.Display);
+            }
+            //Отображение состояния клапана дефлегматора
+            if ('DephState' in msg) {
+                //alert(msg.DephState);
+                if (msg.DephState) {
+                    $('#Dephlegmator').css('background', '#00ff00');
+                }
+                else {
+                    $('#Dephlegmator').css('background', 'rgb(50,80,50)');
+                }
+            }
+            //Отображение состояния клапана конденсатора
+            if ('CondState' in msg) {
+                //alert(msg.CondState);
+                if (msg.CondState) {
+                    $('#Condensator').css('background', '#00ff00');
+                }
+                else {
+                    $('#Condensator').css('background', 'rgb(50,80,50)');
+                }
+            }
+            //Отображение кнопок
+            if (msg.ModeButtons) {
+                $('#ModeButtons').html(msg.ModeButtons);
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div id="page">
+        <!--Заголовок страницы. Выводится название устройства из файла config.py-->
+        <div id="header">
+            <div style="display: inline-block;">
+                <h1> <a href="{{ url_for('home') }}" class="engrav">{{ title }}</a></h1>
+                <h1 class="c0"><span class="c1">Простой но очень умный дистиллятор (SmartDistiller)</span></h1>
+            </div>
+            <div class="right_content">
+                <button id="Shutdown" class="knopka" title="Отключение питания"><span class="icon-switch"></span></button>
+            </div>
+</div>
+
+        <!--Дисплей в виде светодиодной панели-->
+        <div class="Display">
+            <div class="Display_text">Включите поддержку скриптов браузером</div>
+            <div class="Display_cover"></div>
+        </div>
+
+        <!--Панель приборов и кнопок-->
+        <div id="Gauges">
+            <!--Стрелочные термометры-->
+            <div id="Thermometers">
+            </div>
+
+            <!--Стрелочный индикатор мощности нагрева-->
+            <div id="Power"></div>
+
+            <!--Панель с кнопками режимов работы-->
+            <div id="ModeButtons" class="engrav">
+            </div>
+
+            <!--Контейнер с индикаторами холодильников и постоянными кнопками, прижат вправо-->
+            <div class="right_content">
+                <!--Блок отображения состояния клапанов холодильников-->
+                <div id="Cools">
+                    <table style="width:100%;">
+                        <tr>
+                            <td><div class="round" id="Dephlegmator"></div></td>
+                            <td><div class="round" id="Condensator"></div></td>
+                        </tr>
+                        <tr>
+                            <td><label style="text-align:center;">Дефлегматор</label></td>
+                            <td><label style="text-align:center;">Конденсатор</label></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!--Блок с кнопками, отображаемыми постоянно-->
+                <div id="Buttons">
+                    <button id="Parameters" class="knopka">Параметры</button>
+                </div>
+            </div>
+        </div>
+
+        <!--Подвал страницы, здесь отображается некоторая текущая информация-->
+        <div id="footer">
+            <div class="center">
+                <!--<span>Дата и время устройства: </span><br /><span id="ServerDateTime" class="center"></span> <br />
+                <span>Соединение </span><span id="StateConection"></span><br />-->
+
+            </div>
+            <p>
+                Самогонщики всех стран объединяйтесь!
+            </p>
+        </div>
+
+    </div>
+
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(
+            function () {
+                $('div.Display_text').html('Загрузка...');
+                try {
+                    google.charts.setOnLoadCallback(drawGauge.start);
+                }
+                catch (ex) { alert(ex); }
+
+                //создание объета веб-сокетов
+                socket = io();
+
+                // Веб-сокет, принимающий и отображающий данные с сервера
+                socket.on('DataFromServer', (data) => {
+                    //alert('Получены данные');
+                    ShowDeviceData(data);
+                });
+
+                //Обработчик нажатия кнопки в <div id="Gauges">
+                $(document).on('click', 'button', function (eventObject) {
+                    //alert('id=' + $(this).prop('id'));
+                    socket.emit('Control', { 'Button': $(this).prop('id')})
+                });
+
+                // Показатель нагрева
+                var gauge = new RadialGauge({
+                    renderTo: document.createElement('canvas'),
+                    width: 300,
+                    height: 300
+                }).draw();
+
+            }
+        );
+
+        // Объект для отображения стрелочных приборов
+        drawGauge = {
+            // Настройка термометров
+            //options определяет вид стрелочного термометра
+            options: {
+                greenFrom: 0, greenTo: 80,
+                yellowFrom: 80, yellowTo: 90,
+                redFrom: 90, redTo: 100,
+                minorTicks: 10
+            },
+            // Функция отображения термометров
+            ShowThermometers: function (Thermometers) {
+                try { var TempData = new google.visualization.DataTable(); }
+                catch (ex) { return; }
+                TempData.addColumn('string', 'Thermometer');
+                TempData.addColumn('number', 'Temperature');
+                // показания стрелочных приборов
+                TempData.addRows(Thermometers);
+                //Объект chartT, привязанный к тегу div - отображает температурные данные с сервера (бакэнда)
+                try { chartT.draw(TempData, this.options); }
+                catch (ex) { }
+            },
+
+            // настройка ваттметра
+            optionsP: {
+                greenFrom: 0, greenTo: 25,
+                yellowFrom: 25, yellowTo: 35,
+                redFrom: 35, redTo: 100,
+                minorTicks: 5
+            },
+            // Функция отображения ваттметра
+            ShowPower: function (Power) {
+                try { var PwrData = new google.visualization.DataTable(); }
+                catch (ex) { return; }
+                PwrData.addColumn('string', 'Power');
+                PwrData.addColumn('number', 'Value');
+                PwrData.addRows(Power);
+                //Объект chartT, привязанный к тегу div - отображает данные о мощности нагрева с сервера (бакэнда)
+                try { chartP.draw(PwrData, this.optionsP); }
+                catch (ex) { }
+            },
+
+            // функция, создающая объект отображения приборов
+            start: function () {
+                //По готовности всей Google API Visualization создать объект отображения стрелочных приборов
+                this['chartT'] = new google.visualization.Gauge(document.getElementById('Thermometers'));
+                this['chartP'] = new google.visualization.Gauge(document.getElementById('Power'));
+                //Запрос актуальных данных от сервера
+                var dataToServer = { sid: socket.id };
+                socket.emit('GiveDeviceData', dataToServer, (data) => {
+                    //alert(data.DateTime);
+                    ShowDeviceData(data);
+                });
+
+            },
+        };
+    </script>
+</body>
+</html>
