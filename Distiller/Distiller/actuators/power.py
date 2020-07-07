@@ -10,21 +10,19 @@ $Id: power.py,v 1.3 2020/07/07
 
 import time, threading  #Модули для работы со временем и потоками
 from datetime import datetime
-#import RPi.GPIO as GPIO #Модуль доступа к GPIO Raspberry Pi
-from Distiller import app
+from Distiller import app, config, voltmeter
 from Distiller.helpers.transmitter import Transmit
 
-#если работаем на Raspberry Pi, грузим модуль
-#для работы с шиной I2C в Python "python-smbus"
 if app.config['RPI']:
     try:
         import RPi.GPIO as GPIO #Модуль доступа к GPIO Raspberry Pi
+        ##Настройка по номеру штырька на плате (не номер GPIO)
+        GPIO.setmode(GPIO.BOARD)    #по номеру штырьков на плате
     except Exception as exp:
         app.config['Display'] = 'Error: ' + str(exp)
 
 
-##Настройка по номеру штырька на плате (не номер GPIO)
-#GPIO.setmode(GPIO.BOARD)    #по номеру штырьков на плате
+
 
 class Power(threading.Thread):
     step=1         #Шаг установки мощности = 1%
@@ -32,36 +30,49 @@ class Power(threading.Thread):
 
     def __init__(self):
         threading.Thread.__init__(self)
-        self.HEADER_PIN=int(app.config['HEADER_PIN'])
+        self.HEATER_PIN=int(config['HEATER_PIN'])
         self._P=0
+        self._Pa=0
         self._Run=False
 
     @property
     def value(self):
-        return self._P
+        return self._Pa
 
     @value.setter
-    def Value(self, value):
+    def value(self, value):
         try:
-            value=int(value)
+            value=float(value)
+            if value<0:
+                value=0.0
+            if value>250^2/config['PARAMETERS']['rTEH']/1000:
+                value=250^2/config['PARAMETERS']['rTEH']/1000
         except:
-            value=0
-        if value<0:
-            value=0
-        if value>100:
-            value=100
-        new_P=int((int((value+self.step/2)/self.step))*self.step)
-        # Если изменилось значение мощности, то отправить новое значение клиентам
-        if self._P!=new_P:
+            value=0.0
+        new_P=value*100*config['PARAMETERS']['rTEH']/(voltmeter.value^2)
+        if new_P>100:
+            self._P=100
+            self._Pa=(voltmeter.value^2)/config['PARAMETERS']['rTEH']
+        else:
             self._P=new_P
-            Transmit({'Power':[('Нагрев',self._P)], 'DateTime': time.time()})
+            self._Pa=value
+
+        #new_P=int((int((value+self.step/2)/self.step))*self.step)
+        ## Если изменилось значение мощности, то отправить новое значение клиентам
+        #if self._P!=new_P:
+        #    self._P=new_P
+        #    Transmit({'Power':[('Нагрев',self._P)], 'DateTime': time.time()})
         
 
     def run(self):
         """Реализация алгоритма Брезенхема
         для регулирования мощности ТЭНа"""
-        #штырек HEADER_PIN на вывод, подтяжка отключена, низкий уровень
-        #GPIO.setup(self.HEADER_PIN, GPIO.OUT, GPIO.PUD_OFF, GPIO.LOW)
+        if not app.config['RPI']:
+            while self._Run:
+                time.sleep(1)
+            return
+        #штырек HEATER_PIN на вывод, подтяжка отключена, низкий уровень
+        GPIO.setup(self.HEATER_PIN, GPIO.OUT, GPIO.PUD_OFF, GPIO.LOW)
         self._Run=True
         while self._Run:
             Pmax=int((100/self.step))    #Приведенная максимальная мощность
@@ -72,22 +83,27 @@ class Power(threading.Thread):
                     break
                 if ErrP<Pmax/2:
                     ErrP+=Pmax
-                    #GPIO.output(self.HEADER_PIN, GPIO.HIGH)
+                    GPIO.output(self.HEATER_PIN, GPIO.HIGH)
                     #print('Power=ON')
                 else:
                     pass
-                    #GPIO.output(self.HEADER_PIN, GPIO.LOW)
+                    GPIO.output(self.HEATER_PIN, GPIO.LOW)
                     #print('Power=OFF')
                 ErrP-=int(self._P/self.step)
-                #print(GPIO.input(config.HEADER_PIN))
+                #print(GPIO.input(config.HEATER_PIN))
+                if self._P==100:
+                    self._Pa=(voltmeter.value^2)/config['PARAMETERS']['rTEH']
+                else:
+                    self._P=value*100*config['PARAMETERS']['rTEH']/(voltmeter.value^2)
+                app.config['Power']=self._Pa
                 time.sleep(self.period*self.step/100)
-            #GPIO.output(self.HEADER_PIN, GPIO.LOW)
-            print('Power=OFF')
-        #GPIO.cleanup(self.HEADER_PIN)
-        #print('штырек HEADER_PIN освобожден')
+            GPIO.output(self.HEATER_PIN, GPIO.LOW)
+            #print('Power=OFF')
+        GPIO.cleanup(self.HEATER_PIN)
+        #print('штырек HEATER_PIN освобожден')
 
     def stop(self):
-        self.Value=0
+        self.value=0
         self._Run=False
 
     @property
@@ -99,8 +115,8 @@ class Power(threading.Thread):
 
 def main():
     """Ручная установка мощности и тестовое преобразование"""
-    HEADER_PIN=raw_input("Номер штырька регулирования мощности:")
-    import power
+    HEATER_PIN=raw_input("Номер штырька регулирования мощности:")
+    import Power
     power=Power()
     power.start()
     while True:
@@ -109,8 +125,8 @@ def main():
             power.stop()
             break
         try:
-            power.Value=(int(End))
-            print("P=%s"%power.Value)
+            power.value=(int(End))
+            print("P=%s"%power.value)
         except ValueError:
             pass
 

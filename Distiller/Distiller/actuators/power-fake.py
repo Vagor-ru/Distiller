@@ -1,23 +1,30 @@
 """
-$Id: power.py,v 1.3 2017/05/13 
+$Id: power.py,v 1.3 2020/07/07 
 
 Класс-поток обеспечивает регулировку выдаваемый на ТЭН
 мощности по алгоритму Брезенхема.
 
 Регулировка мощности осуществляется последовательным включением/
-отключением штырька HEADER_PIN, его номер прописан в файле config.py
+отключением штырька HEATER_PIN, его номер прописан в файле config.py
 """
 
 import time, threading  #Модули для работы со временем и потоками
 from datetime import datetime
-import RPi.GPIO as GPIO #Модуль доступа к GPIO Raspberry Pi
+#import RPi.GPIO as GPIO #Модуль доступа к GPIO Raspberry Pi
 from Distiller import app
 from Distiller.helpers.transmitter import Transmit
 
+#если работаем на Raspberry Pi, грузим модуль
+#для работы с шиной I2C в Python "python-smbus"
+if app.config['RPI']:
+    try:
+        import RPi.GPIO as GPIO #Модуль доступа к GPIO Raspberry Pi
+    except Exception as exp:
+        app.config['Display'] = 'Error: ' + str(exp)
 
 
 ##Настройка по номеру штырька на плате (не номер GPIO)
-GPIO.setmode(GPIO.BOARD)    #по номеру штырьков на плате
+#GPIO.setmode(GPIO.BOARD)    #по номеру штырьков на плате
 
 class Power(threading.Thread):
     step=1         #Шаг установки мощности = 1%
@@ -30,10 +37,10 @@ class Power(threading.Thread):
         self._Run=False
 
     @property
-    def Value(self):
+    def value(self):
         return self._P
 
-    @Value.setter
+    @value.setter
     def Value(self, value):
         try:
             value=int(value)
@@ -54,7 +61,7 @@ class Power(threading.Thread):
         """Реализация алгоритма Брезенхема
         для регулирования мощности ТЭНа"""
         #штырек HEADER_PIN на вывод, подтяжка отключена, низкий уровень
-        GPIO.setup(self.HEADER_PIN, GPIO.OUT, GPIO.PUD_OFF, GPIO.LOW)
+        #GPIO.setup(self.HEADER_PIN, GPIO.OUT, GPIO.PUD_OFF, GPIO.LOW)
         self._Run=True
         while self._Run:
             Pmax=int((100/self.step))    #Приведенная максимальная мощность
@@ -65,18 +72,18 @@ class Power(threading.Thread):
                     break
                 if ErrP<Pmax/2:
                     ErrP+=Pmax
-                    GPIO.output(self.HEADER_PIN, GPIO.HIGH)
+                    #GPIO.output(self.HEADER_PIN, GPIO.HIGH)
                     #print('Power=ON')
                 else:
                     pass
-                    GPIO.output(self.HEADER_PIN, GPIO.LOW)
+                    #GPIO.output(self.HEADER_PIN, GPIO.LOW)
                     #print('Power=OFF')
                 ErrP-=int(self._P/self.step)
                 #print(GPIO.input(config.HEADER_PIN))
                 time.sleep(self.period*self.step/100)
-            GPIO.output(self.HEADER_PIN, GPIO.LOW)
-            #print('Power=OFF')
-        GPIO.cleanup(self.HEADER_PIN)
+            #GPIO.output(self.HEADER_PIN, GPIO.LOW)
+            print('Power=OFF')
+        #GPIO.cleanup(self.HEADER_PIN)
         #print('штырек HEADER_PIN освобожден')
 
     def stop(self):

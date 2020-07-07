@@ -30,8 +30,8 @@
   <ItemGroup>
     <Compile Include="Distiller\actuators\cools%28RPi%29.py" />
     <Compile Include="Distiller\actuators\cools.py" />
-    <Compile Include="Distiller\actuators\power%28RPi%29.py" />
-    <Compile Include="Distiller\actuators\power.py">
+    <Compile Include="Distiller\actuators\power.py" />
+    <Compile Include="Distiller\actuators\power-fake.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Distiller\actuators\__init__.py">
@@ -44,9 +44,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Distiller\helpers\coolsRegulator.py" />
-    <Compile Include="Distiller\helpers\DS18B20toDB.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Distiller\helpers\logging.py" />
     <Compile Include="Distiller\helpers\transmitter.py">
       <SubType>Code</SubType>
@@ -96,8 +93,7 @@
     <Folder Include="Distiller\templates\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Distiller\configDistiller.json" />
-    <Content Include="Distiller\helpers\DS18B20toDB.txt" />
+    <Content Include="configDistiller.json" />
     <Content Include="Distiller\static\content\dashboard.css" />
     <Content Include="Distiller\static\fonts\icomoon.woff" />
     <Content Include="Distiller\static\img\Background.jpg" />

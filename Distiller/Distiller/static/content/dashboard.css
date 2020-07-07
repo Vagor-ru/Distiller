@@ -78,7 +78,8 @@ div.Display_up {
 #Thermometers {
     border: groove;
     border-radius: 7px;
-    margin: 5px;
+    margin: 10px;
+    padding-left:10px;
     float: left;
     display: inline-block;
 }
@@ -101,12 +102,9 @@ div.Display_up {
     float: left;
     position: relative;
     margin-left: 10px;
+    /*border:3px solid red;*/
     border-radius: 7px;
 }
-
-    #ModeButtons p {
-        padding: 0 30px 0 24px;
-    }
 /******************************/
 /******** right panel *********/
 .right_content {
@@ -150,6 +148,11 @@ div.Display_up {
 }
 /******************************/
 /******** Buttons *********/
+#Buttons{
+    display:inline-block;
+    width:100%;
+    /*border:3px solid green;*/
+}
 .knopka {
     display: inline-block;
     height: 50px;

@@ -21,7 +21,7 @@ import glob     #находит все пути, совпадающие с за�
 import time     #Модуль для работы со временем
 import datetime #Модуль для работы с датой и временем
 import threading    #Модуль для работы с потоками
-from Distiller import app, config
+from Distiller import app, config, dbLock
 
 #Шаблон ID термометра
 TemplateDS18B20="28-000000"
@@ -197,6 +197,7 @@ class Thermometers(threading.Thread):
         Ts=Measure()            #сделать первое измерение
         #создание списка объектов-термометров
         #print(len(self.Tlist))
+        dbLock.acquire()        #всем остальным потокам ждать!
         self.Tlist.clear()
         for T in Ts:
             objT=DS18B20(T[0])
@@ -210,6 +211,7 @@ class Thermometers(threading.Thread):
             else:
                 self.needAutoLocation=True
             self.Tlist.append(objT)
+        dbLock.release()        #другие потоки могут читать Tlist
         #print(len(self.Tlist))
 
     def run(self):
@@ -220,8 +222,10 @@ class Thermometers(threading.Thread):
             # сбросить его
             if self.Tmeasured.isSet():
                 #сохранить предыдущие температуры
+                dbLock.acquire()
                 for objT in self.Tlist:
                     objT.Tpre=objT.T
+                dbLock.release()
                 self.Tmeasured.clear()
             #сбросить флаги закипания и срабатывания, если были установлены
             if self.boiling.is_set():
@@ -234,6 +238,7 @@ class Thermometers(threading.Thread):
             #print(app.config['Thermometers'])
             durationMeasure=time.time()-tBegin
             # сравнение температур и установка флага если закипание
+            dbLock.acquire()    #монополизировать выполнение на время сохранения температур
             for T in Ts:
                 objT=list(filter(lambda objT: objT.ID==T[0],self.Tlist))[0]
                 objT.T=T[1]
@@ -249,6 +254,7 @@ class Thermometers(threading.Thread):
                     self.trigger.set()
                 else:
                     objT.trigger=False
+            dbLock.release()    #разрешить исполнение другим потокам
             self.Tmeasured.set()
             #если сброшен флаг работы, рвем цикл
             if not self.__Run:

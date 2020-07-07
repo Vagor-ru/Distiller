@@ -36,6 +36,7 @@ except Exception as exp:
 # Чтение объекта конфигурации устройства из конфигурационного файла
 with open('configDistiller.json','r',encoding="utf-8") as f:
     config=json.load(f)
+    '''содержит настраиваемые параметры устройства'''
 
 '''Сохранение config:
  with open('configDistiller.json','w',encoding="utf-8") as f:
@@ -45,12 +46,12 @@ with open('configDistiller.json','r',encoding="utf-8") as f:
 #Создание приложения flask_socketio из flask-приложения
 socketio = SocketIO(app)
 
-# Запуск потока, записывающего температурные значения в БД
+# Запуск потока, измеряющего температурные значения
 try:
     from Distiller.sensors.DS18B20 import Thermometers
     thermometers=Thermometers()
     if thermometers.needAutoLocation:
-        app.config['Display']='Необходимо запустить автоопределение мест установки DS18B20'
+        app.config['Display']='Требуется автоопределение мест установки DS18B20'
         app.config['Buttons']='WAITAL.html'
     thermometers.name='thermometers'
     thermometers.start()

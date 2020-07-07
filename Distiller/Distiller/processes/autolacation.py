@@ -1,9 +1,9 @@
 """
-$Id: autolocation.py,v 1.0 2017/06/22 
+$Id: autolocation.py,v 1.3 2020/07/08 
 
-Copyright (c) 2017 C-Bell (VAGor). All rights reserved.
+C-Bell (VAGor). 
 
-Модуль автоматически определяет и сохраняет в базе данных
+Модуль автоматически определяет и сохраняет в конфигурации
 места расположения цифровых термометров DS18B20
 
 Нужно заправить аппаратуру перед запуском.
@@ -15,11 +15,11 @@ Copyright (c) 2017 C-Bell (VAGor). All rights reserved.
 import time
 from datetime import datetime
 import threading
+import json
 from flask import render_template
-from Distiller import models, app, dbLock
-from Distiller import power, condensator, dephlegmator
+from Distiller import app, dbLock, config
+from Distiller import power, condensator, dephlegmator,thermometers
 from Distiller.helpers.transmitter import Transmit
-from Distiller.helpers.logging import Logging
 
 class Autolocation(threading.Thread):
     u'''Класс-поток, определяющий расположение термометров.'''
@@ -29,10 +29,9 @@ class Autolocation(threading.Thread):
     Buttons = ''
 
     def __init__(self):
-        threading.Thread.__init__(self)
+        #threading.Thread.__init__(self)
+        super(Autolocation, self).__init__()
         self._Begin=datetime.now()
-        self.logger=Logging()
-        self.logger.setName('Logger')
 
     def Duration(self):
         sec=(datetime.now()-self._Begin).seconds
@@ -48,8 +47,6 @@ class Autolocation(threading.Thread):
         #Сохранение состояния веб-интерфейса
         self.Display = app.config['Display']
         self.Buttons = app.config['Buttons']
-        # создание и запуск объекта ведения журнала 
-        self.logger.start()
         # Вывести сообщение на дисплей и прикрутить кнопку "Останов"
         self.pageUpdate('Заполнение холодильников<br>'+self.Duration(),
                         'ABORT.html')
@@ -60,98 +57,93 @@ class Autolocation(threading.Thread):
         condensator.Off()
         dephlegmator.Off()
         #Мощность нагрева=100%
-        self.pageUpdate('Мощность нагрева=100%<br>ожидание закипания<br>'+self.Duration())
-        power.Value=100
+        self.pageUpdate('Ожидание закипания<br>'+self.Duration())
+        power.value=4.0
         #Ожидание закипания
-        while True:
+        while not thermometers.boiling.wait():
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
                 return
-            #self.logger.ReadyLog.wait()    #Ждем завершение записи в журнал
-            #спим одну секунду
-            time.sleep(1)
-            self.pageUpdate('Мощность нагрева=100%<br>ожидание закипания<br>'+self.Duration())
-            #Проверить скорость роста температур
-            #Извлекаем из лога два последних момента фиксации температур
-            dbLock.acquire()
-            LastMeasures=models.log.query.order_by(models.db.desc(models.log.id)).limit(2).all()
-            #Если их ещё не два, то пропускаем
-            if len(LastMeasures)==2:
-                #Количество секунд между двумя последними измерениями
-                sec=(LastMeasures[0].TimeStamp-LastMeasures[1].TimeStamp).total_seconds()
-                for Samp in LastMeasures[0].Tsample:
-                    #Если скорость роста температуры на каком-либо термометре более 1°C в секунду, значит закипание
-                    if (Samp.T - LastMeasures[1].Tsample.filter_by(id_DS18B20=Samp.id_DS18B20).first().T)/sec>1:
-                        dbLock.release()
-                        break
-                else:   #если цикл for не был прерван, продолжаем цикл while
-                    dbLock.release()
-                    continue
-                break   #при прерывании цикла for прерываем цикл while
-        #Уменьшаем мощность до 30%
-        power.Value=25
-        # Пауза 30 сек
+            self.pageUpdate('Ожидание закипания<br>'+self.Duration())
+
+        #Уменьшить мощность
+        power.Value=4.0/4
+        # Пауза 
         tBegin=time.time()
-        while time.time()-tBegin<30:
+        duration=30
+        while time.time()-tBegin<duration:
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
                 return
-            sec=20-int(time.time()-tBegin)
+            sec=duration-int(time.time()-tBegin)
             sec_str=u'{:02}:{:02}'\
                .format((sec//60)%60, sec%60)
-            self.pageUpdate('Мощность нагрева=25%%<br>Пауза %s<br>%s'%
+            self.pageUpdate('Прогрев колонны %s<br>%s'%
                             (sec_str,self.Duration()))
             time.sleep(1)
-        #Включаем клапаны дефлегматора и конденсатора на 40 сек
+        #Включить клапаны дефлегматора и конденсатора на 40 сек
+        duration=40
         condensator.On()
         dephlegmator.On()
         tBegin=time.time()
-        while time.time()-tBegin<40:
+        while time.time()-tBegin<duration:
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
                 return
-            sec=40-int(time.time()-tBegin)
+            sec=duration-int(time.time()-tBegin)
             sec_str=u'{:02}:{:02}'\
                .format((sec//60)%60, sec%60)
-            self.pageUpdate('Мощность нагрева=25%%<br>Охладители %s<br>%s'%
+            self.pageUpdate('Охлаждение холодильников %s<br>%s'%
                             (sec_str,self.Duration()))
             time.sleep(1)
-        #Отключаем клапан дефлегматора и ждем ещё 40 сек
+        #Отключить клапан дефлегматора и ждать ещё 40 сек
+        duration=40
         dephlegmator.Off()
         tBegin=time.time()
-        while time.time()-tBegin<40:
+        while time.time()-tBegin<duration:
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort' or app.config['AB_CON']=='Error':
                 self.stop()
                 return
-            sec=40-int(time.time()-tBegin)
+            sec=duration-int(time.time()-tBegin)
             sec_str=u'{:02}:{:02}'\
                .format((sec//60)%60, sec%60)
             self.pageUpdate('Прогрев дефлегматора<br>%s<br>%s'%
                             (sec_str,self.Duration()))
             time.sleep(1)
-        #Читаем из базы в порядке убывания температур, присваиваем имена и завершаем
+        #Сортировать в порядке убывания температур, присвоить имена и завершить
         self.pageUpdate('Присвоение имен термометрам<br>%s'%
                         (self.Duration()))
-        dbLock.acquire()
-        Tlist=models.DS18B20.query.order_by(models.db.desc(models.DS18B20.T)).all()
-        for i in range(len(Tlist)):
-            Tlist[i].Name=app.config['T_LOCATION'][i]
-        models.db.session.commit()
-        dbLock.release()
+        dbLock.acquire()    #захватить исполнение только этим потоком
+        #сортировка списка термометров в порядке убывания температур
+        i=0
+        T_LOCATIONS={}
+        for Th in sorted(thermometers.Tlist, key=lambda thermometer: thermometer.T,reverse=True):
+            #print (Th.T)
+            Th.Name=config['LOCATIONS'][i]  #имя (место расположения) термометра
+            T_LOCATIONS[Th.ID]=config['LOCATIONS'][i]   #имя, соответствующее ID, для сохранения в конфигурации
+            if Th.Name=='Конденсатор':
+                Th.Ttrigger=config['PARAMETERS']['Tcond']
+            if Th.Name=='Дефлегматор':
+                Th.Ttrigger=config['PARAMETERS']['Tdephlock']
+            i+=1
+        #сохранить конфигурацию
+        config['T_LOCATIONS']=T_LOCATIONS
+        with open('configDistiller.json','w',encoding="utf-8") as f:
+            json.dump(config,f,ensure_ascii=False, indent=2)
+        dbLock.release()    #включить многопоточный режим
         self.stop()
         self.pageUpdate('Автоопределение завершено<br>%s'%(self.Duration()),
                         'END.html')
         return
 
     def stop(self):
-        power.Value = 0 #отключаем нагрев
+        power.value = 0 #отключаем нагрев
         condensator.Off()   #отключаем клапан конденсатора
         dephlegmator.Off()  #отключаем клапан дефлегматора
-        self.logger.stop()   #завершить ведение журнала
 
     def abort(self):
         self.stop()
