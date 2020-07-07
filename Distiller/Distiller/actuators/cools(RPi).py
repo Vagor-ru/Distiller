@@ -1,5 +1,5 @@
 """
-$Id: cools.py,v 1.0 2017/06/20 $
+$Id: cools.py,v 1.0 2020/07/01 $
 
 Copyright (c) C-Bell (VAGor). All rights reserved.
 
@@ -15,10 +15,6 @@ from Distiller.helpers.transmitter import Transmit
 GPIO.setmode(GPIO.BOARD)    #по номеру штырьков на плате
 
 
-    
-
-##Настройка по номеру штырька на плате (не номер GPIO)
-GPIO.setmode(GPIO.BOARD)    #по номеру штырьков на плате
 
 class Dephlegmator():
     '''класс дефлегматора'''

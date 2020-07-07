@@ -39,13 +39,15 @@ def TransmittDataToClient(dataToServer):
     DataFromServer={}   #Словарь, который содержит передаваемые данные
     DataFromServer.update(power.DataFromServer)
     if 'Thermometers' in app.config:
-        DataFromServer.update(app.config['Thermometers'])
+        DataFromServer['Thermometers']=app.config['Thermometers']
+    if 'Voltmeter' in app.config:
+        DataFromServer['Voltmeter']=app.config['Voltmeter']
     DataFromServer['Display']=app.config['Display']
     DataFromServer.update(dephlegmator.DataFromServer)
     DataFromServer.update(condensator.DataFromServer)
     if 'Buttons' in app.config:
         DataFromServer['ModeButtons']=render_template(app.config['Buttons'])
-    #print (DataFromServer)
+    print (DataFromServer)
     return DataFromServer
 
 

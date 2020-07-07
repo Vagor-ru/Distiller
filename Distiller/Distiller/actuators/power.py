@@ -1,11 +1,11 @@
 """
-$Id: power.py,v 1.3 2017/05/13 
+$Id: power.py,v 1.3 2020/07/07 
 
 Класс-поток обеспечивает регулировку выдаваемый на ТЭН
 мощности по алгоритму Брезенхема.
 
 Регулировка мощности осуществляется последовательным включением/
-отключением штырька HEADER_PIN, его номер прописан в файле config.py
+отключением штырька HEATER_PIN, его номер прописан в файле config.py
 """
 
 import time, threading  #Модули для работы со временем и потоками
@@ -14,6 +14,13 @@ from datetime import datetime
 from Distiller import app
 from Distiller.helpers.transmitter import Transmit
 
+#если работаем на Raspberry Pi, грузим модуль
+#для работы с шиной I2C в Python "python-smbus"
+if app.config['RPI']:
+    try:
+        import RPi.GPIO as GPIO #Модуль доступа к GPIO Raspberry Pi
+    except Exception as exp:
+        app.config['Display'] = 'Error: ' + str(exp)
 
 
 ##Настройка по номеру штырька на плате (не номер GPIO)
@@ -30,10 +37,10 @@ class Power(threading.Thread):
         self._Run=False
 
     @property
-    def Value(self):
+    def value(self):
         return self._P
 
-    @Value.setter
+    @value.setter
     def Value(self, value):
         try:
             value=int(value)
