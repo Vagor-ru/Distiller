@@ -127,8 +127,12 @@ class Autolocation(threading.Thread):
             T_LOCATIONS[Th.ID]=config['LOCATIONS'][i]   #имя, соответствующее ID, для сохранения в конфигурации
             if Th.Name=='Конденсатор':
                 Th.Ttrigger=config['PARAMETERS']['Tcond']
+            else:
+                Th.Ttrigger=None
             if Th.Name=='Дефлегматор':
                 Th.Ttrigger=config['PARAMETERS']['Tdephlock']
+            else:
+                Th.Ttrigger=None
             i+=1
         #сохранить конфигурацию
         config['T_LOCATIONS']=T_LOCATIONS
