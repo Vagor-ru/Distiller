@@ -118,7 +118,7 @@ class Autolocation(threading.Thread):
         self.pageUpdate('Присвоение имен термометрам<br>%s'%
                         (self.Duration()))
         dbLock.acquire()    #захватить исполнение только этим потоком
-        #сортировка списка термометров в порядке убывания температур
+        #сортировка списка термометров в порядке возрастания температур
         i=0
         T_LOCATIONS={}
         for Th in sorted(thermometers.Tlist, key=lambda thermometer: thermometer.T):
@@ -132,6 +132,7 @@ class Autolocation(threading.Thread):
             i+=1
         #сохранить конфигурацию
         config['T_LOCATIONS']=T_LOCATIONS
+        thermometers.needAutoLocation=False #сбросить флаг автоопределения мест установки термометров
         with open('configDistiller.json','w',encoding="utf-8") as f:
             json.dump(config,f,ensure_ascii=False, indent=2)
         dbLock.release()    #включить многопоточный режим

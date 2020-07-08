@@ -122,20 +122,7 @@ class Power(threading.Thread):
 
 def main():
     """Ручная установка мощности и тестовое преобразование"""
-    HEATER_PIN=raw_input("Номер штырька регулирования мощности:")
-    import Power
-    power=Power()
-    power.start()
-    while True:
-        End=raw_input("Значение мощности (0...100) или Enter для останова:")
-        if End=="":
-            power.stop()
-            break
-        try:
-            power.value=(int(End))
-            print("P=%s"%power.value)
-        except ValueError:
-            pass
+    pass
 
 if __name__=="__main__":
     try:

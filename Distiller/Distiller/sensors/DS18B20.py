@@ -272,16 +272,16 @@ class Thermometers(threading.Thread):
     def dataFromServer(self):
         Tlist=[]
         dbLock.acquire()
-        if 'T_LOCATIONS' in config and len(config['T_LOCATIONS'])==5 and not self.needAutoLocation:
+        if self.needAutoLocation:
+            for Th in self.Tlist:
+                Tlist.append((Th.ID,Th.T))
+        else:
             for Name in config['LOCATIONS']:
                 objT=list(filter(lambda objT: objT.Name==Name,self.Tlist))[0]
                 if objT.Ttrigger!=None:
                     Tlist.append((objT.Name,objT.T,objT.Ttrigger))
                 else:
                     Tlist.append((objT.Name,objT.T))
-        else:
-            for Th in self.Tlist:
-                Tlist.append((Th.ID,Th.T))
         dbLock.release()
         return {'Thermometers':Tlist}
 
