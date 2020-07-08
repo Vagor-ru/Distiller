@@ -8,9 +8,7 @@ import json
 from flask import Flask
 from flask_socketio import SocketIO
 
-import Distiller.models
 from Distiller.config import Config
-from Distiller.database import db
 
 # Объект для блокировки потоков при доступе к совместным ресурсам
 dbLock = threading.Lock()
@@ -53,6 +51,10 @@ try:
     if thermometers.needAutoLocation:
         app.config['Display']='Требуется автоопределение мест установки DS18B20'
         app.config['Buttons']='WAITAL.html'
+    else:
+        app.config['Display']='Жду команду'
+        app.config['Buttons']='WAIT.html'
+
     thermometers.name='thermometers'
     thermometers.start()
     pass
@@ -64,6 +66,7 @@ from Distiller.sensors.Voltmeter import Voltmeter
 voltmeter=Voltmeter()
 voltmeter.name='voltmeter'
 voltmeter.start()
+#print(voltmeter.value)
 
 # Запуск регулятора мощности
 from Distiller.actuators.power import Power
@@ -75,6 +78,12 @@ power.start()
 from Distiller.actuators.cools import Condensator, Dephlegmator
 dephlegmator=Dephlegmator()
 condensator=Condensator()
+
+#Запуск потока, отправляющего значения приборов клиенту
+from Distiller.helpers.transmitter import SendGaugesValues
+sendGaugesValues=SendGaugesValues()
+sendGaugesValues.name='sendGaugesValues'
+sendGaugesValues.start()
 
 
 # Подключение функций представления веб-страниц

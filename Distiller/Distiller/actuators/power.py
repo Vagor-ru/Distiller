@@ -11,7 +11,6 @@ $Id: power.py,v 1.3 2020/07/07
 import time, threading  #Модули для работы со временем и потоками
 from datetime import datetime
 from Distiller import app, config, voltmeter
-from Distiller.helpers.transmitter import Transmit
 
 if app.config['RPI']:
     try:
@@ -45,17 +44,19 @@ class Power(threading.Thread):
             value=float(value)
             if value<0:
                 value=0.0
-            if value>250^2/config['PARAMETERS']['rTEH']/1000:
-                value=250^2/config['PARAMETERS']['rTEH']/1000
-        except:
+            if value>250**2/config['PARAMETERS']['rTEH']/1000:
+                value=250**2/config['PARAMETERS']['rTEH']/1000
+        except Exception as ex:
+            print(ex)
             value=0.0
-        new_P=value*100*config['PARAMETERS']['rTEH']/(voltmeter.value^2)
+        new_P=value*100*config['PARAMETERS']['rTEH']*1000/(voltmeter.value**2)
         if new_P>100:
             self._P=100
-            self._Pa=(voltmeter.value^2)/config['PARAMETERS']['rTEH']
+            self._Pa=(voltmeter.value**2)/config['PARAMETERS']['rTEH']/1000
         else:
             self._P=new_P
             self._Pa=value
+        app.config['Power']=self.dataFromServer
 
         #new_P=int((int((value+self.step/2)/self.step))*self.step)
         ## Если изменилось значение мощности, то отправить новое значение клиентам
@@ -68,7 +69,13 @@ class Power(threading.Thread):
         """Реализация алгоритма Брезенхема
         для регулирования мощности ТЭНа"""
         if not app.config['RPI']:
+            self._Run=True
             while self._Run:
+                V=voltmeter.value
+                if self._P==100:
+                    self._Pa=(V**2)/config['PARAMETERS']['rTEH']/1000
+                else:
+                    self._P=self.value*100*config['PARAMETERS']['rTEH']*1000/(V**2)
                 time.sleep(1)
             return
         #штырек HEATER_PIN на вывод, подтяжка отключена, низкий уровень
@@ -92,9 +99,9 @@ class Power(threading.Thread):
                 ErrP-=int(self._P/self.step)
                 #print(GPIO.input(config.HEATER_PIN))
                 if self._P==100:
-                    self._Pa=(voltmeter.value^2)/config['PARAMETERS']['rTEH']
+                    self._Pa=(voltmeter.value**2)/config['PARAMETERS']['rTEH']/1000
                 else:
-                    self._P=value*100*config['PARAMETERS']['rTEH']/(voltmeter.value^2)
+                    self._P=self.value*100*config['PARAMETERS']['rTEH']*1000/(voltmeter.value**2)
                 app.config['Power']=self._Pa
                 time.sleep(self.period*self.step/100)
             GPIO.output(self.HEATER_PIN, GPIO.LOW)
@@ -107,10 +114,9 @@ class Power(threading.Thread):
         self._Run=False
 
     @property
-    def DataFromServer(self):
-        return {'Power':[('Нагрев',self._P)]}
+    def dataFromServer(self):
+        return {'Power':[('Нагрев',self._Pa)]}
 
-        
 
 
 def main():

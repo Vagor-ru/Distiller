@@ -4,7 +4,7 @@ Routes and views for the flask application.
 
 from datetime import datetime
 from flask import render_template
-from Distiller import app, socketio, power, condensator, dephlegmator
+from Distiller import app, socketio, power, condensator, dephlegmator, thermometers,voltmeter
 from Distiller.helpers.transmitter import Transmit
 
 @app.route('/')
@@ -37,17 +37,15 @@ def TransmittDataToClient(dataToServer):
     #if 'sid' in dataToServer:
     #    print('sid='+dataToServer['sid'])
     DataFromServer={}   #Словарь, который содержит передаваемые данные
-    #DataFromServer.update(power.DataFromServer)
-    if 'Thermometers' in app.config:
-        DataFromServer['Thermometers']=app.config['Thermometers']
-    if 'Voltmeter' in app.config:
-        DataFromServer['Voltmeter']=app.config['Voltmeter']
-    DataFromServer['Power']=power.value
-    DataFromServer['Display']=app.config['Display']
-    DataFromServer.update(dephlegmator.DataFromServer)
-    DataFromServer.update(condensator.DataFromServer)
+    DataFromServer.update(thermometers.dataFromServer)  #Термометры
+    DataFromServer.update(voltmeter.dataFromServer)     #Вольтметр
+    DataFromServer.update(power.dataFromServer)         #Ваттметр
+    DataFromServer.update(condensator.dataFromServer)   #Конденсатор
+    DataFromServer.update(dephlegmator.dataFromServer)  #Дефлегматор
+    if 'Display' in app.config:
+        DataFromServer['Display']=app.config['Display'] #Экран монитора
     if 'Buttons' in app.config:
-        DataFromServer['ModeButtons']=render_template(app.config['Buttons'])
+        DataFromServer['ModeButtons']=render_template(app.config['Buttons'])    #кнопки
     print (DataFromServer)
     return DataFromServer
 

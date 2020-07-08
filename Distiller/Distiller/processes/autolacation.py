@@ -71,7 +71,7 @@ class Autolocation(threading.Thread):
         power.Value=4.0/4
         # Пауза 
         tBegin=time.time()
-        duration=30
+        duration=40
         while time.time()-tBegin<duration:
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
@@ -83,8 +83,8 @@ class Autolocation(threading.Thread):
             self.pageUpdate('Прогрев колонны %s<br>%s'%
                             (sec_str,self.Duration()))
             time.sleep(1)
-        #Включить клапаны дефлегматора и конденсатора на 40 сек
-        duration=40
+        #Включить клапаны дефлегматора и конденсатора на 20 сек
+        duration=20
         condensator.On()
         dephlegmator.On()
         tBegin=time.time()
@@ -99,14 +99,14 @@ class Autolocation(threading.Thread):
             self.pageUpdate('Охлаждение холодильников %s<br>%s'%
                             (sec_str,self.Duration()))
             time.sleep(1)
-        #Отключить клапан дефлегматора и ждать ещё 40 сек
-        duration=40
+        #Отключить клапан дефлегматора и ждать ещё 30 сек
+        duration=30
         dephlegmator.Off()
         tBegin=time.time()
         while time.time()-tBegin<duration:
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort' or app.config['AB_CON']=='Error':
-                self.stop()
+                self.abort()
                 return
             sec=duration-int(time.time()-tBegin)
             sec_str=u'{:02}:{:02}'\
@@ -121,7 +121,7 @@ class Autolocation(threading.Thread):
         #сортировка списка термометров в порядке убывания температур
         i=0
         T_LOCATIONS={}
-        for Th in sorted(thermometers.Tlist, key=lambda thermometer: thermometer.T,reverse=True):
+        for Th in sorted(thermometers.Tlist, key=lambda thermometer: thermometer.T):
             #print (Th.T)
             Th.Name=config['LOCATIONS'][i]  #имя (место расположения) термометра
             T_LOCATIONS[Th.ID]=config['LOCATIONS'][i]   #имя, соответствующее ID, для сохранения в конфигурации

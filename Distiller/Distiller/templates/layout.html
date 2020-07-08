@@ -23,12 +23,12 @@
             }
             //Отображение вольтметра
             if ('Voltmeter' in msg) {
-                ShowVoltmeter(msg.Voltmeter);
+                ShowVoltmeter(msg.Voltmeter[0]);
             }
             //Отображение мощности нагрева
             if ('Power' in msg) {
                 //alert(msg.Power);
-                ShowPower(msg.Power);
+                ShowPower(msg.Power[0]);
             }
             //Отображение надписи на дисплее-табло
             if (msg.Display) {
@@ -169,17 +169,18 @@
                 let VoltMeter = new DialGauge({
                     id: `Voltmeter`,
                     height: 110,
-                    majorTicks: 10,
+                    majorTicks: 8,
                     minorTicks: 5,
-                    minValue: 170,
-                    maxValue: 270,
-                    value: Voltmeter,
-                    title: 'Сеть',
+                    minValue: 180,
+                    maxValue: 260,
+                    value: Voltmeter[1],
+                    title: Voltmeter[0],
                     units: "V",
                 });
             }
             else {
-                document.gauge['Voltmeter'].value = Voltmeter;
+                //console.log(document.gauges)
+                document.gauges['Voltmeter'].value = Voltmeter[1];
             }
         }
 
@@ -188,23 +189,28 @@
          * @param Power
          */
         function ShowPower(Power) {
-            console.log(Power);
-            let WattMeter = new DialGauge({
-                id: 'Power',
-                height: 140,
-                majorTicks: 8,
-                minorTicks: 5,
-                minValue: 0,
-                maxValue: 4.000,
-                value: Power,
-                title: 'Нагрев',
-                units: "kW",
-                canBeChanged: true,
-            });
-            WattMeter.addEventListener('changeValue', function (event) {
-                console.log(`${this.Attributes.id}=${this.value}${this.Attributes.units}`);
-                socket.emit('Control', { 'SetValue': [this.Attributes.id, this.value] });
-            }, false);
+            //console.log(Power);
+            if (!('gauges' in document) || !('Power' in document.gauges)) {
+                let WattMeter = new DialGauge({
+                    id: 'Power',
+                    height: 140,
+                    majorTicks: 8,
+                    minorTicks: 5,
+                    minValue: 0,
+                    maxValue: 4.000,
+                    value: Power[1],
+                    title: Power[0],
+                    units: "kW",
+                    canBeChanged: true,
+                });
+                WattMeter.addEventListener('changeValue', function (event) {
+                    console.log(`${this.Attributes.id}=${this.value}${this.Attributes.units}`);
+                    socket.emit('Control', { 'SetValue': [this.Attributes.id, this.value] });
+                }, false);
+            }
+            else {
+                document.gauges['Power'].value = Power[1];
+            }
         }
 
         /**
@@ -212,10 +218,10 @@
          * @param Thermometers список термометров со значениями температур и триггеров
          * вида [['Низ, 68.4], ['Дефлегматор', 52.3, 53.1]] (третье значение - триггер)
          */
-        function ShowThermometers(Thermometers) {
+        function ShowThermometers(Ths) {
             //проверить необходимость перерисовки термометров
             let redraw = false;
-            for (let Thermometer of Thermometers) {
+            for (let Thermometer of Ths) {
                 if (!document.querySelector(`[id="${Thermometer[0]}"]`)) {
                     redraw = true;
                     break;
@@ -235,15 +241,19 @@
                 //while (Ths.firstChild) { Ths.removeChild(Ths.firstChild); }
                 while (Thermometers.firstChild) { Thermometers.removeChild(Thermometers.firstChild); }
                 //нарисовать термометры заново
-                for (let Thermometer of Thermometers) {
+                for (let Thermometer of Ths) {
                     createThermometer(Thermometer);
                 }
             }
+            //задать новые значения термометрам
             else {
-                for (let Thermometer of Thermometers) {
-                    document.gauges[Thermometer[0]].value = Thermometer[1];
-                    if (len(Thermometer) > 2) {
-                        document.gauges[Thermometer[0]].triggerValue = Thermometer[2];
+                //console.log(Ths)
+                for (let Th of Ths) {
+                    //console.log(Ths[0])
+                    //console.log(Th)
+                    document.gauges[Th[0]].value = Th[1];
+                    if (Th.length > 2) {
+                        document.gauges[Th[0]].triggerValue = Th[2];
                     }
                 }
             }

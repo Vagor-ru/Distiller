@@ -16,20 +16,23 @@ class Voltmeter(threading.Thread):
     с помощью АЦП модуля PCF8591"""
     def __init__(self):
         super(Voltmeter, self).__init__()
-        self._V=220.0
+        self._V=self.GetVoltage()
         self._Run=False
+        app.config['Voltmeter']=self.dataFromServer
 
     @property
     def value(self):
         return self._V
 
+    @property
+    def dataFromServer(self):
+        return {'Voltmeter':[('Сеть',self._V)]}
+
     def run(self):
         self._Run=True
-        while(True):
-            if not self._Run:
-                break
+        while(self._Run):
             self._V=self.GetVoltage()
-            app.config['Voltmeter']=self._V
+            app.config['Voltmeter']=self.dataFromServer
             time.sleep(0.5)
 
     def stop(self):

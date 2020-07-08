@@ -321,26 +321,26 @@ class DialGauge extends EventTarget {
      * перемещает стрелку в нужную позицию
      **/
     drawNeedle() {
-        var r = this.Attributes.height * (1 - 2 / 5 + 1 / 6);  //радиус верха стрелки
-        var widthNeedle = this.Attributes.height / 50;
+        let r = this.Attributes.height * (1 - 2 / 5 + 1 / 6);  //радиус верха стрелки
+        let widthNeedle = this.Attributes.height / 50;
         //console.log(`${this.Attributes.id}.value=${this.Attributes.value}`);
-        var angle = 180 * ((this.Attributes.value - this.Attributes.minValue) /
+        let angle = 180 * ((this.Attributes.value - this.Attributes.minValue) /
             (this.Attributes.maxValue - this.Attributes.minValue)) - 180;    //угол поворота стрелки
-        var cx = this.Attributes.height;
-        var cy = this.Attributes.height * (1 - 1 / 50); //ось шкалы по y
+        let cx = this.Attributes.height;
+        let cy = this.Attributes.height * (1 - 1 / 50); //ось шкалы по y
         //console.log(`r=${r}, angle=${angle}, cx=${cx}, cy=${cy}`);
 
-        var nx1 = cx + (widthNeedle) * Math.cos((angle - 90) * this.rad);
-        var ny1 = cy + (widthNeedle) * Math.sin((angle - 90) * this.rad);
+        let nx1 = cx + (widthNeedle) * Math.cos((angle - 90) * this.rad);
+        let ny1 = cy + (widthNeedle) * Math.sin((angle - 90) * this.rad);
 
-        var nx2 = cx + (r) * Math.cos(angle * this.rad);
-        var ny2 = cy + (r) * Math.sin(angle * this.rad);
+        let nx2 = cx + (r) * Math.cos(angle * this.rad);
+        let ny2 = cy + (r) * Math.sin(angle * this.rad);
 
-        var nx3 = cx + (widthNeedle) * Math.cos((angle + 90) * this.rad);
-        var ny3 = cy + (widthNeedle) * Math.sin((angle + 90) * this.rad);
+        let nx3 = cx + (widthNeedle) * Math.cos((angle + 90) * this.rad);
+        let ny3 = cy + (widthNeedle) * Math.sin((angle + 90) * this.rad);
 
         //console.log(`${nx1},${ny1} ${nx2},${ny2} ${nx3},${ny3}`)
-        var points = nx1 + "," + ny1 + " " + nx2 + "," + ny2 + " " + nx3 + "," + ny3;
+        let points = nx1 + "," + ny1 + " " + nx2 + "," + ny2 + " " + nx3 + "," + ny3;
         //console.log(points);
         this.Needle.setAttributeNS(null, "points", points);
     }
@@ -354,7 +354,7 @@ class DialGauge extends EventTarget {
      * сеттер значения показометра
      **/
     set value(value) {
-        if (!NaN) {
+        if (typeof (value) == 'number') {
             this.Attributes.value = value;
             //console.log(this.Attributes.value);
             if (this.Attributes.value < this.Attributes.minValue) {
@@ -368,6 +368,7 @@ class DialGauge extends EventTarget {
             this.InputValue.value = this.Attributes.value;
             this.drawNeedle();
         }
+        else { console.warn('Type of value must be a number'); }
     }
 
     /**

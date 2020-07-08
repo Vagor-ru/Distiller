@@ -203,9 +203,13 @@ class Thermometers(threading.Thread):
             objT=DS18B20(T[0])
             objT.T=T[1]
             objT.Tpre=T[1]
-            if "T_LOCATION" in config:
-                if T[0] in config["T_LOCATION"]:
-                    objT.Name=config["T_LOCATION"][T[0]]
+            if "T_LOCATIONS" in config:
+                if T[0] in config["T_LOCATIONS"]:
+                    objT.Name=config["T_LOCATIONS"][T[0]]
+                    if objT.Name=='Конденсатор':
+                        objT.Ttrigger=config['PARAMETERS']['Tcond']
+                    if objT.Name=='Дефлегматор':
+                        objT.Ttrigger=config['PARAMETERS']['Tdephlock']
                 else:
                     self.needAutoLocation=True
             else:
@@ -234,7 +238,7 @@ class Thermometers(threading.Thread):
                 self.trigger.clear()
             tBegin=time.time()
             Ts=Measure()
-            app.config['Thermometers']=Ts
+            app.config['Thermometers']=self.dataFromServer
             #print(app.config['Thermometers'])
             durationMeasure=time.time()-tBegin
             # сравнение температур и установка флага если закипание
@@ -260,11 +264,28 @@ class Thermometers(threading.Thread):
             if not self.__Run:
                 break
 
-        @property
-        def values(self):
-            return self.Tlist
+    @property
+    def values(self):
+        return self.Tlist
 
-        def stop(self):
+    @property
+    def dataFromServer(self):
+        Tlist=[]
+        dbLock.acquire()
+        if 'T_LOCATIONS' in config and len(config['T_LOCATIONS'])==5 and not self.needAutoLocation:
+            for Name in config['LOCATIONS']:
+                objT=list(filter(lambda objT: objT.Name==Name,self.Tlist))[0]
+                if objT.Ttrigger!=None:
+                    Tlist.append((objT.Name,objT.T,objT.Ttrigger))
+                else:
+                    Tlist.append((objT.Name,objT.T))
+        else:
+            for Th in self.Tlist:
+                Tlist.append((Th.ID,Th.T))
+        dbLock.release()
+        return {'Thermometers':Tlist}
+
+    def stop(self):
             self.__Run=False
 
 
