@@ -76,6 +76,7 @@ class Power(threading.Thread):
                     self._Pa=(V**2)/config['PARAMETERS']['rTEH']/1000
                 else:
                     self._P=self.value*100*config['PARAMETERS']['rTEH']*1000/(V**2)
+                print('%s=>%s'%(self._Pa,self._P))
                 time.sleep(1)
             return
         #штырек HEATER_PIN на вывод, подтяжка отключена, низкий уровень
