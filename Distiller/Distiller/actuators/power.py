@@ -106,6 +106,7 @@ class Power(threading.Thread):
                 #print(GPIO.input(config.HEATER_PIN))
                 if self._P==100:
                     self._Pa=(voltmeter.value**2)/config['PARAMETERS']['rTEH']/1000
+                    Transmit(self.dataFromServer)
                 else:
                     self._P=self.value*100*config['PARAMETERS']['rTEH']*1000/(voltmeter.value**2)
                 app.config['Power']=self._Pa
