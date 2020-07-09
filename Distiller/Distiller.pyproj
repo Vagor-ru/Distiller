@@ -29,12 +29,8 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Distiller\actuators\cools%28RPi%29.py" />
     <Compile Include="Distiller\actuators\cools.py" />
     <Compile Include="Distiller\actuators\power.py" />
-    <Compile Include="Distiller\actuators\power-fake.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Distiller\actuators\__init__.py">
       <SubType>Code</SubType>
     </Compile>
@@ -50,7 +46,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Distiller\processes\autolacation.py" />
-    <Compile Include="Distiller\processes\manualOperations.py">
+    <Compile Include="Distiller\processes\manualMode.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Distiller\processes\crude.py" />

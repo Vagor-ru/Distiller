@@ -78,8 +78,10 @@ div.Display_up {
 #Thermometers {
     border: groove;
     border-radius: 7px;
-    margin: 10px;
-    padding-left:10px;
+    margin: 5px;
+    margin-left:10px;
+    padding:3px;
+    padding-left:5px;
     float: left;
     display: inline-block;
 }
@@ -88,6 +90,7 @@ div.Display_up {
 #Gauges {
     position: relative;
     margin: 5px;
+    padding: 1px;
     border: groove;
     border-radius: 7px;
     display: inline-block;
@@ -115,15 +118,16 @@ div.Display_up {
     display: inline-block;
 }
 /******************************/
-/******** Cools *********/
-#Cools {
-    border: groove;
-    border-radius: 7px;
-    font-weight: bold;
-    color: #3E8282;
-    text-align: center;
-    color: darkcyan;
-    font-weight: 700;
+/*********** LED **************/
+#Condensator:hover::after {
+    color: #00ff00;
+    font-size: 16px; /* Размер текста подсказки */
+    content: "Конденсатор";
+}
+#Dephlegmator:hover::after {
+    color: #00ff00;
+    font-size: 16px; /* Размер текста подсказки */
+    content: "Дефлегматор";
 }
 .round {
     width: 20px;

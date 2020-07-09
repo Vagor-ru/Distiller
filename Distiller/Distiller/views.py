@@ -79,6 +79,10 @@ def Controls(DataControls):
             crude.start()
         if DataControls['Button']=='ManualMode':
             print('Поступила команда запуска ручного режима')
+            from Distiller.processes.manualMode import ManualMode
+            manualMode=ManualMode()
+            manualMode.name='ManualMode'
+            manualMode.start()
         if DataControls['Button']=='Abort':
             print('Команда прерывания процесса')
             app.config['AB_CON']='Abort'
@@ -103,8 +107,14 @@ def Controls(DataControls):
             pass
     if 'SetTrigger' in DataControls:
         print(DataControls['SetTrigger'])
+        if app.config['Mode']=='MANUAL_MODE':
+            thermometers.setTtrigger(DataControls['SetTrigger'][0],DataControls['SetTrigger'][1])
         pass
     if 'SetValue' in DataControls:
         print(DataControls['SetValue'])
+        if DataControls['SetValue'][0]=='Power' and app.config['Mode']=='MANUAL_MODE':
+            power.value=float(DataControls['SetValue'][1])
+        else:
+            power.value=power.value
         pass
 

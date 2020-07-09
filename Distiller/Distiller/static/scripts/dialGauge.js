@@ -211,7 +211,7 @@ class DialGauge extends EventTarget {
         }, false);
         this.SVG.addEventListener("mouseup", (event) => {
             if (this.Attributes.canBeChanged) {
-                this.dispatchEvent(new CustomEvent("changeValue", { detail: { value: this.Attributes.value } }));
+                this.dispatchEvent(new CustomEvent("changeValue", { detail: { id: this.Attributes.id, value: this.Attributes.triggerValue } }));
             }
         }, false);
 
@@ -647,7 +647,7 @@ class Thermometer extends EventTarget {
                 this.dropNeedle(event);
             }, false);
             this.SVG.addEventListener("mouseup", (event) => {
-                this.dispatchEvent(new CustomEvent("changeTrigger", { detail: { value: this.Attributes.triggerValue } }));
+                this.dispatchEvent(new CustomEvent("changeTrigger", { detail: { id: this.Attributes.id, value: this.Attributes.triggerValue } }));
             }, false);
 
         }

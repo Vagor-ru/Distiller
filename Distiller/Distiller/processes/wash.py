@@ -1,6 +1,6 @@
 """
-$Id: wash.py,v 1.1 2017/09/18 
-Copyright (c) 2017 C-Bell (VAGor).
+$Id: wash.py,v 1.3 2020/07/09 
+ By C-Bell (VAGor).
 
 Класс-поток перегонки бражки
 
@@ -9,7 +9,7 @@ import time, os
 from datetime import datetime
 import threading
 from flask import render_template
-from Distiller import models, app, dbLock
+from Distiller import app, dbLock
 from Distiller import power, condensator, dephlegmator
 from Distiller.helpers.transmitter import Transmit
 from Distiller.helpers.logging import Logging

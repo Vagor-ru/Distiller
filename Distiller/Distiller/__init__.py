@@ -49,9 +49,11 @@ try:
     from Distiller.sensors.DS18B20 import Thermometers
     thermometers=Thermometers()
     if thermometers.needAutoLocation:
+        app.config['Mode']='WAITAL'
         app.config['Display']='Требуется автоопределение мест установки DS18B20'
         app.config['Buttons']='WAITAL.html'
     else:
+        app.config['Mode']='WAIT'
         app.config['Display']='Жду команду'
         app.config['Buttons']='WAIT.html'
 
@@ -79,12 +81,20 @@ from Distiller.actuators.cools import Condensator, Dephlegmator
 dephlegmator=Dephlegmator()
 condensator=Condensator()
 
+#запуск потока регулирования охладителей
+from Distiller.helpers.coolsRegulator import CoolsRegulator
+coolsRegulator=CoolsRegulator()
+coolsRegulator.name='coolsRegulator'
+coolsRegulator.start()
+
 #Запуск потока, отправляющего значения приборов клиенту
 from Distiller.helpers.transmitter import SendGaugesValues
 sendGaugesValues=SendGaugesValues()
 sendGaugesValues.name='sendGaugesValues'
 sendGaugesValues.start()
 
+for Thread in threading.enumerate():
+    print(Thread.name)
 
 # Подключение функций представления веб-страниц
 import Distiller.views

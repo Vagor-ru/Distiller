@@ -198,7 +198,7 @@
                     minorTicks: 5,
                     minValue: 0,
                     maxValue: 4.000,
-                    value: Power[1],
+                    value: +Power[1].toFixed(2),
                     title: Power[0],
                     units: "kW",
                     canBeChanged: true,
@@ -209,7 +209,7 @@
                 }, false);
             }
             else {
-                document.gauges['Power'].value = Power[1];
+                document.gauges['Power'].value = +Power[1].toFixed(2);
             }
         }
 
@@ -251,9 +251,9 @@
                 for (let Th of Ths) {
                     //console.log(Ths[0])
                     //console.log(Th)
-                    document.gauges[Th[0]].value = Th[1];
+                    document.gauges[Th[0]].value = +Th[1].toFixed(1);
                     if (Th.length > 2) {
-                        document.gauges[Th[0]].triggerValue = Th[2];
+                        document.gauges[Th[0]].triggerValue = +Th[2].toFixed(1);
                     }
                 }
             }
@@ -273,7 +273,7 @@
                 id: thermometer[0],
                 title: thermometer[0],
                 units: "°C",
-                value: thermometer[1],
+                value: +thermometer[1].toFixed(1),
                 triggerValue: 100,
                 width: 400,
                 minorTicks: 5,
@@ -281,7 +281,7 @@
             //если задано значение триггера, включить его
             if (thermometer.length > 2) {
                 options.withTrigger = true;
-                options.triggerValue = thermometer[2];
+                options.triggerValue = +thermometer[2].toFixed(1);
             }
             //создать строку термометра
             let divRow = document.createElement('div');
@@ -299,6 +299,7 @@
             //если есть триггер, привязать обработчика изменения значения триггера
             if (thermometer.length > 2) {
                 Thrmr.addEventListener('changeTrigger', function (event) {
+                    console.log(`Триггер термометра ${event.detail.id} запрошен ${event.detail.value}`)
                     socket.emit('Control', { 'SetTrigger': [event.detail.id, event.detail.value]});
                 }, false);
             }

@@ -264,6 +264,14 @@ class Thermometers(threading.Thread):
             if not self.__Run:
                 break
 
+    def getTtrigger(self, name):
+        objT=list(filter(lambda objT: objT.Name==name,self.Tlist))[0]
+        return objT.Ttrigger
+    def setTtrigger(self, name, Ttr):
+        objT=list(filter(lambda objT: objT.Name==name,self.Tlist))[0]
+        objT.Ttrigger=float(Ttr)
+        pass
+
     @property
     def values(self):
         return self.Tlist

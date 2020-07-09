@@ -9,8 +9,9 @@ $Id: power.py,v 1.3 2020/07/07
 """
 
 import time, threading  #Модули для работы со временем и потоками
-from datetime import datetime
 from Distiller import app, config, voltmeter
+from Distiller.helpers.transmitter import Transmit
+
 
 if app.config['RPI']:
     try:
@@ -28,7 +29,8 @@ class Power(threading.Thread):
     period=50.0    #Длительность преобразования Брезенхема (сек)
 
     def __init__(self):
-        threading.Thread.__init__(self)
+        #threading.Thread.__init__(self)
+        super(Power, self).__init__()
         self.HEATER_PIN=int(config['HEATER_PIN'])
         self._P=0
         self._Pa=0
@@ -47,9 +49,10 @@ class Power(threading.Thread):
             if value>250**2/config['PARAMETERS']['rTEH']/1000:
                 value=250**2/config['PARAMETERS']['rTEH']/1000
         except Exception as ex:
-            print(ex)
+            #print(ex)
             value=0.0
         new_P=value*100*config['PARAMETERS']['rTEH']*1000/(voltmeter.value**2)
+        print(new_P)
         if new_P>100:
             self._P=100
             self._Pa=(voltmeter.value**2)/config['PARAMETERS']['rTEH']/1000
@@ -57,6 +60,7 @@ class Power(threading.Thread):
             self._P=new_P
             self._Pa=value
         app.config['Power']=self.dataFromServer
+        Transmit(self.dataFromServer)
 
         #new_P=int((int((value+self.step/2)/self.step))*self.step)
         ## Если изменилось значение мощности, то отправить новое значение клиентам
@@ -74,9 +78,10 @@ class Power(threading.Thread):
                 V=voltmeter.value
                 if self._P==100:
                     self._Pa=(V**2)/config['PARAMETERS']['rTEH']/1000
+                    Transmit(self.dataFromServer)
                 else:
                     self._P=self.value*100*config['PARAMETERS']['rTEH']*1000/(V**2)
-                print('%s=>%s'%(self._Pa,self._P))
+                #print('%s=>%s'%(self._Pa,self._P))
                 time.sleep(1)
             return
         #штырек HEATER_PIN на вывод, подтяжка отключена, низкий уровень

@@ -68,7 +68,7 @@ class Autolocation(threading.Thread):
             self.pageUpdate('Ожидание закипания<br>'+self.Duration())
 
         #Уменьшить мощность
-        power.Value=4.0/4
+        power.value=4.0/4
         # Пауза 
         tBegin=time.time()
         duration=40
@@ -125,14 +125,11 @@ class Autolocation(threading.Thread):
             #print (Th.T)
             Th.Name=config['LOCATIONS'][i]  #имя (место расположения) термометра
             T_LOCATIONS[Th.ID]=config['LOCATIONS'][i]   #имя, соответствующее ID, для сохранения в конфигурации
+            Th.Ttrigger=None
             if Th.Name=='Конденсатор':
                 Th.Ttrigger=config['PARAMETERS']['Tcond']
-            else:
-                Th.Ttrigger=None
             if Th.Name=='Дефлегматор':
                 Th.Ttrigger=config['PARAMETERS']['Tdephlock']
-            else:
-                Th.Ttrigger=None
             i+=1
         #сохранить конфигурацию
         config['T_LOCATIONS']=T_LOCATIONS

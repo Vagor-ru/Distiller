@@ -8,13 +8,14 @@ C-Bell (VAGor).
 """
 
 import threading
+import time
 from flask import render_template
+from Distiller import app, coolsRegulator,power,thermometers,config
 from Distiller.helpers.transmitter import Transmit
-from Distiller.helpers.DS18B20toDB import ReadyDS18B20
 from Distiller.helpers.coolsRegulator import CoolsRegulator
 
 
-class ManualOperations(threading.Thread):
+class ManualMode(threading.Thread):
     """класс-поток, предоставляющий ручное управление дистиллятором"""
 
     # Для сохранения состояния дисплея и кнопок
@@ -22,30 +23,36 @@ class ManualOperations(threading.Thread):
     Buttons = ''
 
     def __init__(self):
-        threading.Thread.__init__(self)
-        self.CoolsRegl=CoolsRegulator()
-        self.CoolsRegl.name='CoolsRegulator'
-
+        #threading.Thread.__init__(self)
+        super(ManualMode, self).__init__()
+        self._Run=False
 
     def run(self):
         # Сброс переменной прерывания/перехода процесса
         app.config['AB_CON']=''
+        app.config['Mode']='MANUAL_MODE'
         #Сохранение состояния веб-интерфейса
         self.Display = app.config['Display']
         self.Buttons = app.config['Buttons']
         # Вывести сообщение на дисплей и прикрутить кнопку "Останов"
         self.pageUpdate('Ручной режим<br>',
                         'ABORT.html')
-        self.CoolsRegl.Tdeph=40
-        self.CoolsRegl.Tcond=29
-        #старт регулятора охлаждения
-        self.CoolsRegl.start()
-        #Мощность нагрева=100%
-        power.Value=100
-        #Ожидание закипания
-        while True:
-            # ждать свежие данные о температурах
-            ReadyDS18B20.wait()
+        self._Run=True
+        #Ожидание в цикле
+        while self._Run:
+            if app.config['AB_CON']=='Abort' or app.config['AB_CON']=='Error':
+                break
+            time.sleep(0.5) #не частить
+
+        power.value=0
+        thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond'])
+        thermometers.setTtrigger('Дефлегматор',config['PARAMETERS']['Tdephlock'])
+        self._Run=False
+        app.config['Mode']='WAIT'
+        app.config['Display']=self.Display
+        app.config['Buttons']=self.Buttons
+        self.pageUpdate(app.config['Display'],app.config['Buttons'])
+        return
     
     def pageUpdate(self, Display=None, Buttons=None):
         DataFromServer={}
