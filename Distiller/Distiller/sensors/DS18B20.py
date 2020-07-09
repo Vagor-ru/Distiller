@@ -265,12 +265,20 @@ class Thermometers(threading.Thread):
                 break
 
     def getTtrigger(self, name):
+        '''Возвращает установку триггера заданного термометра'''
         objT=list(filter(lambda objT: objT.Name==name,self.Tlist))[0]
         return objT.Ttrigger
     def setTtrigger(self, name, Ttr):
+        '''Устанавливает температуру триггера заданного термометра'''
         objT=list(filter(lambda objT: objT.Name==name,self.Tlist))[0]
         objT.Ttrigger=float(Ttr)
         pass
+
+    def getValue(self, name):
+        '''возвращает значение температуры указанного термометра'''
+        objT=list(filter(lambda objT: objT.Name==name,self.Tlist))[0]
+        return objT.T
+
 
     @property
     def values(self):

@@ -8,7 +8,7 @@ By C-Bell (VAGor).
 
 import time
 from Distiller.helpers.transmitter import Transmit
-from Distiller import app
+from Distiller import app,config
 if app.config['RPI']:
     import RPi.GPIO as GPIO #Модуль доступа к GPIO Raspberry Pi
 
@@ -23,7 +23,7 @@ class Dephlegmator():
 
     def __init__(self):
         self._State = False
-        self.PIN = app.config['DEPH_PIN']
+        self.PIN = int(config['DEPH_PIN'])
         if app.config['RPI']:
             GPIO.setup(self.PIN, GPIO.OUT)
             GPIO.output(self.PIN, GPIO.LOW)
@@ -61,7 +61,7 @@ class Condensator():
     '''класс конденсатора'''
     def __init__(self):
         self._State = False
-        self.PIN = app.config['CONDER_PIN']
+        self.PIN = int(config['CONDER_PIN'])
         if app.config['RPI']:
             GPIO.setup(self.PIN, GPIO.OUT)
             GPIO.output(self.PIN, GPIO.LOW)

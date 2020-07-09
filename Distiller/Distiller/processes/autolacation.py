@@ -60,12 +60,12 @@ class Autolocation(threading.Thread):
         self.pageUpdate('Ожидание закипания<br>'+self.Duration())
         power.value=4.0
         #Ожидание закипания
-        while not thermometers.boiling.wait():
+        while not thermometers.boiling.wait(0.5):
+            self.pageUpdate('Ожидание закипания<br>'+self.Duration())
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
                 return
-            self.pageUpdate('Ожидание закипания<br>'+self.Duration())
 
         #Уменьшить мощность
         power.value=4.0/4

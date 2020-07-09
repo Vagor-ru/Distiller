@@ -9,11 +9,9 @@ import time, os
 from datetime import datetime
 import threading
 from flask import render_template
-from Distiller import app, dbLock
-from Distiller import power, condensator, dephlegmator
+from Distiller import app, dbLock,config
+from Distiller import power, condensator, dephlegmator, coolsRegulator, thermometers
 from Distiller.helpers.transmitter import Transmit
-from Distiller.helpers.logging import Logging
-from Distiller.helpers.coolsRegulator import CoolsRegulator
 
 
 
@@ -25,12 +23,9 @@ class Wash(threading.Thread):
     Buttons = ''
 
     def __init__(self):
-        threading.Thread.__init__(self)
+        #threading.Thread.__init__(self)
+        super(Wash, self).__init__()
         self._Begin=datetime.now()
-        self.CoolsRegl=CoolsRegulator()
-        self.CoolsRegl.name='CoolsRegulator'
-        self.Log=Logging()
-        self.Log.name='Logger'
 
     def Duration(self):
         sec=(datetime.now()-self._Begin).seconds
@@ -46,8 +41,6 @@ class Wash(threading.Thread):
         self.Buttons = app.config['Buttons']
         # Фиксация момента запуска процесса
         self._Begin=datetime.now()
-        # Старт процесса журналирования
-        self.Log.start()
         # Вывести сообщение на дисплей и прикрутить кнопку "Останов"
         self.pageUpdate('Заполнение холодильников<br>'+self.Duration(),
                         'ABORT.html')
@@ -57,53 +50,32 @@ class Wash(threading.Thread):
         time.sleep(2)
         condensator.Off()
         dephlegmator.Off()
-        #старт регулятора охлаждения
-        self.CoolsRegl.start()
         #Мощность нагрева=100%
-        power.Value=100
+        power.value=4.0
         #Ожидание закипания
-        while True:
+        while not thermometers.boiling.wait(0.5):
             # Вывести на дисплей состояние
-            self.pageUpdate('Разгон (ожидание закипания)<br>'+self.Duration())
+            self.pageUpdate('Бражка (ожидание закипания)<br>'+self.Duration())
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
                 return
-            # Отдохнуть секундочку
-            time.sleep(1)
-            #Проверить скорость роста температур
-            #Извлекаем из лога два последних момента фиксации температур
-            dbLock.acquire()
-            LastMeasures=models.log.query.order_by(models.db.desc(models.log.id)).limit(2).all()
-            #Если их ещё не два, то пропускаем
-            if len(LastMeasures)==2:
-                # Секунд между двумя последними измерениями
-                sec=(LastMeasures[0].TimeStamp-LastMeasures[1].TimeStamp).total_seconds()
-                for Samp in LastMeasures[0].Tsample:
-                    #Если скорость роста температуры на каком-либо термометре более 1°C в секунду, значит закипание
-                    V=(Samp.T - LastMeasures[1].Tsample.filter_by(id_DS18B20=Samp.id_DS18B20).first().T)/sec
-                    #print(V)
-                    if V>1.0:
-                        dbLock.release()
-                        break
-                else:   #если цикл for не был прерван, продолжаем цикл while
-                    dbLock.release()
-                    continue
-                break   #при прерывании цикла for прерываем цикл while
-        # Стабилизация
-        tBgn=time.time()        #фиксация времени начала стабилизации
-        dbLock.acquire()
-        power.Value=models.Parameters1.query.filter(models.Parameters1.Symbol==u'Pst').first().Value
-        durationSt=int(60*models.Parameters1.query.filter(models.Parameters1.Symbol==u'tSt').first().Value)
-        dbLock.release()
-        # Новые надпись на дисплее и набор кнопок
-        self.pageUpdate('Стабилизация (антипена)<br>%s'%(self.Duration()), 'ABORT_NEXT.html')
-        while (time.time()-tBgn) < durationSt:
+
+        # Ожидание забега температуры низа
+        tBgn=time.time()        #фиксация времени начала ожидания
+        tBott=10    #длительность ожидания в сек
+        # получить время ожидания забега температуры низа
+        # Новый набор кнопок
+        self.pageUpdate(None, 'ABORT_NEXT.html')
+        # выдержка tBott секунд после закипания
+        power.value=0
+        while (time.time()-tBgn)<tBott:
             # Вывести на дисплей состояние
-            sec=int(durationSt-int(time.time()-tBgn))
+            sec=int(tBott-int(time.time()-tBgn))
             sec_str=u'{:02}:{:02}'\
                .format((sec//60)%60, sec%60)
-            self.pageUpdate('Стабилизация (антипена)%s<br>%s'%(sec_str,self.Duration()))
+            self.pageUpdate('Ждем забег Tниз<br>%s<br>%s'%
+                            (sec_str,self.Duration()))
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -113,29 +85,87 @@ class Wash(threading.Thread):
                 break
             # Отдохнуть секундочку
             time.sleep(1)
+
+
+        # Стабилизация-антипена
+        tBgn=time.time()        #фиксация времени начала стабилизации
+        Tbott=thermometers.getValue('Низ')  #фиксация температуры стабилизации
+        Pst=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp']*\
+            (config['PARAMETERS']['T_H2O']-Tbott)
+        Kst=8   #коэффициент пропорционального регулятора
+        self.pageUpdate('Бражка: антипена<br>%s'%(self.Duration()), 'ABORT_NEXT.html')
+        durationA_F=60*float(config['PARAMETERS']['tA_F'])
+        while (time.time()-tBgn) < durationA_F:
+            # Вывести на дисплей состояние
+            sec=int(durationA_F-int(time.time()-tBgn))
+            sec_str=u'{:02}:{:02}'\
+               .format((sec//60)%60, sec%60)
+            self.pageUpdate('Бражка: антипена %s<br>%s'%(sec_str,self.Duration()))
+            #пропорциональный регулятор
+            power.value=Pst-Kst*(thermometers.getValue('Низ')-Tbott)
+            # При получении команды прервать процесс
+            if app.config['AB_CON']=='Abort':
+                self.abort()
+                return
+            elif app.config['AB_CON']=='Next':
+                app.config['AB_CON']=''
+                break
+            # Отдохнуть секундочку
+            time.sleep(1)
+
+        #ожидание прогрева колонны
+        power.value=100
+        self.pageUpdate('Прогрев колонны')
+        while not thermometers.boiling.wait(0.5):
+            self.pageUpdate('Прогрев колонны<br>%s'%(self.Duration()))
+            # При получении команды прервать процесс
+            if app.config['AB_CON']=='Abort':
+                self.abort()
+                return
+            elif app.config['AB_CON']=='Next':
+                app.config['AB_CON']=''
+                break
+            # Отдохнуть секундочку
+            time.sleep(1)
+
         # Отбор тела
-        self.pageUpdate('Отбор тела<br><br>%s'%(self.Duration()), 'ABORT.html')
+        self.pageUpdate('Бражка: перегон<br><br>%s'%(self.Duration()), 'ABORT.html')
         while True:
+            #нажата кнопка Останов
             if app.config['AB_CON']=='Abort':
                 self.abort()
                 return
             # Освежить дисплей
-            self.pageUpdate('Отбор тела<br><br>%s'%(self.Duration()))
+            self.pageUpdate('Бражка: перегон<br><br>%s'%(self.Duration()))
             # Регулировать дефлегматор и нагрев
-            dbLock.acquire()
-            Tbdeph = models.Parameters1.query.filter(models.Parameters1.Symbol=='Tbdeph').first().Value
-            Kdeph = models.Parameters1.query.filter(models.Parameters1.Symbol=='Kdeph').first().Value
-            Pbase = models.Parameters1.query.filter(models.Parameters1.Symbol=='Pbase').first().Value
-            Kp = models.Parameters1.query.filter(models.Parameters1.Symbol=='Kp').first().Value
-            Tbott = models.DS18B20.query.filter(models.DS18B20.Name=='Низ').first().T
-            self.CoolsRegl.Tdeph=(Tbdeph-Kdeph*Tbott)
-            power.Value=(Pbase+Kp*Tbott)
-            if models.DS18B20.query.filter(models.DS18B20.Name=='Низ').first().T>models.Parameters1.query.filter(models.Parameters1.Symbol=='Tend').first().Value:
-                dbLock.release()
+            '''Температура срабатывания клапана дефлегматора рассчитывается по формуле:
+            Tдеф=Tдеф_воды+Kдеф*(Tкип_воды-Tниз), где
+            Tдеф_воды   -затворяющая температура дефлегматора при кипении воды в кубе
+            Kдеф        -коэффициент изменения температуры срабатывания дефлегматора
+            Tкип_воды   -температура низа колонны при кипении воды в кубе
+            Tниз        -температура низа колонны
+            '''
+            Tdeph=config['PARAMETERS']['Tdeph_H2O']+config['PARAMETERS']['Kdeph']*\
+                (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
+            thermometers.setTtrigger('Дефлегматор',Tdeph)
+            '''Мощность устанавливается предзахлёбная, рассчитывается по формуле:
+            P=Pводы-Kp*(Tкип_воды-Tниз), где
+            Pводы       -предзахлёбная мощность при кипении воды в кубе
+            Kp          -коэффициент изменения мощности
+            Tкип_воды   -температура низа колонны при кипении воды в кубе
+            Tниз        -температура низа колонны
+            '''
+            power.value=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp']*\
+                (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
+            #Новый критерий завершения перегона
+            if (thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
+                (thermometers.getValue('Низ')-thermometers.getValue('Середина'))>2:
                 break
-            dbLock.release()
-            # Отдохнуть секундочку
-            time.sleep(1)
+            #завершение перегона по температуре низа колонны
+            if thermometers.getValue('Низ')>config['PARAMETERS']['T_H2O']:
+                break
+            #ждать завершение измерения температур
+            thermometers.Tmeasured.wait()
         # Остановить всё
         self.stop()
         self.pageUpdate('Перегон бражки завершен<br>%s'%(self.Duration()),
@@ -143,11 +173,9 @@ class Wash(threading.Thread):
         return
 
     def stop(self):
-        power.Value = 0 #отключаем нагрев
+        power.value = 0 #отключаем нагрев
         condensator.Off()   #отключаем клапан конденсатора
         dephlegmator.Off()  #отключаем клапан дефлегматора
-        self.Log.stop()   #завершить ведение журнала
-        self.CoolsRegl.stop()   #остановить регулятор охлаждения
 
     def abort(self):
         self.stop()
