@@ -71,7 +71,7 @@ class Autolocation(threading.Thread):
         power.value=4.0/4
         # Пауза 
         tBegin=time.time()
-        duration=40
+        duration=80
         while time.time()-tBegin<duration:
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':

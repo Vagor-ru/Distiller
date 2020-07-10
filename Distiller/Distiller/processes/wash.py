@@ -68,7 +68,7 @@ class Wash(threading.Thread):
         # Новый набор кнопок
         self.pageUpdate(None, 'ABORT_NEXT.html')
         # выдержка tBott секунд после закипания
-        power.value=0
+        #power.value=0
         while (time.time()-tBgn)<tBott:
             # Вывести на дисплей состояние
             sec=int(tBott-int(time.time()-tBgn))
@@ -92,12 +92,12 @@ class Wash(threading.Thread):
         Tbott=thermometers.getValue('Низ')  #фиксация температуры стабилизации
         Pst=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp']*\
             (config['PARAMETERS']['T_H2O']-Tbott)
-        Kst=8   #коэффициент пропорционального регулятора
+        Kst=0.8   #коэффициент пропорционального регулятора
         self.pageUpdate('Бражка: антипена<br>%s'%(self.Duration()), 'ABORT_NEXT.html')
-        durationA_F=60*float(config['PARAMETERS']['tA_F'])
-        while (time.time()-tBgn) < durationA_F:
+        duration=60*float(config['PARAMETERS']['tA_F'])
+        while (time.time()-tBgn) < duration:
             # Вывести на дисплей состояние
-            sec=int(durationA_F-int(time.time()-tBgn))
+            sec=int(duration-int(time.time()-tBgn))
             sec_str=u'{:02}:{:02}'\
                .format((sec//60)%60, sec%60)
             self.pageUpdate('Бражка: антипена %s<br>%s'%(sec_str,self.Duration()))
@@ -114,11 +114,31 @@ class Wash(threading.Thread):
             time.sleep(1)
 
         #ожидание прогрева колонны
-        power.value=100
-        self.pageUpdate('Прогрев колонны')
+        power.value=5.0
+        self.pageUpdate('Прогрев колонны<br>%s'%(self.Duration()))
         while not thermometers.boiling.wait(0.5):
             self.pageUpdate('Прогрев колонны<br>%s'%(self.Duration()))
             # При получении команды прервать процесс
+            if app.config['AB_CON']=='Abort':
+                self.abort()
+                return
+            elif app.config['AB_CON']=='Next':
+                app.config['AB_CON']=''
+                break
+            # Отдохнуть секундочку
+            time.sleep(1)
+
+        #стабилизация
+        power.value=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp']*\
+                (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
+        duration=60
+        tBgn=time.time()
+        while (time.time()-tBgn<duration):
+            # Вывести на дисплей состояние
+            sec=int(duration-int(time.time()-tBgn))
+            sec_str=u'{:02}:{:02}'\
+               .format((sec//60)%60, sec%60)
+            self.pageUpdate('Бражка: стабилизация %s<br>%s'%(sec_str,self.Duration()))
             if app.config['AB_CON']=='Abort':
                 self.abort()
                 return
