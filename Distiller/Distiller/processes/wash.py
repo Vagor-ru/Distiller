@@ -63,18 +63,20 @@ class Wash(threading.Thread):
 
         # Ожидание забега температуры низа
         tBgn=time.time()        #фиксация времени начала ожидания
-        tBott=10    #длительность ожидания в сек
+        tBott=100    #длительность ожидания в сек
         # получить время ожидания забега температуры низа
         # Новый набор кнопок
         self.pageUpdate(None, 'ABORT_NEXT.html')
         # выдержка tBott секунд после закипания
-        #power.value=0
+        power.value=config['PARAMETERS']['P_H2O']
+        count5sec=5
+        Tbott=thermometers.getValue('Низ')
         while (time.time()-tBgn)<tBott:
             # Вывести на дисплей состояние
             sec=int(tBott-int(time.time()-tBgn))
             sec_str=u'{:02}:{:02}'\
                .format((sec//60)%60, sec%60)
-            self.pageUpdate('Ждем забег Tниз<br>%s<br>%s'%
+            self.pageUpdate('Стабилизация Tниз<br>%s<br>%s'%
                             (sec_str,self.Duration()))
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
@@ -83,6 +85,13 @@ class Wash(threading.Thread):
             elif app.config['AB_CON']=='Next':
                 app.config['AB_CON']=''
                 break
+            count5sec-=1    #уменьшить счетчик секунд
+            if(count5sec==0):
+                count5sec=5
+                if (thermometers.getValue('Низ')-Tbott<0.5):
+                    break
+                else:
+                    Tbott=thermometers.getValue('Низ')
             # Отдохнуть секундочку
             time.sleep(1)
 
