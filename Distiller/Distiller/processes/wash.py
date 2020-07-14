@@ -14,7 +14,6 @@ from Distiller import power, condensator, dephlegmator, coolsRegulator, thermome
 from Distiller.helpers.transmitter import Transmit
 
 
-
 class Wash(threading.Thread):
     u'''Класс, реализующий алгоритм перегонки бражки'''
 
@@ -55,7 +54,7 @@ class Wash(threading.Thread):
         #Ожидание закипания
         while not thermometers.boiling.wait(0.5):
             # Вывести на дисплей состояние
-            self.pageUpdate('Бражка (ожидание закипания)<br>'+self.Duration())
+            self.pageUpdate('Бражка: ожидание закипания<br>'+self.Duration())
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -111,7 +110,7 @@ class Wash(threading.Thread):
             elif app.config['AB_CON']=='Next':
                 app.config['AB_CON']=''
                 break
-            count5sec-=1    #уменьшить счетчик секунд
+            countSec-=1    #уменьшить счетчик секунд
             if(countSec==0):
                 countSec=20
                 #если температура меняется не сильно, значит температурная полка достигнута
