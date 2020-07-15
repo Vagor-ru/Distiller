@@ -52,7 +52,7 @@ class Wash(threading.Thread):
         #Мощность нагрева=100%
         power.value=4.0
         #Ожидание закипания
-        while not thermometers.boiling.wait(0.5):
+        while not thermometers.boiling.wait(1):
             # Вывести на дисплей состояние
             self.pageUpdate('Бражка: ожидание закипания<br>'+self.Duration())
             # При получении команды прервать процесс
@@ -86,24 +86,24 @@ class Wash(threading.Thread):
             # Отдохнуть секундочку
             time.sleep(1)
 
-        #балансировка колонны по температурам
-        # Новый набор кнопок
-        self.pageUpdate(None, 'ABORT_NEXT.html')
-        #подать максимальную мощность
-        power.value=250**2/config['PARAMETERS']['rTEH']
-        while (thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
-                (thermometers.getValue('Низ')-thermometers.getValue('Середина'))>1:
-            # Вывести на дисплей состояние
-            self.pageUpdate('Бражка: ожидание закипания<br>'+self.Duration())
-            # При получении команды прервать процесс
-            if app.config['AB_CON']=='Abort':
-                self.abort()
-                return
-            elif app.config['AB_CON']=='Next':
-                app.config['AB_CON']=''
-                break
-            # Отдохнуть секундочку
-            time.sleep(1)
+        ##балансировка колонны по температурам
+        ## Новый набор кнопок
+        #self.pageUpdate(None, 'ABORT_NEXT.html')
+        ##подать максимальную мощность
+        #power.value=250**2/config['PARAMETERS']['rTEH']
+        #while (thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
+        #        (thermometers.getValue('Низ')-thermometers.getValue('Середина'))>1:
+        #    # Вывести на дисплей состояние
+        #    self.pageUpdate('Бражка: ожидание закипания<br>'+self.Duration())
+        #    # При получении команды прервать процесс
+        #    if app.config['AB_CON']=='Abort':
+        #        self.abort()
+        #        return
+        #    elif app.config['AB_CON']=='Next':
+        #        app.config['AB_CON']=''
+        #        break
+        #    # Отдохнуть секундочку
+        #    time.sleep(1)
 
         ## Выход низа на температурную полку
         #tBgn=time.time()        #фиксация времени начала ожидания
