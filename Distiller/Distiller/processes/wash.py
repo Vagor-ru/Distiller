@@ -86,6 +86,43 @@ class Wash(threading.Thread):
             # Отдохнуть секундочку
             time.sleep(1)
 
+        #Вывод верха колонны на температурную полку
+        #подать максимальную мощность
+        power.value=250**2/config['PARAMETERS']['rTEH']
+        tBgn=time.time()        #фиксация времени начала этапа
+        while True:
+            # Вывести на дисплей состояние
+            sec=int(time.time()-tBgn)
+            sec_str=u'{:02}:{:02}'\
+               .format((sec//60)%60, sec%60)
+            self.pageUpdate('Бражка: стабилизация %s<br>%s'%(sec_str,self.Duration()))
+            # При получении команды прервать процесс
+            if app.config['AB_CON']=='Abort':
+                self.abort()
+                return
+            elif app.config['AB_CON']=='Next':
+                app.config['AB_CON']=''
+                break
+            if thermometers.boiling.wait(1) and thermometers.getObjT('Верх').boiling:
+                break    #поймали закипание на верхнем термометре
+        while True:
+            # Вывести на дисплей состояние
+            sec=int(time.time()-tBgn)
+            sec_str=u'{:02}:{:02}'\
+               .format((sec//60)%60, sec%60)
+            self.pageUpdate('Бражка: стабилизация %s<br>%s'%(sec_str,self.Duration()))
+            # При получении команды прервать процесс
+            if app.config['AB_CON']=='Abort':
+                self.abort()
+                return
+            elif app.config['AB_CON']=='Next':
+                app.config['AB_CON']=''
+                break
+            objT=thermometers.getObjT('Верх')
+            if objT.V_T<0.2:    #если скорость роста температуры низкая, значит температурная полка
+                break
+            thermometers.Tmeasured.wait()   #ожидать следующего измерения температуры
+
         ##балансировка колонны по температурам
         ## Новый набор кнопок
         #self.pageUpdate(None, 'ABORT_NEXT.html')

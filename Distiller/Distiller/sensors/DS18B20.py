@@ -107,7 +107,7 @@ class T(threading.Thread):
 
 #--------------------
     
-#Возвращает кортеж из списка кортежей названий термометров с температурами
+#Возвращает список кортежей названий термометров с температурами
 #и временем измерения
 def Measure(Sort=False, SortByT=False, TimeOut=None):
     u'''Функция Measure() ищет все цифровые термометры DS18B20 на шине 1-wire
@@ -167,6 +167,7 @@ class DS18B20:
         self.Name=None      #Наименование (место установки) термометра
         self.T=None         #текущая температура
         self.Tpre=None      #предыдущая температура
+        self.V_T=0.0        #скорость роста температуры
         self.Ttrigger=None  #установка порога срабатывания
         self.boiling=False  #флаг закипания
         self.trigger=False  #флаг сработки по порогу
@@ -238,16 +239,17 @@ class Thermometers(threading.Thread):
                 self.trigger.clear()
             tBegin=time.time()
             Ts=Measure()
+            durationMeasure=time.time()-tBegin
             app.config['Thermometers']=self.dataFromServer
             #print(app.config['Thermometers'])
-            durationMeasure=time.time()-tBegin
             # сравнение температур и установка флага если закипание
             dbLock.acquire()    #монополизировать выполнение на время сохранения температур
             for T in Ts:
                 objT=list(filter(lambda objT: objT.ID==T[0],self.Tlist))[0]
                 objT.T=T[1]
+                objT.V_T=(objT.T-objT.Tpre)/durationMeasure
                 #если скорость роста температуры больше 1°C в секунду, закипание
-                if objT.Tpre!=None and (objT.T-objT.Tpre)/durationMeasure>1:
+                if objT.V_T>1:
                     objT.boiling=True
                     self.boiling.set()
                 else:
@@ -268,6 +270,7 @@ class Thermometers(threading.Thread):
         '''Возвращает установку триггера заданного термометра'''
         objT=list(filter(lambda objT: objT.Name==name,self.Tlist))[0]
         return objT.Ttrigger
+
     def setTtrigger(self, name, Ttr):
         '''Устанавливает температуру триггера заданного термометра'''
         objT=list(filter(lambda objT: objT.Name==name,self.Tlist))[0]
@@ -278,6 +281,11 @@ class Thermometers(threading.Thread):
         '''возвращает значение температуры указанного термометра'''
         objT=list(filter(lambda objT: objT.Name==name,self.Tlist))[0]
         return objT.T
+
+    def getObjT(self, name):
+        '''возвращает объект термометра по его имени'''
+        objT=list(filter(lambda objT: objT.Name==name,self.Tlist))[0]
+        return objT
 
 
     @property
