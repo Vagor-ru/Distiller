@@ -9,7 +9,7 @@ import time, os
 from datetime import datetime
 import threading
 from flask import render_template
-from Distiller import app, dbLock
+from Distiller import app, dbLock, config
 from Distiller import power, condensator, dephlegmator, thermometers
 from Distiller.helpers.transmitter import Transmit
 
@@ -55,7 +55,7 @@ class Crude(threading.Thread):
         #Ожидание закипания
         #Мощность нагрева=100%
         power.value=250**2/config['PARAMETERS']['rTEH']
-        while not thermometers.boiling.wait(0.5):
+        while not thermometers.boiling.wait(1):
             # Вывести на дисплей состояние
             self.pageUpdate('2-й перегон ожидание закипания<br>'+self.Duration())
             # При получении команды прервать процесс
@@ -77,6 +77,7 @@ class Crude(threading.Thread):
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
+                return
             # переход к отбору голов
             if app.config['AB_CON']=='Next':
                 app.config['AB_CON']=''
@@ -147,7 +148,7 @@ class Crude(threading.Thread):
             Tкип_воды   -температура низа колонны при кипении воды в кубе
             Tниз        -температура низа колонны
             '''
-            power.value=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp']*\
+            power.value=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp2']*\
                 (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
             #ждать завершение измерения температур
             thermometers.Tmeasured.wait()
@@ -179,7 +180,7 @@ class Crude(threading.Thread):
             Tкип_воды   -температура низа колонны при кипении воды в кубе
             Tниз        -температура низа колонны
             '''
-            power.value=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp']*\
+            power.value=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp2']*\
                 (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
             #Новый критерий завершения перегона
             if (thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
