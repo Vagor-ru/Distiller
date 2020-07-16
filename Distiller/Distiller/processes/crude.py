@@ -170,7 +170,7 @@ class Crude(threading.Thread):
             Tкип_воды   -температура низа колонны при кипении воды в кубе
             Tниз        -температура низа колонны
             '''
-            Tdeph=config['PARAMETERS']['Tdeph_H2O']+config['PARAMETERS']['Kdeph']*\
+            Tdeph=config['PARAMETERS']['Tdeph_H2O']+config['PARAMETERS']['Kdeph2']*\
                 (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
             thermometers.setTtrigger('Дефлегматор',Tdeph)
             '''Мощность устанавливается предзахлёбная, рассчитывается по формуле:
