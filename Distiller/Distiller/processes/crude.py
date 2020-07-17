@@ -65,7 +65,7 @@ class Crude(threading.Thread):
 
         #прогрев колонны
         tBgn=time.time()
-        duration=15
+        duration=10
         # Новый набор кнопок
         self.pageUpdate(None, 'ABORT_NEXT.html')
         while time.time()-tBgn<duration:
