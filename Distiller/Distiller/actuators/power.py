@@ -52,12 +52,12 @@ class Power(threading.Thread):
             #print(ex)
             value=0.0
         new_P=value*100*config['PARAMETERS']['rTEH']*1000/(voltmeter.value**2)
-        print(new_P)
+        #print(new_P)
         if new_P>100:
             self._P=100
             self._Pa=(voltmeter.value**2)/config['PARAMETERS']['rTEH']/1000
         else:
-            self._P=new_P
+            self._P=round(new_P)
             self._Pa=value
         app.config['Power']=self.dataFromServer
         Transmit(self.dataFromServer)
