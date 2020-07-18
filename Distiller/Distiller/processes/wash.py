@@ -24,12 +24,12 @@ class Wash(threading.Thread):
     def __init__(self):
         #threading.Thread.__init__(self)
         super(Wash, self).__init__()
-        self._Begin=datetime.now()
+        self._Begin=time.time()
 
     def Duration(self):
-        sec=(datetime.now()-self._Begin).seconds
+        sec=int(time.time()-self._Begin)
         return u'Нач. {}<br>длит. {}:{:02}:{:02}'\
-               .format(self._Begin.strftime('%d.%m.%y %H:%M:%S'), 
+               .format(time.strftime("%d.%m.%y %H:%M:%S", time.localtime(self._Begin)), 
                        sec//3600, (sec//60)%60, sec%60)
 
     def run(self):
@@ -39,7 +39,7 @@ class Wash(threading.Thread):
         self.Display = app.config['Display']
         self.Buttons = app.config['Buttons']
         # Фиксация момента запуска процесса
-        self._Begin=datetime.now()
+        self._Begin=time.time()
         # Вывести сообщение на дисплей и прикрутить кнопку "Останов"
         self.pageUpdate('Заполнение холодильников<br>'+self.Duration(),
                         'ABORT.html')
