@@ -107,6 +107,9 @@ class Wash(threading.Thread):
                 break    #поймали закипание на верхнем термометре
         Vt=0    #накопитель скоростей роста температуры
         numberSec =5  #Количество секунд, за которые измеряется средняя скорость
+        #установить мощность, соответствующую температуре низа колонны
+        power.value=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp']*\
+            (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
         while True:
             # Вывести на дисплей состояние
             sec=int(time.time()-tBgn)
