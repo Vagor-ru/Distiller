@@ -57,7 +57,7 @@ class Crude(threading.Thread):
         power.value=250**2/config['PARAMETERS']['rTEH']
         while not thermometers.boiling.wait(1):
             # Вывести на дисплей состояние
-            self.pageUpdate('2-й перегон ожидание закипания<br>'+self.Duration())
+            self.pageUpdate('2-й перегон: ожидание закипания<br>'+self.Duration())
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -73,7 +73,7 @@ class Crude(threading.Thread):
             sec=int(duration-int(time.time()-tBgn))
             sec_str=u'{:02}:{:02}'\
                .format((sec//60)%60, sec%60)
-            self.pageUpdate('2-й перегон прогрев колонны %s<br>%s'%(sec_str,self.Duration()))
+            self.pageUpdate('2-й перегон: прогрев колонны %s<br>%s'%(sec_str,self.Duration()))
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -139,7 +139,7 @@ class Crude(threading.Thread):
             sec=int(time.time()-tBgn)
             sec_str=u'{}:{:02}:{:02}'\
                .format(sec//3600, (sec//60)%60, sec%60)
-            self.pageUpdate('2-й перегон головы<br>%s<br>%s'%(sec_str,self.Duration()))
+            self.pageUpdate('2-й перегон: головы<br>%s<br>%s'%(sec_str,self.Duration()))
             # Регулировать мощность нагрева
             '''Мощность устанавливается предзахлёбная, рассчитывается по формуле:
             P=Pводы-Kp*(Tкип_воды-Tниз), где
@@ -154,7 +154,7 @@ class Crude(threading.Thread):
             thermometers.Tmeasured.wait()
 
         # Отбор тела
-        self.pageUpdate('2-й перегон тело<br><br>%s'%(self.Duration()), 'ABORT.html')
+        self.pageUpdate('2-й перегон: тело<br><br>%s'%(self.Duration()), 'ABORT.html')
         while True:
             if app.config['AB_CON']=='Abort':
                 self.abort()

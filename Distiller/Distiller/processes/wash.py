@@ -60,7 +60,7 @@ class Wash(threading.Thread):
                 self.abort()
                 return
 
-        # Стабилизация-антипена
+        # антипена
         tBgn=time.time()        #фиксация времени начала стабилизации
         Tbott=thermometers.getValue('Низ')  #фиксация температуры стабилизации
         Pst=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp']*\
@@ -95,7 +95,7 @@ class Wash(threading.Thread):
             sec=int(time.time()-tBgn)
             sec_str=u'{:02}:{:02}'\
                .format((sec//60)%60, sec%60)
-            self.pageUpdate('Бражка: стабилизация %s<br>%s'%(sec_str,self.Duration()))
+            self.pageUpdate('Бражка: стабилизация1 %s<br>%s'%(sec_str,self.Duration()))
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -105,12 +105,14 @@ class Wash(threading.Thread):
                 break
             if thermometers.boiling.wait(1) and thermometers.getObjT('Верх').boiling:
                 break    #поймали закипание на верхнем термометре
+        Vt=0    #накопитель скоростей роста температуры
+        numberSec =5  #Количество секунд, за которые измеряется средняя скорость
         while True:
             # Вывести на дисплей состояние
             sec=int(time.time()-tBgn)
             sec_str=u'{:02}:{:02}'\
                .format((sec//60)%60, sec%60)
-            self.pageUpdate('Бражка: стабилизация %s<br>%s'%(sec_str,self.Duration()))
+            self.pageUpdate('Бражка: стабилизация2 %s<br>%s'%(sec_str,self.Duration()))
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -118,10 +120,17 @@ class Wash(threading.Thread):
             elif app.config['AB_CON']=='Next':
                 app.config['AB_CON']=''
                 break
-            objT=thermometers.getObjT('Верх')
-            if objT.V_T<0.2:    #если скорость роста температуры низкая, значит температурная полка
-                break
             thermometers.Tmeasured.wait()   #ожидать следующего измерения температуры
+            numberSec-=1
+            if numberSec==0:
+                numberSec =5
+                if Vt/numberSec < 0.2:  #если скорость роста температуры низкая, значит температурная полка
+                    #print(u"температурная полка")
+                    break
+                Vt=0
+            else:
+                objT=thermometers.getObjT('Верх')
+                Vt+=objT.V_T
 
         ##балансировка колонны по температурам
         ## Новый набор кнопок
