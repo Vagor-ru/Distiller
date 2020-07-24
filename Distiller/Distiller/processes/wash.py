@@ -108,9 +108,9 @@ class Wash(threading.Thread):
         Vt=0    #накопитель скоростей роста температуры
         numberSec =5  #Количество секунд, за которые измеряется средняя скорость
         #установить мощность, соответствующую температуре низа колонны
-        power.value=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp']*\
-            (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
         while True:
+            power.value=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp']*\
+                (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
             # Вывести на дисплей состояние
             sec=int(time.time()-tBgn)
             sec_str=u'{:02}:{:02}'\
