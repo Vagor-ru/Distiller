@@ -41,11 +41,11 @@ class Crude(threading.Thread):
         self.Buttons = app.config['Buttons']
         # Фиксация момента запуска процесса
         self._Begin=time.time()
+
+        #Заполнение холодильников
         # Вывести сообщение на дисплей и прикрутить кнопку "Останов"
         self.pageUpdate('Заполнение холодильников<br>'+self.Duration(),
                         'ABORT.html')
-
-        #Заполнение холодильников
         condensator.On()
         dephlegmator.On()
         time.sleep(2)

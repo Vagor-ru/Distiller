@@ -107,8 +107,8 @@ class Wash(threading.Thread):
                 break    #поймали закипание на верхнем термометре
         Vt=0    #накопитель скоростей роста температуры
         numberSec =5  #Количество секунд, за которые измеряется средняя скорость
-        #установить мощность, соответствующую температуре низа колонны
         while True:
+            #установить мощность, соответствующую температуре низа колонны
             power.value=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp']*\
                 (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
             # Вывести на дисплей состояние
@@ -134,99 +134,6 @@ class Wash(threading.Thread):
             else:
                 objT=thermometers.getObjT('Верх')
                 Vt+=objT.V_T
-
-        ##балансировка колонны по температурам
-        ## Новый набор кнопок
-        #self.pageUpdate(None, 'ABORT_NEXT.html')
-        ##подать максимальную мощность
-        #power.value=250**2/config['PARAMETERS']['rTEH']
-        #while (thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
-        #        (thermometers.getValue('Низ')-thermometers.getValue('Середина'))>1:
-        #    # Вывести на дисплей состояние
-        #    self.pageUpdate('Бражка: ожидание закипания<br>'+self.Duration())
-        #    # При получении команды прервать процесс
-        #    if app.config['AB_CON']=='Abort':
-        #        self.abort()
-        #        return
-        #    elif app.config['AB_CON']=='Next':
-        #        app.config['AB_CON']=''
-        #        break
-        #    # Отдохнуть секундочку
-        #    time.sleep(1)
-
-        ## Выход низа на температурную полку
-        #tBgn=time.time()        #фиксация времени начала ожидания
-        #tBott=120    #длительность ожидания в сек
-        ## Новый набор кнопок
-        #self.pageUpdate(None, 'ABORT_NEXT.html')
-        ##подать максимальную мощность
-        #power.value=250**2/config['PARAMETERS']['rTEH']
-        ##сравнение температур каждые 20 секунд
-        #countSec=20
-        #Tbott=thermometers.getValue('Низ')
-        ## выдержка tBott секунд после закипания
-        #while (time.time()-tBgn)<tBott:
-        #    # Вывести на дисплей состояние
-        #    sec=int(tBott-int(time.time()-tBgn))
-        #    sec_str=u'{:02}:{:02}'\
-        #       .format((sec//60)%60, sec%60)
-        #    self.pageUpdate('Стабилизация Tниз<br>%s<br>%s'%
-        #                    (sec_str,self.Duration()))
-        #    # При получении команды прервать процесс
-        #    if app.config['AB_CON']=='Abort':
-        #        self.abort()
-        #        return
-        #    elif app.config['AB_CON']=='Next':
-        #        app.config['AB_CON']=''
-        #        break
-        #    countSec-=1    #уменьшить счетчик секунд
-        #    if(countSec==0):
-        #        countSec=20
-        #        #если температура меняется не сильно, значит температурная полка достигнута
-        #        if (thermometers.getValue('Низ')-Tbott<0.5):
-        #            break
-        #        else:
-        #            Tbott=thermometers.getValue('Низ')
-        #    # Отдохнуть секундочку
-        #    time.sleep(1)
-
-
-        #ожидание прогрева колонны 
-        #power.value=5.0 #(max)
-        #self.pageUpdate('Прогрев колонны<br>%s'%(self.Duration()))
-        ##последовательно ожидать закипание на середине, затем наверху колонны
-        #for i in range(2):
-        #    while not thermometers.boiling.wait(0.5):
-        #        self.pageUpdate('Прогрев колонны<br>%s'%(self.Duration()))
-        #        # При получении команды прервать процесс
-        #        if app.config['AB_CON']=='Abort':
-        #            self.abort()
-        #            return
-        #        elif app.config['AB_CON']=='Next':
-        #            app.config['AB_CON']=''
-        #            break
-        #        # Отдохнуть секундочку
-        #        time.sleep(1)
-
-        #стабилизация
-        #power.value=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp']*\
-        #        (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
-        #duration=60
-        #tBgn=time.time()
-        #while (time.time()-tBgn<duration):
-        #    # Вывести на дисплей состояние
-        #    sec=int(duration-int(time.time()-tBgn))
-        #    sec_str=u'{:02}:{:02}'\
-        #       .format((sec//60)%60, sec%60)
-        #    self.pageUpdate('Бражка: стабилизация %s<br>%s'%(sec_str,self.Duration()))
-        #    if app.config['AB_CON']=='Abort':
-        #        self.abort()
-        #        return
-        #    elif app.config['AB_CON']=='Next':
-        #        app.config['AB_CON']=''
-        #        break
-        #    # Отдохнуть секундочку
-        #    time.sleep(1)
 
         # Отбор тела
         self.pageUpdate('Бражка: перегон<br><br>%s'%(self.Duration()), 'ABORT.html')
