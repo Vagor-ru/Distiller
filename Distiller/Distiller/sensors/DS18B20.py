@@ -89,13 +89,11 @@ class T(threading.Thread):
         #Если не на Raspberry Pi, вернуть фейк
         if not app.config['RPI']:
             return self.temp_fake(device_folder)
-        device_file = device_folder + '/w1_slave'
+        device_file = device_folder + '/temperature'
         f = open(device_file, 'r')
-        lines = f.readlines()
+        val = f.read()
         f.close()
-        equals_pos = lines[1].find('t=')
-        temp_string = lines[1][equals_pos + 2:]
-        temp_c = float(temp_string) / 1000.0
+        temp_c = float(val) / 1000.0
         return (os.path.basename(device_folder),
                 round(temp_c, 1),
                 datetime.datetime.now())
