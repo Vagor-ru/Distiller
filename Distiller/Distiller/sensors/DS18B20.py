@@ -90,12 +90,18 @@ class T(threading.Thread):
         if not app.config['RPI']:
             return self.temp_fake(device_folder)
         device_file = device_folder + '/temperature'
-        dbLock.acquire()
-        f = open(device_file, 'r')
-        val = f.read()
-        f.close()
-        dbLock.release()
-        temp_c = float(val) / 1000.0
+        #dbLock.acquire()
+        temp_c=0.0
+        while True:
+            f = open(device_file, 'r')
+            val = f.read()
+            f.close()
+            try:
+                temp_c = float(val) / 1000.0
+                break
+            except ValueError:
+                pass
+        #dbLock.release()
         return (os.path.basename(device_folder),
                 round(temp_c, 1),
                 datetime.datetime.now())
