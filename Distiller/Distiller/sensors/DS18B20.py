@@ -214,7 +214,7 @@ class Thermometers(threading.Thread):
                 if T[0] in config["T_LOCATIONS"]:
                     objT.Name=config["T_LOCATIONS"][T[0]]
                     if objT.Name=='Конденсатор':
-                        objT.Ttrigger=config['PARAMETERS']['Tcond']
+                        objT.Ttrigger=config['PARAMETERS']['Tcond']['value']
                     if objT.Name=='Дефлегматор':
                         objT.Ttrigger=config['PARAMETERS']['Tdephlock']
                 else:

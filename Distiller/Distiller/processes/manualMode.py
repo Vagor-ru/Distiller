@@ -45,7 +45,7 @@ class ManualMode(threading.Thread):
             time.sleep(0.5) #не частить
 
         power.value=0
-        thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond'])
+        thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
         thermometers.setTtrigger('Дефлегматор',config['PARAMETERS']['Tdephlock'])
         self._Run=False
         app.config['Mode']='WAIT'

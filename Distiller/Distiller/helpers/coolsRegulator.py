@@ -28,7 +28,7 @@ class CoolsRegulator(threading.Thread):
         else:
             self._Tdeph=Tdeph
         if Tcond==None:
-            self._Tcond=config['PARAMETERS']['Tcond']
+            self._Tcond=config['PARAMETERS']['Tcond']['value']
         else:
             self._Tcond=Tcond
 

@@ -43,12 +43,24 @@ class Wash(threading.Thread):
         # Вывести сообщение на дисплей и прикрутить кнопку "Останов"
         self.pageUpdate('Заполнение холодильников<br>'+self.Duration(),
                         'ABORT.html')
+
         #Заполнение холодильников
-        condensator.On()
-        dephlegmator.On()
-        time.sleep(2)
-        condensator.Off()
-        dephlegmator.Off()
+        tBgn=time.time()        #фиксация времени начала заполнения
+        thermometers.setTtrigger('Дефлегматор',15)
+        thermometers.setTtrigger('Конденсатор',15)
+        while (time.time()-tBgn) < config['PARAMETERS']['tFillCoolers']['value']:
+            # При получении команды прервать процесс
+            if app.config['AB_CON']=='Abort':
+                self.abort()
+                return
+            elif app.config['AB_CON']=='Next':
+                app.config['AB_CON']=''
+                break
+            # Отдохнуть секундочку
+            time.sleep(1)
+        thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['Tdeph_H2O']['value'])
+        thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
+
         #Мощность нагрева=100%
         power.value=4.0
         #Ожидание закипания
@@ -152,7 +164,7 @@ class Wash(threading.Thread):
             Tкип_воды   -температура низа колонны при кипении воды в кубе
             Tниз        -температура низа колонны
             '''
-            Tdeph=config['PARAMETERS']['Tdeph_H2O']+config['PARAMETERS']['Kdeph']*\
+            Tdeph=config['PARAMETERS']['Tdeph_H2O']['value']+config['PARAMETERS']['Kdeph']*\
                 (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
             thermometers.setTtrigger('Дефлегматор',Tdeph)
             '''Мощность устанавливается предзахлёбная, рассчитывается по формуле:
