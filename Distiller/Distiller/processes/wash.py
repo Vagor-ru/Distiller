@@ -9,10 +9,11 @@ import time, os
 from datetime import datetime
 import threading
 from flask import render_template
+from simple_pid import PID
 from Distiller import app, dbLock,config
 from Distiller import power, condensator, dephlegmator, coolsRegulator, thermometers
 from Distiller.helpers.transmitter import Transmit
-
+from Distiller.actuators.dephlegmator import DephRun
 
 class Wash(threading.Thread):
     u'''Класс, реализующий алгоритм перегонки бражки'''
@@ -24,6 +25,9 @@ class Wash(threading.Thread):
     def __init__(self):
         #threading.Thread.__init__(self)
         super(Wash, self).__init__()
+        self.pid = PID(5, 0.25, 0.1, setpoint=66.1)
+        self.pid.output_limits = (0, 100)
+        self.Deph = DephRun()
         self._Begin=time.time()
 
     def Duration(self):
@@ -40,6 +44,8 @@ class Wash(threading.Thread):
         self.Buttons = app.config['Buttons']
         # Фиксация момента запуска процесса
         self._Begin=time.time()
+        #Запуск регулятора охладителя дефлегматора
+        self.Deph.run()
         # Вывести сообщение на дисплей и прикрутить кнопку "Останов"
         self.pageUpdate('Заполнение холодильников<br>'+self.Duration(),
                         'ABORT.html')
@@ -192,6 +198,8 @@ class Wash(threading.Thread):
         return
 
     def stop(self):
+        self.Deph.value = 0
+        self.Deph.stop()    # останов охлаждения дефлегматора
         power.value = 0 #отключаем нагрев
         condensator.Off()   #отключаем клапан конденсатора
         dephlegmator.Off()  #отключаем клапан дефлегматора
