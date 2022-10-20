@@ -40,8 +40,8 @@ class CoolsRegulator(threading.Thread):
     def Tdeph(self, tdeph):
         if tdeph>85:
             tdeph=85
-        if tdeph<12:
-            tdeph=12
+        if tdeph<16:
+            tdeph=16
         self._Tdeph=tdeph
 
     @property
@@ -52,8 +52,8 @@ class CoolsRegulator(threading.Thread):
     def Tcond(self, tcond):
         if tcond>85:
             tcond=85
-        if tcond<10:
-            tcond=10
+        if tcond<16:
+            tcond=16
         self._Tcond=Tcond
 
     def run(self):
@@ -67,11 +67,11 @@ class CoolsRegulator(threading.Thread):
                         condensator.On()
                     else:
                         condensator.Off()
-                if Th.Name=='Дефлегматор':
-                    if Th.trigger:
-                        dephlegmator.On()
-                    else:
-                        dephlegmator.Off()
+                #if Th.Name=='Дефлегматор':
+                #    if Th.trigger:
+                #        dephlegmator.On()
+                #    else:
+                #        dephlegmator.Off()
         dephlegmator.Off()
         condensator.Off()
         return
