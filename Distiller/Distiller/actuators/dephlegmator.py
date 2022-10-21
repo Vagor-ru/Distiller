@@ -24,6 +24,7 @@ class DephRun(threading.Thread):
             #else:
             #    print("0")
             time.sleep(1)
+        self.Dephlegmator.State = False
 
     @property
     def value(self):
