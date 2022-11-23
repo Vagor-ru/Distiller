@@ -97,13 +97,13 @@ class Wash(threading.Thread):
         """Антипена"""
         tBgn=time.time()        #фиксация времени начала стабилизации
         Tbott=thermometers.getValue('Низ')  #фиксация температуры стабилизации
-        #Pst=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp']*\
-        #    (config['PARAMETERS']['T_H2O']-Tbott)
+        #Pst=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
+        #    (config['PARAMETERS']['T_H2O']['value']-Tbott)
         #Kst=0.8   #коэффициент пропорционального регулятора
         pidH = PID(10, 0.25, 0.1, setpoint=Tbott)
         pidH.output_limits(0, 4.0)
         self.pageUpdate('Бражка: Антипена<br>%s'%(self.Duration()), 'ABORT_NEXT.html')
-        duration=60*float(config['PARAMETERS']['tA_F'])
+        duration=60*float(config['PARAMETERS']['tA_F']['value'])
         while (time.time()-tBgn) < duration:
             # Вывести на дисплей состояние
             sec=int(duration-int(time.time()-tBgn))
@@ -126,7 +126,7 @@ class Wash(threading.Thread):
 
         """Вывод верха колонны на температурную полку"""
         #подать максимальную мощность
-        power.value=250**2/config['PARAMETERS']['rTEH']
+        power.value=250**2/config['PARAMETERS']['rTEH']['value']
         tBgn=time.time()        #фиксация времени начала этапа
         while True:
             # Вывести на дисплей состояние
@@ -152,8 +152,8 @@ class Wash(threading.Thread):
         self.pidD(thermometers.getValue('Верх'))    #сделать первое вычисление PID
         while (time.time()-tBgn) < duration:
             #установить мощность, соответствующую температуре низа колонны
-            power.value=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp']*\
-                (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
+            power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
+                (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             # Вывести на дисплей состояние
             sec=int(time.time()-tBgn)
             sec_str=u'{:02}:{:02}'\
@@ -188,8 +188,8 @@ class Wash(threading.Thread):
             Tкип_воды   -температура низа колонны при кипении воды в кубе
             Tниз        -температура низа колонны
             '''
-            #Tdeph=config['PARAMETERS']['Tdeph_H2O']['value']+config['PARAMETERS']['Kdeph']*\
-            #    (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
+            #Tdeph=config['PARAMETERS']['Tdeph_H2O']['value']+config['PARAMETERS']['Kdeph']['value']*\
+            #    (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             #thermometers.setTtrigger('Дефлегматор',Tdeph)
             '''Мощность устанавливается предзахлёбная, рассчитывается по формуле:
             P=Pводы-Kp*(Tкип_воды-Tниз), где
@@ -198,8 +198,8 @@ class Wash(threading.Thread):
             Tкип_воды   -температура низа колонны при кипении воды в кубе
             Tниз        -температура низа колонны
             '''
-            power.value=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp']*\
-                (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
+            power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
+                (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             thermometers.Tmeasured.wait()   #ожидать следующего измерения температуры
             #рассчитать и установить охлаждение
             self.Deph.value = self.pidD(thermometers.getValue('Верх'))
@@ -208,7 +208,7 @@ class Wash(threading.Thread):
                 (thermometers.getValue('Низ')-thermometers.getValue('Середина'))>2:
                 break
             #завершение перегона по температуре низа колонны
-            if thermometers.getValue('Низ')+1.0>config['PARAMETERS']['T_H2O']:
+            if thermometers.getValue('Низ')+1.0>config['PARAMETERS']['T_H2O']['value']:
                 break
 
         """Охлаждение холодильников"""

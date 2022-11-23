@@ -54,7 +54,7 @@ class Crude(threading.Thread):
 
         #Ожидание закипания
         #Мощность нагрева=100%
-        power.value=250**2/config['PARAMETERS']['rTEH']
+        power.value=250**2/config['PARAMETERS']['rTEH']['value']
         while not thermometers.boiling.wait(1):
             # Вывести на дисплей состояние
             self.pageUpdate('2-й перегон: ожидание закипания<br>'+self.Duration())
@@ -91,7 +91,7 @@ class Crude(threading.Thread):
         ## Новый набор кнопок
         #self.pageUpdate(None, 'ABORT_NEXT.html')
         ##подать максимальную мощность
-        #power.value=250**2/config['PARAMETERS']['rTEH']
+        #power.value=250**2/config['PARAMETERS']['rTEH']['value']
         ##сравнение температур каждые 20 секунд
         #countSec=20
         #Tbott=thermometers.getValue('Низ')
@@ -124,7 +124,7 @@ class Crude(threading.Thread):
         # Отбор голов
         tBgn=time.time()        #фиксация времени начала отбора голов
         #установка триггера дефлегматора
-        Tdeph=config['PARAMETERS']['Tdeph_HEAD']
+        Tdeph=46.3
         thermometers.setTtrigger('Дефлегматор',Tdeph)
         while True:
             # При получении команды прервать процесс
@@ -148,8 +148,8 @@ class Crude(threading.Thread):
             Tкип_воды   -температура низа колонны при кипении воды в кубе
             Tниз        -температура низа колонны
             '''
-            power.value=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp2']*\
-                (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
+            power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
+                (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             #ждать завершение измерения температур
             thermometers.Tmeasured.wait()
 
@@ -170,8 +170,8 @@ class Crude(threading.Thread):
             Tкип_воды   -температура низа колонны при кипении воды в кубе
             Tниз        -температура низа колонны
             '''
-            Tdeph=config['PARAMETERS']['Tdeph_H2O']['value']+config['PARAMETERS']['Kdeph2']*\
-                (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
+            Tdeph=config['PARAMETERS']['Tdephlock']['value']+config['PARAMETERS']['Kdeph']['value']*\
+                (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             thermometers.setTtrigger('Дефлегматор',Tdeph)
             '''Мощность устанавливается предзахлёбная, рассчитывается по формуле:
             P=Pводы-Kp*(Tкип_воды-Tниз), где
@@ -180,14 +180,14 @@ class Crude(threading.Thread):
             Tкип_воды   -температура низа колонны при кипении воды в кубе
             Tниз        -температура низа колонны
             '''
-            power.value=config['PARAMETERS']['P_H2O']-config['PARAMETERS']['Kp2']*\
-                (config['PARAMETERS']['T_H2O']-thermometers.getValue('Низ'))
+            power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
+                (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             #Новый критерий завершения перегона
             if (thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
                 (thermometers.getValue('Низ')-thermometers.getValue('Середина'))>2:
                 break
             #завершение перегона по температуре низа колонны
-            if thermometers.getValue('Низ')+1.0>config['PARAMETERS']['T_H2O']:
+            if thermometers.getValue('Низ')+1.0>config['PARAMETERS']['T_H2O']['value']:
                 break
             #ждать завершение измерения температур
             thermometers.Tmeasured.wait()

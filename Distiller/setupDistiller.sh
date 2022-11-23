@@ -2,6 +2,9 @@
 # Скрипт разворачивания проекта Distiller
 # Запуск: bash setupDistiller.sh
 
+#Переименование предыдущего конфигурационного файла
+mv -f /home/pi/Distiller/configDistiller.json /home/pi/Distiller/preconfigDistiller.json
+
 #Распаковка архива
 unzip -u Distiller.zip -d /home/pi/Distiller
 

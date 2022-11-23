@@ -31,7 +31,7 @@ class Power(threading.Thread):
     def __init__(self):
         #threading.Thread.__init__(self)
         super(Power, self).__init__()
-        self.HEATER_PIN=int(config['HEATER_PIN'])
+        self.HEATER_PIN=int(config['HEATER_PIN']['number'])
         self._P=0
         self._Pa=0
         self._Run=False
@@ -46,16 +46,16 @@ class Power(threading.Thread):
             value=float(value)
             if value<0:
                 value=0.0
-            if value>250**2/config['PARAMETERS']['rTEH']/1000:
-                value=250**2/config['PARAMETERS']['rTEH']/1000
+            if value>250**2/config['PARAMETERS']['rTEH']['value']/1000:
+                value=250**2/config['PARAMETERS']['rTEH']['value']/1000
         except Exception as ex:
             #print(ex)
             value=0.0
-        new_P=value*100*config['PARAMETERS']['rTEH']*1000/(voltmeter.value**2)
+        new_P=value*100*config['PARAMETERS']['rTEH']['value']*1000/(voltmeter.value**2)
         #print(new_P)
         if new_P>100:
             self._P=100
-            self._Pa=(voltmeter.value**2)/config['PARAMETERS']['rTEH']/1000
+            self._Pa=(voltmeter.value**2)/config['PARAMETERS']['rTEH']['value']/1000
         else:
             self._P=round(new_P)
             self._Pa=value
@@ -77,10 +77,10 @@ class Power(threading.Thread):
             while self._Run:
                 V=voltmeter.value
                 if self._P==100:
-                    self._Pa=(V**2)/config['PARAMETERS']['rTEH']/1000
+                    self._Pa=(V**2)/config['PARAMETERS']['rTEH']['value']/1000
                     Transmit(self.dataFromServer)
                 else:
-                    self._P=self.value*100*config['PARAMETERS']['rTEH']*1000/(V**2)
+                    self._P=self.value*100*config['PARAMETERS']['rTEH']['value']*1000/(V**2)
                 #print('%s=>%s'%(self._Pa,self._P))
                 time.sleep(1)
             return
@@ -105,10 +105,10 @@ class Power(threading.Thread):
                 ErrP-=int(self._P/self.step)
                 #print(GPIO.input(config.HEATER_PIN))
                 if self._P==100:
-                    self._Pa=(voltmeter.value**2)/config['PARAMETERS']['rTEH']/1000
+                    self._Pa=(voltmeter.value**2)/config['PARAMETERS']['rTEH']['value']/1000
                     Transmit(self.dataFromServer)
                 else:
-                    self._P=self.value*100*config['PARAMETERS']['rTEH']*1000/(voltmeter.value**2)
+                    self._P=self.value*100*config['PARAMETERS']['rTEH']['value']*1000/(voltmeter.value**2)
                 app.config['Power']=self._Pa
                 time.sleep(self.period*self.step/100)
             GPIO.output(self.HEATER_PIN, GPIO.LOW)

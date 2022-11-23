@@ -10,10 +10,10 @@ class Config(object):
     DEVICE_NAME = u'Дистиллятор'
     
     # Путь к каталогу запуска программы
-    BASEDIR = os.path.abspath(os.path.dirname(__file__))
-    # Каталог для хранения журналов работы
-    LOGSDIR = os.path.join(BASEDIR, 'logs')
-    os.makedirs(LOGSDIR, exist_ok=True)
+    #BASEDIR = os.path.abspath(os.path.dirname(__file__))
+    ## Каталог для хранения журналов работы
+    #LOGSDIR = os.path.join(BASEDIR, 'logs')
+    #os.makedirs(LOGSDIR, exist_ok=True)
 
     # Определяет, включен ли режим отладки.
     # Если включен, flask будет показывать
@@ -28,29 +28,29 @@ class Config(object):
     # данных, например cookies.
     SECRET_KEY = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for x in range(random.randint(10,16)))
 
-    # URI используемый для подключения к базе данных
-    # Основная база данных
-    SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASEDIR, "Distiller.db")
-    #Базы данных приложения
-    SQLALCHEMY_BINDS = {'Distiller':'sqlite:///' + os.path.join(BASEDIR, "Distiller.db"),
-                        'log':'sqlite:///' + os.path.join(LOGSDIR,
-                                                          datetime.now().strftime('%Y_%m_%d %H-%M-%S.db'))}
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    ## URI используемый для подключения к базе данных
+    ## Основная база данных
+    #SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASEDIR, "Distiller.db")
+    ##Базы данных приложения
+    #SQLALCHEMY_BINDS = {'Distiller':'sqlite:///' + os.path.join(BASEDIR, "Distiller.db"),
+    #                    'log':'sqlite:///' + os.path.join(LOGSDIR,
+    #                                                      datetime.now().strftime('%Y_%m_%d %H-%M-%S.db'))}
+    #SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     #Места установки термометров
-    T_LOCATION=['Низ', '1/2', 'Верх', 'Деф', 'Конд']
+    #T_LOCATION=['Низ', '1/2', 'Верх', 'Деф', 'Конд']
 
-    #Распределение ножек Raspberry Pi
-    # Сеть One-Wire
-    OW_PIN=7    #GPIO4
-    # Вывод управления нагревателем
-    HEADER_PIN=18   #GPIO24
-    # Вход синхронизации с 220V 50Hz (не используется)
-    #SYNC_PIN=12
-    # Вывод управления дефлегматором
-    DEPH_PIN=11     #GPIO17
-    # Вывод управления конденсатором
-    CONDER_PIN=12   #GPIO18
+    ##Распределение ножек Raspberry Pi
+    ## Сеть One-Wire
+    #OW_PIN=7    #GPIO4
+    ## Вывод управления нагревателем
+    #HEADER_PIN=18   #GPIO24
+    ## Вход синхронизации с 220V 50Hz (не используется)
+    ##SYNC_PIN=12
+    ## Вывод управления дефлегматором
+    #DEPH_PIN=11     #GPIO17
+    ## Вывод управления конденсатором
+    #CONDER_PIN=12   #GPIO18
 
     #Параметры перегона бражки по умолчанию
     #(индивидульны для колонны)

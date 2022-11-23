@@ -45,6 +45,9 @@
     </Compile>
     <Compile Include="Distiller\helpers\coolsRegulator.py" />
     <Compile Include="Distiller\helpers\logging.py" />
+    <Compile Include="Distiller\helpers\transferConfig.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Distiller\helpers\transmitter.py">
       <SubType>Code</SubType>
     </Compile>

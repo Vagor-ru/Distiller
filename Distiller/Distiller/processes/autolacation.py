@@ -129,10 +129,10 @@ class Autolocation(threading.Thread):
             if Th.Name=='Конденсатор':
                 Th.Ttrigger=config['PARAMETERS']['Tcond']['value']
             if Th.Name=='Дефлегматор':
-                Th.Ttrigger=config['PARAMETERS']['Tdephlock']
+                Th.Ttrigger=config['PARAMETERS']['Tdephlock']['value']
             i+=1
         #сохранить конфигурацию
-        config['T_LOCATIONS']=T_LOCATIONS
+        config['LOCATIONS']["locations"]=T_LOCATIONS
         thermometers.needAutoLocation=False #сбросить флаг автоопределения мест установки термометров
         with open('configDistiller.json','w',encoding="utf-8") as f:
             json.dump(config,f,ensure_ascii=False, indent=2)

@@ -45,10 +45,10 @@ class Voltmeter(threading.Thread):
             return self.EmulateVoltage()
 
     def MeasureVoltage(self):
-        SMBus(1).write_byte(config['ADC_ADDR'], 0b1000010)
-        SMBus(1).read_byte(config['ADC_ADDR']) # read last value
-        SMBus(1).read_byte(config['ADC_ADDR']) # repeat reading last value
-        return round(config['PARAMETERS']['K_V']*SMBus(1).read_byte(config['ADC_ADDR']))
+        SMBus(1).write_byte(config['ADC_ADDR']['value'], 0b1000010)
+        SMBus(1).read_byte(config['ADC_ADDR']['value']) # read last value
+        SMBus(1).read_byte(config['ADC_ADDR']['value']) # repeat reading last value
+        return round(config['PARAMETERS']['K_V']['value']*SMBus(1).read_byte(config['ADC_ADDR']['value']))
 
     def EmulateVoltage(self):
         return round(210+random.random()*20)

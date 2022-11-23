@@ -210,13 +210,13 @@ class Thermometers(threading.Thread):
             objT=DS18B20(T[0])
             objT.T=T[1]
             objT.Tpre=T[1]
-            if "T_LOCATIONS" in config:
-                if T[0] in config["T_LOCATIONS"]:
-                    objT.Name=config["T_LOCATIONS"][T[0]]
+            if "locations" in config['LOCATIONS']:
+                if T[0] in config['LOCATIONS']["locations"]:
+                    objT.Name=config['LOCATIONS']["locations"][T[0]]
                     if objT.Name=='Конденсатор':
                         objT.Ttrigger=config['PARAMETERS']['Tcond']['value']
                     if objT.Name=='Дефлегматор':
-                        objT.Ttrigger=config['PARAMETERS']['Tdephlock']
+                        objT.Ttrigger=config['PARAMETERS']['Tdephlock']['value']
                 else:
                     self.needAutoLocation=True
             else:
@@ -306,7 +306,7 @@ class Thermometers(threading.Thread):
             for Th in self.Tlist:
                 Tlist.append((Th.ID,Th.T))
         else:
-            for Name in config['LOCATIONS']:
+            for Name in config['LOCATIONS']['names']:
                 objT=list(filter(lambda objT: objT.Name==Name,self.Tlist))[0]
                 if objT.Ttrigger!=None:
                     Tlist.append((objT.Name,objT.T,objT.Ttrigger))
