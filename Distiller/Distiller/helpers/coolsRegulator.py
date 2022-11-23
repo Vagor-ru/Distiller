@@ -24,7 +24,7 @@ class CoolsRegulator(threading.Thread):
         super(CoolsRegulator, self).__init__()
         self.Run=False
         if Tdeph==None:
-            self._Tdeph=config['PARAMETERS']['Tdephlock']
+            self._Tdeph=config['PARAMETERS']['Tdephlock']['value']
         else:
             self._Tdeph=Tdeph
         if Tcond==None:

@@ -23,7 +23,7 @@ class Dephlegmator():
 
     def __init__(self):
         self._State = False
-        self.PIN = int(config['DEPH_PIN'])
+        self.PIN = int(config['DEPH_PIN']['number'])
         if app.config['RPI']:
             GPIO.setup(self.PIN, GPIO.OUT)
             GPIO.output(self.PIN, GPIO.LOW)
@@ -61,7 +61,7 @@ class Condensator():
     '''класс конденсатора'''
     def __init__(self):
         self._State = False
-        self.PIN = int(config['CONDER_PIN'])
+        self.PIN = int(config['CONDER_PIN']['number'])
         if app.config['RPI']:
             GPIO.setup(self.PIN, GPIO.OUT)
             GPIO.output(self.PIN, GPIO.LOW)
