@@ -40,8 +40,21 @@ with open('configDistiller.json','r',encoding="utf-8") as f:
     json.dump(config,f,ensure_ascii=False, indent=2)
 '''
 
-# Проверка наличия предыдущей конфигурации
+# Проверка наличия предыдущей версии конфигурации после обновления ПО
 if os.path.isfile('preconfigDistiller.json'):
+    with open('preconfigDistiller.json','r',encoding="utf-8") as f:
+        preconfig=json.load(f)
+    if "CONDER_PIN#" in preconfig:
+        '''если обнаружена предыдущая версия конфигурации'''
+        from Distiller.helpers.transferConfig import transferConfig
+        transferConfig.transfer(config, preconfig)  #перенести часть предыдущих параметров в новую версию конфига
+    elif "EDITION" in preconfig and preconfig['EDITION'] =='2022-11-22':
+        '''если версия та же, использовать конфиг с raspberry'''
+        config=preconfig
+    '''Сохранение config:'''
+    with open('configDistiller.json','w',encoding="utf-8") as f:
+        json.dump(config,f,ensure_ascii=False, indent=2)
+    os.remove('preconfigDistiller.json')    #удалить ненужный файл конфига
     pass
 
 #Создание приложения flask_socketio из flask-приложения

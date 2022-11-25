@@ -34,20 +34,29 @@ class Power(threading.Thread):
         self.HEATER_PIN=int(config['HEATER_PIN']['number'])
         self._P=0
         self._Pa=0
+        self._Pmax=voltmeter.value**2/config['PARAMETERS']['rTEH']['value']/1000
         self._Run=False
 
     @property
+    def Pmax(self):
+        '''Текущая максимальная мощность
+        (зависит от напряжения сети питания)'''
+        return self._Pmax
+
+    @property
     def value(self):
+        '''значение заданной мощности в кВт'''
         return self._Pa
 
     @value.setter
     def value(self, value):
+        '''установка мощности в кВт'''
         try:
             value=float(value)
             if value<0:
                 value=0.0
-            if value>250**2/config['PARAMETERS']['rTEH']['value']/1000:
-                value=250**2/config['PARAMETERS']['rTEH']['value']/1000
+            if value>self._Pmax/1000:
+                value=self._Pmax/1000
         except Exception as ex:
             #print(ex)
             value=0.0
@@ -76,6 +85,7 @@ class Power(threading.Thread):
             self._Run=True
             while self._Run:
                 V=voltmeter.value
+                self._Pmax=voltmeter.value**2/config['PARAMETERS']['rTEH']['value']/1000
                 if self._P==100:
                     self._Pa=(V**2)/config['PARAMETERS']['rTEH']['value']/1000
                     Transmit(self.dataFromServer)
@@ -88,6 +98,7 @@ class Power(threading.Thread):
         GPIO.setup(self.HEATER_PIN, GPIO.OUT, GPIO.PUD_OFF, GPIO.LOW)
         self._Run=True
         while self._Run:
+            self._Pmax=voltmeter.value**2/config['PARAMETERS']['rTEH']['value']/1000
             Pmax=int((100/self.step))    #Приведенная максимальная мощность
             #Pwr=int(self._P/self.step)
             ErrP=Pmax-int(self._P/self.step)

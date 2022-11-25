@@ -8,6 +8,7 @@ class DephRun(threading.Thread):
 
     def __init__(self, value=0):
         """Конструктор дефлегматора"""
+        super(DephRun, self).__init__()
         self.Bresenham = Bresenham()
         self.Dephlegmator = Dephlegmator()
         self.__value = 0
@@ -15,9 +16,10 @@ class DephRun(threading.Thread):
         self._Run = False
 
     def run(self):
-        """Цикл регулирования"""
+        """Запуск цикла регулирования охлаждения дефлегматора"""
         self._Run = True
         while self._Run:
+            #print('Сейчас Bresenham будет расчитан.')
             self.Dephlegmator.State = self.Bresenham(self.value)
             #if self.Dephlegmator.State:
             #    print("1")
