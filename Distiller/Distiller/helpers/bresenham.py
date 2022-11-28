@@ -8,10 +8,11 @@ class Bresenham(object):
         self.reset()
 
     def __call__(self, value=None):
-        """реализация алгоритма брезенхема, устанавливает и возвращает требуемое значение текущего кванта"""
+        """реализация алгоритма брезенхема, устанавливает и возвращает требуемое значение текущего кванта,
+           можно задать необходимое значение, если не задать, используется предыдущее"""
         if not value is None:
             self.value = value
-        if self.__error<self.range/2:
+        if self.__error < self.range/2:
             self.__error += self.range
             self.__quantum = True
         else:
@@ -25,9 +26,11 @@ class Bresenham(object):
 
     @property
     def range(self):
+        '''Диапазон, в котором распределяются кванты'''
         return self.__range
     @range.setter
     def range(self, range):
+        '''Установка диапазона, в котором распределяются кванты'''
         if range <= 0:
             self.__range = 1
         else:
@@ -35,9 +38,11 @@ class Bresenham(object):
 
     @property
     def value(self):
+        '''Количество квантов в диапазоне'''
         return self.__value
     @value.setter
     def value(self, value):
+        '''Установка количества квантов в диапазоне'''
         if value < 0:
             self.__value = 0
         elif value > self.range:
@@ -47,9 +52,11 @@ class Bresenham(object):
 
     @property
     def quantum(self):
+        '''Состояние текущего кванта (включен/выключен)'''
         return self.__quantum
 
     def reset(self):
+        '''Сброс алгоритма к началу диапазона'''
         self.__step=0
         self.__error=self.range-self.value
         self.__quantum = False

@@ -11,6 +11,7 @@ $Id: power.py,v 1.3 2020/07/07
 import time, threading  #Модули для работы со временем и потоками
 from Distiller import app, config, voltmeter
 from Distiller.helpers.transmitter import Transmit
+from Distiller.helpers.bresenham import Bresenham
 
 
 if app.config['RPI']:
@@ -25,6 +26,7 @@ if app.config['RPI']:
 
 
 class Power(threading.Thread):
+    '''Класс-поток регулирования мощности нагрева'''
     step=1         #Шаг установки мощности = 1%
     period=50.0    #Длительность преобразования Брезенхема (сек)
 
@@ -32,6 +34,7 @@ class Power(threading.Thread):
         #threading.Thread.__init__(self)
         super(Power, self).__init__()
         self.HEATER_PIN=int(config['HEATER_PIN']['number'])
+        self.Bresenham = Bresenham()
         self._P=0
         self._Pa=0
         self._Pmax=voltmeter.value**2/config['PARAMETERS']['rTEH']['value']/1000
@@ -39,91 +42,57 @@ class Power(threading.Thread):
 
     @property
     def Pmax(self):
-        '''Текущая максимальная мощность
-        (зависит от напряжения сети питания)'''
+        '''Текущая максимальная мощность в кВт
+        (зависит от напряжения сети питания и
+        сопротивления нагревателя)'''
         return self._Pmax
 
     @property
     def value(self):
         '''значение заданной мощности в кВт'''
         return self._Pa
-
     @value.setter
     def value(self, value):
         '''установка мощности в кВт'''
-        try:
-            value=float(value)
-            if value<0:
-                value=0.0
-            if value>self._Pmax/1000:
-                value=self._Pmax/1000
-        except Exception as ex:
-            #print(ex)
-            value=0.0
-        new_P=value*100*config['PARAMETERS']['rTEH']['value']*1000/(voltmeter.value**2)
-        #print(new_P)
-        if new_P>100:
-            self._P=100
-            self._Pa=(voltmeter.value**2)/config['PARAMETERS']['rTEH']['value']/1000
+        if value<0:
+            self._Pa = 0.0
+        elif value > self._Pmax:
+            self._Pa = self._Pmax
         else:
-            self._P=round(new_P)
-            self._Pa=value
+            self._Pa = float(value)
+        self.Bresenham.value = self.Bresenham.range*self.value/self.Pmax
         app.config['Power']=self.dataFromServer
         Transmit(self.dataFromServer)
 
-        #new_P=int((int((value+self.step/2)/self.step))*self.step)
-        ## Если изменилось значение мощности, то отправить новое значение клиентам
-        #if self._P!=new_P:
-        #    self._P=new_P
-        #    Transmit({'Power':[('Нагрев',self._P)], 'DateTime': time.time()})
-        
-
     def run(self):
-        """Реализация алгоритма Брезенхема
-        для регулирования мощности ТЭНа"""
+        """Поток регулирования мощности ТЭНа по алгоритму Брезенхема"""
         if not app.config['RPI']:
             self._Run=True
             while self._Run:
                 V=voltmeter.value
-                self._Pmax=voltmeter.value**2/config['PARAMETERS']['rTEH']['value']/1000
-                if self._P==100:
-                    self._Pa=(V**2)/config['PARAMETERS']['rTEH']['value']/1000
+                if self.value >= self.Pmax:
+                    self._Pmax = self.value = V**2/config['PARAMETERS']['rTEH']['value']/1000
                     Transmit(self.dataFromServer)
                 else:
-                    self._P=self.value*100*config['PARAMETERS']['rTEH']['value']*1000/(V**2)
-                #print('%s=>%s'%(self._Pa,self._P))
+                    self._Pmax = V**2/config['PARAMETERS']['rTEH']['value']/1000
+                self.Bresenham.value = self.Bresenham.range*self.value/self.Pmax
                 time.sleep(1)
             return
         #штырек HEATER_PIN на вывод, подтяжка отключена, низкий уровень
         GPIO.setup(self.HEATER_PIN, GPIO.OUT, GPIO.PUD_OFF, GPIO.LOW)
         self._Run=True
         while self._Run:
-            self._Pmax=voltmeter.value**2/config['PARAMETERS']['rTEH']['value']/1000
-            Pmax=int((100/self.step))    #Приведенная максимальная мощность
-            #Pwr=int(self._P/self.step)
-            ErrP=Pmax-int(self._P/self.step)
-            for x in range(Pmax):
-                if not self._Run:
-                    break
-                if ErrP<Pmax/2:
-                    ErrP+=Pmax
-                    GPIO.output(self.HEATER_PIN, GPIO.HIGH)
-                    #print('Power=ON')
-                else:
-                    pass
-                    GPIO.output(self.HEATER_PIN, GPIO.LOW)
-                    #print('Power=OFF')
-                ErrP-=int(self._P/self.step)
-                #print(GPIO.input(config.HEATER_PIN))
-                if self._P==100:
-                    self._Pa=(voltmeter.value**2)/config['PARAMETERS']['rTEH']['value']/1000
-                    Transmit(self.dataFromServer)
-                else:
-                    self._P=self.value*100*config['PARAMETERS']['rTEH']['value']*1000/(voltmeter.value**2)
-                app.config['Power']=self._Pa
-                time.sleep(self.period*self.step/100)
-            GPIO.output(self.HEATER_PIN, GPIO.LOW)
-            #print('Power=OFF')
+            V=voltmeter.value
+            if self.value >= self.Pmax:
+                self._Pmax = self.value = V**2/config['PARAMETERS']['rTEH']['value']/1000
+                Transmit(self.dataFromServer)
+            else:
+                self._Pmax = V**2/config['PARAMETERS']['rTEH']['value']/1000
+            #self.Bresenham.value = self.Bresenham.range*self.value/self.Pmax
+            GPIO.output(self.HEATER_PIN, self.Bresenham(self.Bresenham.range*self.value/self.Pmax))
+            time.sleep(1)
+        GPIO.output(self.HEATER_PIN, GPIO.LOW)
+        #print('Power=OFF')
         GPIO.cleanup(self.HEATER_PIN)
         #print('штырек HEATER_PIN освобожден')
 
