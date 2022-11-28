@@ -53,12 +53,12 @@ class Autolocation(threading.Thread):
         #Заполнение холодильников 2сек
         condensator.On()
         dephlegmator.On()
-        time.sleep(2)
+        time.sleep(4)
         condensator.Off()
         dephlegmator.Off()
         #Мощность нагрева=100%
         self.pageUpdate('Ожидание закипания<br>'+self.Duration())
-        power.value=4.0
+        power.value=power.Pmax
         #Ожидание закипания
         while not thermometers.boiling.wait(0.5):
             self.pageUpdate('Ожидание закипания<br>'+self.Duration())
@@ -67,11 +67,11 @@ class Autolocation(threading.Thread):
                 self.abort()
                 return
 
-        #Уменьшить мощность
-        power.value=4.0/4
+        #Уменьшить мощность в 4 раза
+        power.value=power.value/4
         # Пауза 
         tBegin=time.time()
-        duration=80
+        duration=80 #продолжительность паузы в сек
         while time.time()-tBegin<duration:
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
@@ -123,8 +123,8 @@ class Autolocation(threading.Thread):
         T_LOCATIONS={}
         for Th in sorted(thermometers.Tlist, key=lambda thermometer: thermometer.T):
             #print (Th.T)
-            Th.Name=config['LOCATIONS'][i]  #имя (место расположения) термометра
-            T_LOCATIONS[Th.ID]=config['LOCATIONS'][i]   #имя, соответствующее ID, для сохранения в конфигурации
+            Th.Name=config['LOCATIONS']['names'][i]  #имя (место расположения) термометра
+            T_LOCATIONS[Th.ID]=config['LOCATIONS']['names'][i]   #имя, соответствующее ID, для сохранения в конфигурации
             Th.Ttrigger=None
             if Th.Name=='Конденсатор':
                 Th.Ttrigger=config['PARAMETERS']['Tcond']['value']
