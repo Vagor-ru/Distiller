@@ -35,7 +35,6 @@ class Power(threading.Thread):
         super(Power, self).__init__()
         self.HEATER_PIN=int(config['HEATER_PIN']['number'])
         self.Bresenham = Bresenham()
-        self._P=0
         self._Pa=0
         self._Pmax=voltmeter.value**2/config['PARAMETERS']['rTEH']['value']/1000
         self._Run=False
