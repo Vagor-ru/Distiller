@@ -7,17 +7,18 @@ class transferConfig(object):
         cfgNew['OW_PIN']['number']=cfgOld['OW_PIN']
         cfgNew['PARAMETERS']['Kdeph']['value']=(cfgOld['PARAMETERS']['Kdeph']+cfgOld['PARAMETERS']['Kdeph2'])/2
         cfgNew['PARAMETERS']['Kp']['value']=(cfgOld['PARAMETERS']['Kp']+cfgOld['PARAMETERS']['Kp2'])/2
-        cfgNew['P_H2O']['value']=cfgOld['P_H2O']
-        cfgNew['Tdephlock']['value']=cfgOld['Tdephlock']
-        cfgNew['T_H2O']['value']=cfgOld['T_H2O']
-        cfgNew['rTEH']['value']=cfgOld['rTEH']
-        cfgNew['tCooling']['value']=cfgOld['tCooling']
-        cfgNew['tA_F']['value']=cfgOld['tA_F']
-        cfgNew['K_V']['value']=cfgOld['K_V']
+        cfgNew['PARAMETERS']['P_H2O']['value']=cfgOld['PARAMETERS']['P_H2O']
+        cfgNew['PARAMETERS']['Tdephlock']['value']=cfgOld['PARAMETERS']['Tdephlock']
+        cfgNew['PARAMETERS']['T_H2O']['value']=cfgOld['PARAMETERS']['T_H2O']
+        cfgNew['PARAMETERS']['rTEH']['value']=cfgOld['PARAMETERS']['rTEH']
+        cfgNew['PARAMETERS']['tCooling']['value']=cfgOld['PARAMETERS']['tCooling']
+        cfgNew['PARAMETERS']['tA_F']['value']=cfgOld['PARAMETERS']['tA_F']
+        cfgNew['PARAMETERS']['K_V']['value']=cfgOld['PARAMETERS']['K_V']
         cfgNew['ADC_ADDR']['value']=cfgOld['ADC_ADDR']
-        cfgNew['Tcond']=cfgOld['Tcond']
-        cfgNew['tFillCoolers']=cfgOld['tFillCoolers']
+        cfgNew['PARAMETERS']['Tcond']=cfgOld['PARAMETERS']['Tcond']
+        cfgNew['PARAMETERS']['tFillCoolers']=cfgOld['PARAMETERS']['tFillCoolers']
         cfgNew['LOCATIONS']['names']=cfgOld['LOCATIONS']
+        cfgNew['LOCATIONS']['locations']=cfgOld['T_LOCATIONS']
 
 
 
