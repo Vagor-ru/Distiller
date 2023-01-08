@@ -15,7 +15,7 @@ class transferConfig(object):
         cfgNew['PARAMETERS']['tA_F']['value']=cfgOld['PARAMETERS']['tA_F']
         cfgNew['PARAMETERS']['K_V']['value']=cfgOld['PARAMETERS']['K_V']
         cfgNew['ADC_ADDR']['value']=cfgOld['ADC_ADDR']
-        cfgNew['PARAMETERS']['Tcond']=cfgOld['PARAMETERS']['Tcond']
+        cfgNew['PARAMETERS']['Tcond']['value']=cfgOld['PARAMETERS']['Tcond']
         #cfgNew['PARAMETERS']['tFillCoolers']=cfgOld['PARAMETERS']['tFillCoolers']
         cfgNew['LOCATIONS']['names']=cfgOld['LOCATIONS']
         cfgNew['LOCATIONS']['locations']=cfgOld['T_LOCATIONS']
