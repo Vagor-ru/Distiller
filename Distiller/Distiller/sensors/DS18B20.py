@@ -245,6 +245,7 @@ class Thermometers(threading.Thread):
                 self.trigger.clear()
             tBegin=time.time()
             Ts=Measure()
+            #print(Ts)
             durationMeasure=time.time()-tBegin
             app.config['Thermometers']=self.dataFromServer
             #print(app.config['Thermometers'])

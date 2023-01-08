@@ -91,9 +91,9 @@ class Wash(threading.Thread):
                 self.abort()
                 return
 
-        """Пауза в 10 секунд для прогрева низа колонны"""
+        """Пауза в 15 секунд для прогрева низа колонны"""
         tBgn=time.time()        #фиксация времени начала паузы
-        while (time.time()-tBgn) < 10:
+        while (time.time()-tBgn) < 15:
             self.pageUpdate('Бражка: Нагрев - пауза<br>'+self.Duration())
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
@@ -102,6 +102,17 @@ class Wash(threading.Thread):
             # Отдохнуть секундочку
             time.sleep(1)
         power.value=0   #отключить нагрев
+
+        """Пауза в 15 секунд инерции нагрева низа колонны"""
+        tBgn=time.time()        #фиксация времени начала паузы
+        while (time.time()-tBgn) < 15:
+            self.pageUpdate('Бражка: Пауза<br>'+self.Duration())
+            # При получении команды прервать процесс
+            if app.config['AB_CON']=='Abort':
+                self.abort()
+                return
+            # Отдохнуть секундочку
+            time.sleep(1)
 
         """Антипена"""
         tBgn=time.time()        #фиксация времени начала стабилизации
@@ -113,6 +124,7 @@ class Wash(threading.Thread):
         #Установка диапазона рассчитываемой PID-регулятором мощности
         #print('МаксиМощь=', power.Pmax)
         pidH.output_limits = (0, power.Pmax)
+        pidH.reset()
         self.pageUpdate('Бражка: Антипена<br>%s'%(self.Duration()), 'ABORT_NEXT.html')
         duration=60*float(config['PARAMETERS']['tA_F']['value'])
         while (time.time()-tBgn) < duration:
@@ -120,7 +132,7 @@ class Wash(threading.Thread):
             sec=int(duration-int(time.time()-tBgn))
             sec_str=u'{:02}:{:02}'\
                .format((sec//60)%60, sec%60)
-            self.pageUpdate('Бражка: Антипена %s<br>%s'%(sec_str,self.Duration()))
+            self.pageUpdate('Бражка: Антипена<br>%s %s<br>%s'%(pidH.setpoint, sec_str, self.Duration()))
             #установка коэффициентов PID-регулятора (на случай, если во время антипены их кто поменял)
             pidH.tunings = (config['PARAMETERS']['PID_H']['Kp']['value'],\
                config['PARAMETERS']['PID_H']['Ki']['value'],\
