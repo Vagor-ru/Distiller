@@ -173,6 +173,7 @@ div.Display_up {
     color: rgb(0,79,86);
     user-select: none;
     margin: 5px;
+    margin-left: 10px;
 }
 
     .knopka:hover {
@@ -239,4 +240,13 @@ div.Display_up {
     position: relative;
 }
 
+p {
+    font-size: 18px;
+    margin-left: 20px;
+}
+
+input {
+    font-size: 14px;
+    margin-left: 10px;
+}
 /******************************/

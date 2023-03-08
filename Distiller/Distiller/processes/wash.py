@@ -26,9 +26,9 @@ class Wash(threading.Thread):
         #threading.Thread.__init__(self)
         super(Wash, self).__init__()
         """Загрузка в PID-регулятор коэффициентов и уставки из конфига"""
-        self.pidD = PID(config['PARAMETERS']['PID_D']['Kp']['value'],\
-           config['PARAMETERS']['PID_D']['Ki']['value'],\
-          config['PARAMETERS']['PID_D']['Kd']['value'],\
+        self.pidD = PID(config['PARAMETERS']['Kpd']['value'],\
+           config['PARAMETERS']['Kid']['value'],\
+          config['PARAMETERS']['Kdd']['value'],\
          setpoint=config['PARAMETERS']['T_Head']['value'])
         """Установить пределы выхода PID-регулятора"""
         self.pidD.output_limits = (0, 100)
@@ -117,9 +117,9 @@ class Wash(threading.Thread):
         """Антипена"""
         tBgn=time.time()        #фиксация времени начала стабилизации
         #PID-регулятор температуры низа колонны (сразу фиксируется температура низа колонны)
-        pidH = PID(config['PARAMETERS']['PID_H']['Kp']['value'],\
-           config['PARAMETERS']['PID_H']['Ki']['value'],\
-          config['PARAMETERS']['PID_H']['Kd']['value'],\
+        pidH = PID(config['PARAMETERS']['Kph']['value'],\
+           config['PARAMETERS']['Kih']['value'],\
+          config['PARAMETERS']['Kdh']['value'],\
          setpoint=thermometers.getValue('Низ'))
         #Установка диапазона рассчитываемой PID-регулятором мощности
         #print('МаксиМощь=', power.Pmax)
@@ -134,9 +134,9 @@ class Wash(threading.Thread):
                .format((sec//60)%60, sec%60)
             self.pageUpdate('Бражка: Антипена<br>%s %s<br>%s'%(pidH.setpoint, sec_str, self.Duration()))
             #установка коэффициентов PID-регулятора (на случай, если во время антипены их кто поменял)
-            pidH.tunings = (config['PARAMETERS']['PID_H']['Kp']['value'],\
-               config['PARAMETERS']['PID_H']['Ki']['value'],\
-              config['PARAMETERS']['PID_H']['Kd']['value'])
+            pidH.tunings = (config['PARAMETERS']['Kph']['value'],\
+               config['PARAMETERS']['Kih']['value'],\
+              config['PARAMETERS']['Kdh']['value'])
             #расчёт PID-регулятором необходимой мощности для поддержания температуры низа колонны
             power.value=pidH(thermometers.getValue('Низ'))
             # При получении команды прервать процесс
@@ -195,9 +195,9 @@ class Wash(threading.Thread):
                 app.config['AB_CON']=''
                 break
             #Заново подгрузить коэффициенты PID-регулятора дефлегматора (вдруг изменились)
-            self.pidD.tunings = (config['PARAMETERS']['PID_D']['Kp']['value'],\
-                              config['PARAMETERS']['PID_D']['Ki']['value'],\
-                              config['PARAMETERS']['PID_D']['Kd']['value'])
+            self.pidD.tunings = (config['PARAMETERS']['Kpd']['value'],\
+                              config['PARAMETERS']['Kid']['value'],\
+                              config['PARAMETERS']['Kdd']['value'])
             self.pidD.setpoint = config['PARAMETERS']['T_Head']['value']
             #рассчитать и установить охлаждение дефлегматора
             self.Deph.value = self.pidD(thermometers.getValue('Верх'))
@@ -215,9 +215,9 @@ class Wash(threading.Thread):
             self.pageUpdate('Бражка: перегон<br><br>%s'%(self.Duration()))
             # Регулировать дефлегматор и нагрев
             #Заново подгрузить коэффициенты (вдруг изменились)
-            self.pidD.tunings = (config['PARAMETERS']['PID_D']['Kp']['value'],\
-                              config['PARAMETERS']['PID_D']['Ki']['value'],\
-                              config['PARAMETERS']['PID_D']['Kd']['value'])
+            self.pidD.tunings = (config['PARAMETERS']['Kpd']['value'],\
+                              config['PARAMETERS']['Kid']['value'],\
+                              config['PARAMETERS']['Kdd']['value'])
             self.pidD.setpoint = config['PARAMETERS']['T_Body']['value']
             #рассчитать и установить охлаждение
             self.Deph.value = self.pidD(thermometers.getValue('Верх'))

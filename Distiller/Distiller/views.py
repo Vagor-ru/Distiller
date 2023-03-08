@@ -2,9 +2,10 @@
 Routes and views for the flask application.
 """
 
+import json
 from datetime import datetime
-from flask import render_template
-from Distiller import app, socketio, power, condensator, dephlegmator, thermometers,voltmeter
+from flask import render_template, request, flash, redirect
+from Distiller import app, socketio, power, condensator, dephlegmator, thermometers,voltmeter, config
 from Distiller.helpers.transmitter import Transmit
 
 @app.route('/')
@@ -14,6 +15,25 @@ def home():
         'layout.html',
         title=app.config['DEVICE_NAME'],
     )
+
+@app.route('/parameters', methods=['GET', 'POST'])
+def parameters():
+    """Renders the page parameters data."""
+    if request.method == 'POST':
+        form = request.form.to_dict()
+        #print(form)
+        for field in form:
+            config['PARAMETERS'][field]['value'] = float(form[field])
+            #print(field, config['PARAMETERS'][field]['value'])
+        with open('configDistiller.json','w',encoding="utf-8") as f:
+            json.dump(config,f,ensure_ascii=False, indent=2)
+        flash('Параметры успешно сохранены', 'success')
+        return redirect('/')
+    else:
+        #return redirect('/')
+        pass
+    #print(config['PARAMETERS'])
+    return render_template('parameters.html', title='Параметры', parameters=config['PARAMETERS'])
 
 ############################################################################
 #  Обработчики запросов через веб-сокеты
