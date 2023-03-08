@@ -1,5 +1,5 @@
 class transferConfig(object):
-    """Версия от 22.11.2022 сохранение предыдущей конфигурации"""
+    """Версия от 2023-03-08 сохранение предыдущей конфигурации"""
     def transfer(cfgNew, cfgOld):
         cfgNew['CONDER_PIN']['number']=cfgOld['CONDER_PIN']
         cfgNew['DEPH_PIN']['number']=cfgOld['DEPH_PIN']

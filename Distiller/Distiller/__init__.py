@@ -48,7 +48,7 @@ if os.path.isfile('preconfigDistiller.json'):
         '''если обнаружена предыдущая версия конфигурации'''
         from Distiller.helpers.transferConfig import transferConfig
         transferConfig.transfer(config, preconfig)  #перенести часть предыдущих параметров в новую версию конфига
-    elif "EDITION" in preconfig and preconfig['EDITION'] =='2022-11-22':
+    elif "EDITION" in preconfig and preconfig['EDITION'] =='2023-03-08':
         '''если версия та же, использовать конфиг с raspberry'''
         config=preconfig
     '''Сохранение config:'''
