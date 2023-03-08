@@ -14,7 +14,7 @@
                 {% if parameters[parameter].label %}
                 <p>
                 {{ parameters[parameter].label }}
-                <input type="number" value={{ parameters[parameter].value }} name={{ parameter }}
+                <input type="number" step="any" value={{ parameters[parameter].value }} name={{ parameter }}
                        {% if parameters[parameter].title %}
                             title={{ parameters[parameter].title }}
                        {% endif %}
