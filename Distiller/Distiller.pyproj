@@ -102,6 +102,7 @@
     <Content Include="Distiller\templates\ABORT_NEXT.html" />
     <Content Include="Distiller\templates\dialGauge.html" />
     <Content Include="Distiller\templates\END.html" />
+    <Content Include="Distiller\templates\parameters.html" />
     <Content Include="Distiller\templates\WAIT.html" />
     <Content Include="Distiller\templates\WAITAL.html" />
     <Content Include="requirements.txt" />

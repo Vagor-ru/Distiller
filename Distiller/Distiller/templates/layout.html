@@ -99,7 +99,11 @@
             <div id="Buttons">
                 <!--Панель с кнопками режимов работы-->
                 <div id="ModeButtons" class="engrav"></div>
-                <button id="Parameters" class="knopka">Параметры</button>
+                <!--button id="Parameters" class="knopka">Параметры</button-->
+                <a href="/parameters" id="Parameters" class="knopka">Параметры</a>
+                {% for msg in get_flashed_messages() %}
+                <div class="flash">{{msg}}</div>
+                {% endfor %}
             </div>
         </div>
 

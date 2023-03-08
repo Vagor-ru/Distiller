@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>{{ title }}</title>
+    <link href="../static/content/dashboard.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="page">
+        <h1>{{ parameters.name }}</h1>
+        <form action="" method="post" name="{{ parameters.name }}">
+            {% for parameter in parameters %}
+                {% if parameters[parameter].label %}
+                <p>
+                {{ parameters[parameter].label }}
+                <input type="number" value={{ parameters[parameter].value }} name={{ parameter }}
+                       {% if parameters[parameter].title %}
+                            title={{ parameters[parameter].title }}
+                       {% endif %}
+                       {% if parameters[parameter].min %}
+                            min={{ parameters[parameter].min }}
+                       {% endif %}
+                       {% if parameters[parameter].max %}
+                            max={{ parameters[parameter].max }}
+                       {% endif %}
+                />
+                </p>
+                {% endif %}
+            {% endfor %}
+            <a href="/" class="knopka">Отмена</a>
+            <input class="knopka" type="submit" value="Сохранить" />
+        </form>
+    </div>
+</body>
+
+</html>
