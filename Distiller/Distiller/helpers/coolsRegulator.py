@@ -10,7 +10,7 @@ By C-Bell (VAGor).
 import time
 import threading
 from Distiller import config
-from Distiller import condensator, dephlegmator
+from Distiller import condensator
 from Distiller import thermometers
 
 
@@ -72,7 +72,7 @@ class CoolsRegulator(threading.Thread):
                 #        dephlegmator.On()
                 #    else:
                 #        dephlegmator.Off()
-        dephlegmator.Off()
+        #dephlegmator.Off()
         condensator.Off()
         return
 

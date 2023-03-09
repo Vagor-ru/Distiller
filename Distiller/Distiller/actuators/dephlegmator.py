@@ -1,5 +1,5 @@
 import time, threading  #Модули для работы со временем и потоками
-from Distiller import app, config
+from Distiller import app, config, dephlegmator
 from Distiller.helpers.bresenham import Bresenham
 from Distiller.actuators.cools import Dephlegmator
 
@@ -10,7 +10,8 @@ class DephRun(threading.Thread):
         """Конструктор дефлегматора"""
         super(DephRun, self).__init__()
         self.Bresenham = Bresenham()
-        self.Dephlegmator = Dephlegmator()
+        #self.Dephlegmator = Dephlegmator()
+        dephlegmator.Off()
         self.__value = 0
         self.value = value
         self._Run = False
@@ -20,13 +21,16 @@ class DephRun(threading.Thread):
         self._Run = True
         while self._Run:
             #print('Сейчас Bresenham будет расчитан.')
-            self.Dephlegmator.State = self.Bresenham(self.value)
+            if self.Bresenham(self.value):
+                dephlegmator.On()
+            else:
+                dephlegmator.Off()
             #if self.Dephlegmator.State:
             #    print("1")
             #else:
             #    print("0")
             time.sleep(1)
-        self.Dephlegmator.State = False
+        dephlegmator.Off()
 
     @property
     def value(self):
