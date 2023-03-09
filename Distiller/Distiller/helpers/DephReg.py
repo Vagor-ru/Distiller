@@ -20,9 +20,12 @@ class DephReg(threading.Thread):
         self.Deph = DephRun()   #Bresenham-регулятор дефлегматора
         self.Deph.value=0   #отключить охлаждение дефлегматора
 
+
     def run(self):
         """Запуск цикла регулирования температуры верха колонны"""
         self._Run = True
+        # запустить регулятор дефлегматора
+        self.Deph.start()
         while self._Run:
             '''цикл регулирования'''
             thermometers.Tmeasured.wait()   #ожидать следующего измерения температуры
@@ -31,9 +34,11 @@ class DephReg(threading.Thread):
                               config['PARAMETERS']['Kid']['value'],\
                               config['PARAMETERS']['Kdd']['value'])
             self.pidD.setpoint = thermometers.getTtrigger('Верх')
-            print(thermometers.getValue('Верх'), '->', thermometers.getTtrigger('Верх'))
+            #print(thermometers.getValue('Верх'), '->', thermometers.getTtrigger('Верх'))
             #рассчитать и установить охлаждение
-            self.Deph.value = self.pidD(thermometers.getValue('Верх'))
+            PID_D = self.pidD(thermometers.getValue('Верх'))
+            #print('Дефлегматор=', PID_D)
+            self.Deph.value = PID_D
         self.Deph.value=0   #отключить охлаждение дефлегматора
         self.Deph.stop()
 
