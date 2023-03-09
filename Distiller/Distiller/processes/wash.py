@@ -161,9 +161,6 @@ class Wash(threading.Thread):
         """Стабилизация колонны"""
         duration = 60   #Продолжительность этапа стабилизации (сек)
         tBgn=time.time()        #фиксация времени начала этапа
-        self.pidD.setpoint = config['PARAMETERS']['T_Head']['value']   #установить целевую температуру верха колонны (якобы отбор голов)
-        self.pidD.reset()   #сбросить PID
-        self.pidD(thermometers.getValue('Верх'))    #сделать первое вычисление PID
         while (time.time()-tBgn) < duration:
             #установить мощность, соответствующую температуре низа колонны
             power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
@@ -182,6 +179,8 @@ class Wash(threading.Thread):
                 break
             #Заново подгрузить коэффициенты PID-регулятора дефлегматора (вдруг изменились)
             thermometers.setTtrigger('Верх',config['PARAMETERS']['Tdephlock']['value'])
+            # Отдохнуть секундочку
+            time.sleep(1)
 
         """ Отбор тела"""
         self.pageUpdate('Бражка: перегон<br><br>%s'%(self.Duration()), 'ABORT.html')
@@ -215,6 +214,7 @@ class Wash(threading.Thread):
 
         """Охлаждение холодильников"""
         self.pageUpdate('Охлаждение колонны<br><br>%s'%(self.Duration()), 'ABORT.html')
+        power.value = 0 #отключить нагрев
         #установить порог срабатывания клапана конденсатора 15°C
         thermometers.setTtrigger('Конденсатор',15)
         #установить целевую температуру верха колонны
@@ -229,7 +229,6 @@ class Wash(threading.Thread):
             self.pageUpdate('Охлаждение колонны<br><br>%s'%(self.Duration()))
             # Отдохнуть секундочку
             time.sleep(1)
-        self.Deph.value=0  #отключить дефлегматор
         #установить нормальный порог срабатывания клапана конденсатора
         thermometers.setTtrigger('Конденсатор', config['PARAMETERS']['Tcond']['value'])
         #установить целевую температуру затворения дефлегматора
