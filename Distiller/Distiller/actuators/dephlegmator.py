@@ -25,10 +25,6 @@ class DephRun(threading.Thread):
                 dephlegmator.On()
             else:
                 dephlegmator.Off()
-            #if self.Dephlegmator.State:
-            #    print("1")
-            #else:
-            #    print("0")
             time.sleep(1)
         dephlegmator.Off()
 
