@@ -97,11 +97,18 @@ from Distiller.actuators.cools import Condensator, Dephlegmator
 dephlegmator=Dephlegmator()
 condensator=Condensator()
 
-#запуск потока регулирования охладителей
+#запуск потока регулирования конденсатора
 from Distiller.helpers.coolsRegulator import CoolsRegulator
 coolsRegulator=CoolsRegulator()
 coolsRegulator.name='coolsRegulator'
 coolsRegulator.start()
+
+#запуск потока PID-регулятора температуры верха колонны
+thermometers.setTtrigger('Верх', config['PARAMETERS']['Tdephlock']['value'])
+from Distiller.helpers.DephReg import DephReg
+deph_Reg = DephReg()
+deph_Reg.name = 'deph_Reg'
+deph_Reg.start()
 
 #Запуск потока, отправляющего значения приборов клиенту
 from Distiller.helpers.transmitter import SendGaugesValues

@@ -25,15 +25,6 @@ class Wash(threading.Thread):
     def __init__(self):
         #threading.Thread.__init__(self)
         super(Wash, self).__init__()
-        """Загрузка в PID-регулятор коэффициентов и уставки из конфига"""
-        self.pidD = PID(config['PARAMETERS']['Kpd']['value'],\
-           config['PARAMETERS']['Kid']['value'],\
-          config['PARAMETERS']['Kdd']['value'],\
-         setpoint=config['PARAMETERS']['T_Head']['value'])
-        """Установить пределы выхода PID-регулятора"""
-        self.pidD.output_limits = (0, 100)
-        self.Deph = DephRun()
-        self.Deph.value=0   #отключить охлаждение дефлегматора
         self._Begin=time.time()
 
     def Duration(self):
@@ -50,19 +41,16 @@ class Wash(threading.Thread):
         self.Buttons = app.config['Buttons']
         # Фиксация момента запуска процесса
         self._Begin=time.time()
-        #Запуск регулятора охладителя дефлегматора
-        self.Deph.start()
         # Вывести сообщение на дисплей и прикрутить кнопку "Останов"
         self.pageUpdate('Заполнение холодильников<br>'+self.Duration(),
                         'ABORT.html')
 
         #Заполнение холодильников
         tBgn=time.time()        #фиксация времени начала заполнения
-        #thermometers.setTtrigger('Дефлегматор',15)
-        #Включить дефлегматор на полную
-        self.Deph.value = 100
         #установить порог срабатывания клапана конденсатора 15°C
         thermometers.setTtrigger('Конденсатор',15)
+        #установить температуру удержания верха колонны
+        thermometers.setTtrigger('Верх', 15)
         while (time.time()-tBgn) < config['PARAMETERS']['tFillCoolers']['value']:
             '''цикл заполнения холодильников'''
             # При получении команды прервать процесс
@@ -74,11 +62,9 @@ class Wash(threading.Thread):
                 break
             # Отдохнуть секундочку
             time.sleep(1)
-        #thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['Tdeph_H2O']['value'])
-        #отключить охлаждение дефлегматора
-        self.Deph.value = 0
         #установить порог срабатывания клапана конденсатора из конфига
         thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
+        thermometers.setTtrigger('Верх',config['PARAMETERS']['Tdephlock']['value'])
 
         """Ожидание закипания"""
         #Мощность нагрева=100%
@@ -195,17 +181,12 @@ class Wash(threading.Thread):
                 app.config['AB_CON']=''
                 break
             #Заново подгрузить коэффициенты PID-регулятора дефлегматора (вдруг изменились)
-            self.pidD.tunings = (config['PARAMETERS']['Kpd']['value'],\
-                              config['PARAMETERS']['Kid']['value'],\
-                              config['PARAMETERS']['Kdd']['value'])
-            self.pidD.setpoint = config['PARAMETERS']['T_Head']['value']
-            #рассчитать и установить охлаждение дефлегматора
-            self.Deph.value = self.pidD(thermometers.getValue('Верх'))
-            thermometers.Tmeasured.wait()   #ожидать следующего измерения температуры
+            thermometers.setTtrigger('Верх',config['PARAMETERS']['Tdephlock']['value'])
 
         """ Отбор тела"""
         self.pageUpdate('Бражка: перегон<br><br>%s'%(self.Duration()), 'ABORT.html')
-        self.pidD.setpoint = config['PARAMETERS']['T_Body']['value']   #установить целевую температуру верха колонны на отбор тела
+        #установить целевую температуру верха колонны на отбор тела
+        thermometers.setTtrigger('Верх', config['PARAMETERS']['T_Body']['value'])
         while True:
             #нажата кнопка Останов
             if app.config['AB_CON']=='Abort':
@@ -213,14 +194,7 @@ class Wash(threading.Thread):
                 return
             # Освежить дисплей
             self.pageUpdate('Бражка: перегон<br><br>%s'%(self.Duration()))
-            # Регулировать дефлегматор и нагрев
-            #Заново подгрузить коэффициенты (вдруг изменились)
-            self.pidD.tunings = (config['PARAMETERS']['Kpd']['value'],\
-                              config['PARAMETERS']['Kid']['value'],\
-                              config['PARAMETERS']['Kdd']['value'])
-            self.pidD.setpoint = config['PARAMETERS']['T_Body']['value']
-            #рассчитать и установить охлаждение
-            self.Deph.value = self.pidD(thermometers.getValue('Верх'))
+            # Регулировать нагрев
             '''Мощность устанавливается предзахлёбная, рассчитывается по формуле:
             P=Pводы-Kp*(Tкип_воды-Tниз), где
             Pводы       -предзахлёбная мощность при кипении воды в кубе
@@ -241,11 +215,12 @@ class Wash(threading.Thread):
 
         """Охлаждение холодильников"""
         self.pageUpdate('Охлаждение колонны<br><br>%s'%(self.Duration()), 'ABORT.html')
-        self.Deph.value=100  #включить дефлегматор
         #установить порог срабатывания клапана конденсатора 15°C
         thermometers.setTtrigger('Конденсатор',15)
+        #установить целевую температуру верха колонны
+        thermometers.setTtrigger('Верх',15)
         tBgn=time.time()        #фиксация времени начала этапа
-        while (time.time()-tBgn) < 15:
+        while (time.time()-tBgn) < 60:
             #нажата кнопка Останов
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -257,6 +232,8 @@ class Wash(threading.Thread):
         self.Deph.value=0  #отключить дефлегматор
         #установить нормальный порог срабатывания клапана конденсатора
         thermometers.setTtrigger('Конденсатор', config['PARAMETERS']['Tcond']['value'])
+        #установить целевую температуру затворения дефлегматора
+        thermometers.setTtrigger('Верх', config['PARAMETERS']['Tdephlock']['value'])
 
         # Остановить всё
         self.stop()
@@ -265,8 +242,6 @@ class Wash(threading.Thread):
         return
 
     def stop(self):
-        self.Deph.value = 0
-        self.Deph.stop()    # останов охлаждения дефлегматора
         power.value = 0 #отключаем нагрев
         condensator.Off()   #отключаем клапан конденсатора
         dephlegmator.Off()  #отключаем клапан дефлегматора
