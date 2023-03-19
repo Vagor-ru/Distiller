@@ -11,6 +11,7 @@ Copyright (c) C-Bell (VAGor). All rights reserved.
 import os
 import threading
 import logging
+import pathlib
 from datetime import datetime, time
 from time import strftime, localtime
 #from Distiller import ds18B20toDB
@@ -32,7 +33,9 @@ class Logging(threading.Thread):
         self.logger = logging.getLogger(name)   # объект логирования
         self.logger.setLevel(logging.INFO)      # уровень логирования
         # Писать будем в файл, при каждом запуске логгера создаём новый
-        handler = logging.FileHandler(f"logs\{name}{strftime('%y%m%d%H%M%S', localtime())}.log", mode='w')
+        # имя файла с директорией логов
+        f_log = pathlib.Path('logs', f"{name}{strftime('%y%m%d%H%M%S', localtime())}.log")
+        handler = logging.FileHandler(f_log, mode='w')
         formatter = logging.Formatter("%(message)s")
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
