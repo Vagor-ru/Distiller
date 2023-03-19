@@ -14,6 +14,7 @@ from Distiller import app, dbLock,config
 from Distiller import power, condensator, dephlegmator, coolsRegulator, thermometers
 from Distiller.helpers.transmitter import Transmit
 from Distiller.actuators.dephlegmator import DephRun
+from Distiller.helpers.log import Logging
 
 class Wash(threading.Thread):
     u'''Класс, реализующий алгоритм перегонки бражки'''
@@ -26,6 +27,7 @@ class Wash(threading.Thread):
         #threading.Thread.__init__(self)
         super(Wash, self).__init__()
         self._Begin=time.time()
+        self.log = Logging('Wash')
 
     def Duration(self):
         sec=int(time.time()-self._Begin)
@@ -44,6 +46,7 @@ class Wash(threading.Thread):
         # Вывести сообщение на дисплей и прикрутить кнопку "Останов"
         self.pageUpdate('Заполнение холодильников<br>'+self.Duration(),
                         'ABORT.html')
+        self.log.start()
 
         #Заполнение холодильников
         tBgn=time.time()        #фиксация времени начала заполнения
@@ -155,7 +158,10 @@ class Wash(threading.Thread):
                 app.config['AB_CON']=''
                 break
             if thermometers.boiling.wait(1) and thermometers.getObjT('Верх').boiling:
+                thermometers.values
                 break    #поймали закипание на верхнем термометре
+            if thermometers.getValue('Верх') > thermometers.getTtrigger('Верх'):
+                break    #выше не нужно
         power.value=0   #отключить нагрев
 
         """Стабилизация колонны"""
@@ -178,7 +184,7 @@ class Wash(threading.Thread):
                 app.config['AB_CON']=''
                 break
             #Заново подгрузить коэффициенты PID-регулятора дефлегматора (вдруг изменились)
-            thermometers.setTtrigger('Верх',config['PARAMETERS']['Tdephlock']['value'])
+            thermometers.setTtrigger('Верх',config['PARAMETERS']['T_Head']['value'])
             # Отдохнуть секундочку
             time.sleep(1)
 
@@ -186,6 +192,7 @@ class Wash(threading.Thread):
         self.pageUpdate('Бражка: перегон<br><br>%s'%(self.Duration()), 'ABORT.html')
         #установить целевую температуру верха колонны на отбор тела
         thermometers.setTtrigger('Верх', config['PARAMETERS']['T_Body']['value'])
+        count_end = 0
         while True:
             #нажата кнопка Останов
             if app.config['AB_CON']=='Abort':
@@ -207,7 +214,12 @@ class Wash(threading.Thread):
             #Новый критерий завершения перегона
             if (thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
                 (thermometers.getValue('Низ')-thermometers.getValue('Середина'))>2:
-                break
+                count_end += 1
+                if count_end > 15:
+                    break
+            else:
+                """сброс числа обнаружения критериев"""
+                count_end = 0
             #завершение перегона по температуре низа колонны
             if thermometers.getValue('Низ')+1.0>config['PARAMETERS']['T_H2O']['value']:
                 break
@@ -244,6 +256,7 @@ class Wash(threading.Thread):
         power.value = 0 #отключаем нагрев
         condensator.Off()   #отключаем клапан конденсатора
         dephlegmator.Off()  #отключаем клапан дефлегматора
+        self.log.stop()     #остановить лог
 
     def abort(self):
         self.stop()
