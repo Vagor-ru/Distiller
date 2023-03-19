@@ -580,6 +580,7 @@ class Thermometer extends EventTarget {
             this.inputTrigger = document.createElement("input");
             this.inputTrigger.style.cssText = cssInput;
             this.inputTrigger.type = "number";
+            this.inputTrigger.step = "0.1";
             divTrigger.appendChild(this.inputTrigger);
             this.inputTrigger.value = this.Attributes.triggerValue;
             this.inputTrigger.insertAdjacentText("afterend", this.Attributes.units);
