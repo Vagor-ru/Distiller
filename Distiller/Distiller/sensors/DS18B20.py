@@ -76,7 +76,7 @@ class T(threading.Thread):
         self._T = self.read_temp_raw(self._device_folder)
     @property
     def T(self):
-        u"""Возвращает текущее значение температуры"""
+        u'''Возвращает текущее значение температуры'''
         return self._T
     @property
     def name(self):
@@ -182,11 +182,11 @@ class Thermometers(threading.Thread):
     ''' Класс-поток, измеряет температуры и устанавливает флаг
         готовности температурных данных, флаг закипания,
         флаг срабатывания порога'''
-    # Событие "Получены новые данные о температурах"
+    '''Событие "Получены новые данные о температурах'''
     Tmeasured=threading.Event()
-    #Событие закипание
+    """Событие закипание"""
     boiling=threading.Event()
-    #Событие превышения порога
+    """Событие превышения порога"""
     trigger=threading.Event()
     #флаг необходимости автоопределения мест установки термометров
     needAutoLocation=False
@@ -297,6 +297,7 @@ class Thermometers(threading.Thread):
 
     @property
     def values(self):
+        '''Возвращает список объектов - термометров'''
         return self.Tlist
 
     @property

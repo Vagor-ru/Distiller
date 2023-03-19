@@ -13,6 +13,7 @@ from flask import render_template
 from Distiller import app, coolsRegulator,power,thermometers,config
 from Distiller.helpers.transmitter import Transmit
 from Distiller.helpers.coolsRegulator import CoolsRegulator
+from Distiller.helpers.log import Logging
 
 
 class ManualMode(threading.Thread):
@@ -26,6 +27,7 @@ class ManualMode(threading.Thread):
         #threading.Thread.__init__(self)
         super(ManualMode, self).__init__()
         self._Run=False
+        self.log = Logging('Manual')
 
     def run(self):
         # Сброс переменной прерывания/перехода процесса
@@ -34,6 +36,7 @@ class ManualMode(threading.Thread):
         #Сохранение состояния веб-интерфейса
         self.Display = app.config['Display']
         self.Buttons = app.config['Buttons']
+        self.log.start()
         # Вывести сообщение на дисплей и прикрутить кнопку "Останов"
         self.pageUpdate('Ручной режим<br>',
                         'ABORT.html')
@@ -45,6 +48,7 @@ class ManualMode(threading.Thread):
             time.sleep(0.5) #не частить
 
         power.value=0
+        self.log.stop()
         thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
         thermometers.setTtrigger('Верх',config['PARAMETERS']['Tdephlock']['value'])
         self._Run=False

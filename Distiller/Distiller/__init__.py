@@ -10,6 +10,10 @@ from flask_socketio import SocketIO
 
 from Distiller.config import Config
 
+# Создание папки для логов
+if not os.path.isdir('logs'):
+    os.mkdir('logs')
+
 # Объект для блокировки потоков при доступе к совместным ресурсам
 dbLock = threading.Lock()
 
