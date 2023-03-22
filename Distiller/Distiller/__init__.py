@@ -102,13 +102,20 @@ dephlegmator=Dephlegmator()
 condensator=Condensator()
 
 #запуск потока регулирования конденсатора
-from Distiller.helpers.coolsRegulator import CoolsRegulator
-coolsRegulator=CoolsRegulator()
-coolsRegulator.name='coolsRegulator'
-coolsRegulator.start()
+#from Distiller.helpers.coolsRegulator import CoolsRegulator
+#coolsRegulator=CoolsRegulator()
+#coolsRegulator.name='coolsRegulator'
+#coolsRegulator.start()
 
-#запуск потока PID-регулятора температуры верха колонны
-thermometers.setTtrigger('Верх', config['PARAMETERS']['Tdephlock']['value'])
+#запуск потока PID-регулятора температуры конденсатора
+thermometers.setTtrigger('Конденсатор', config['PARAMETERS']['Tcond']['value'])
+from Distiller.helpers.condReg import CondReg
+cond_Reg = CondReg()
+cond_Reg.name = 'cond_Reg'
+cond_Reg.start()
+
+#запуск потока PID-регулятора температуры дефлегматора
+thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['Tdephlock']['value'])
 from Distiller.helpers.DephReg import DephReg
 deph_Reg = DephReg()
 deph_Reg.name = 'deph_Reg'

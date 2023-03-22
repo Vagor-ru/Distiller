@@ -1,31 +1,31 @@
 import time, threading  #Модули для работы со временем и потоками
-from Distiller import dephlegmator
+from Distiller import condensator
 from Distiller.helpers.bresenham import Bresenham
 
-class DephRun(threading.Thread):
-    """Класс-поток регулирования интенсивности охлаждения дефлегматора с использованием алгоритма Брезенхема"""
+class CondRun(threading.Thread):
+    """Класс-поток регулирования интенсивности охлаждения конденсатора
+   с использованием алгоритма Брезенхема"""
 
     def __init__(self, value=0):
-        """Конструктор дефлегматора"""
-        super(DephRun, self).__init__()
+        """Конструктор регулятора конденсатора"""
+        super(CondRun, self).__init__()
         self.Bresenham = Bresenham()
-        #self.Dephlegmator = Dephlegmator()
-        dephlegmator.Off()
+        condensator.Off()
         self.__value = 0
         self.value = value
         self._Run = False
 
     def run(self):
-        """Запуск цикла регулирования охлаждения дефлегматора"""
+        """Запуск цикла регулирования охлаждения конденсатора"""
         self._Run = True
         while self._Run:
             #print('Сейчас Bresenham будет расчитан.')
             if self.Bresenham(self.value):
-                dephlegmator.On()
+                condensator.On()
             else:
-                dephlegmator.Off()
+                condensator.Off()
             time.sleep(0.1)
-        dephlegmator.Off()
+        condensator.Off()
 
     @property
     def value(self):
@@ -43,5 +43,6 @@ class DephRun(threading.Thread):
     def stop(self):
         self.value = 0
         self._Run = False
+
 
 
