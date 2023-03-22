@@ -4,7 +4,7 @@ from Distiller import config, thermometers
 from Distiller.actuators.dephlegmator import DephRun
 
 class DephReg(threading.Thread):
-    u"""Класс-поток PID-регулирования температуры верха колонны"""
+    u"""Класс-поток PID-регулирования температуры дефлегматора"""
 
     def __init__(self):
         #пуск родительской инициализации
@@ -14,7 +14,7 @@ class DephReg(threading.Thread):
            config['PARAMETERS']['Kid']['value'],\
           config['PARAMETERS']['Kdd']['value'],\
          setpoint=config['PARAMETERS']['Tdephlock']['value'])
-        thermometers.setTtrigger('Верх', self.pidD.setpoint)
+        thermometers.setTtrigger('Дефлегматор', self.pidD.setpoint)
         """Установить пределы выхода PID-регулятора"""
         self.pidD.output_limits = (0, 100)
         self.Deph = DephRun()   #Bresenham-регулятор дефлегматора
@@ -22,7 +22,7 @@ class DephReg(threading.Thread):
 
 
     def run(self):
-        """Запуск цикла регулирования температуры верха колонны"""
+        """Запуск цикла регулирования температуры дефлегматора"""
         self._Run = True
         # запустить регулятор дефлегматора
         self.Deph.start()
@@ -33,10 +33,10 @@ class DephReg(threading.Thread):
             self.pidD.tunings = (config['PARAMETERS']['Kpd']['value'],\
                               config['PARAMETERS']['Kid']['value'],\
                               config['PARAMETERS']['Kdd']['value'])
-            self.pidD.setpoint = thermometers.getTtrigger('Верх')
-            #print(thermometers.getValue('Верх'), '->', thermometers.getTtrigger('Верх'))
+            self.pidD.setpoint = thermometers.getTtrigger('Дефлегматор')
+            #print(thermometers.getValue('Дефлегматор'), '->', thermometers.getTtrigger('Дефлегматор'))
             #рассчитать и установить охлаждение
-            PID_D = self.pidD(thermometers.getValue('Верх'))
+            PID_D = self.pidD(thermometers.getValue('Дефлегматор'))
             #print('Дефлегматор=', PID_D)
             self.Deph.value = PID_D
         self.Deph.value=0   #отключить охлаждение дефлегматора

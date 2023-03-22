@@ -52,8 +52,8 @@ class Wash(threading.Thread):
         tBgn=time.time()        #фиксация времени начала заполнения
         #установить порог срабатывания клапана конденсатора 15°C
         thermometers.setTtrigger('Конденсатор',15)
-        #установить температуру удержания верха колонны
-        thermometers.setTtrigger('Верх', 15)
+        #установить температуру удержания Дефлегматора
+        thermometers.setTtrigger('Дефлегматор', 15)
         while (time.time()-tBgn) < config['PARAMETERS']['tFillCoolers']['value']:
             '''цикл заполнения холодильников'''
             # При получении команды прервать процесс
@@ -67,7 +67,7 @@ class Wash(threading.Thread):
             time.sleep(1)
         #установить порог срабатывания клапана конденсатора из конфига
         thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
-        thermometers.setTtrigger('Верх',config['PARAMETERS']['Tdephlock']['value'])
+        thermometers.setTtrigger('Дефлегматор',config['PARAMETERS']['Tdephlock']['value'])
 
         """Ожидание закипания"""
         #Мощность нагрева=100%
@@ -184,14 +184,14 @@ class Wash(threading.Thread):
                 app.config['AB_CON']=''
                 break
             #Заново подгрузить коэффициенты PID-регулятора дефлегматора (вдруг изменились)
-            thermometers.setTtrigger('Верх',config['PARAMETERS']['T_Head']['value'])
+            thermometers.setTtrigger('Дефлегматор',config['PARAMETERS']['T_Head']['value'])
             # Отдохнуть секундочку
             time.sleep(1)
 
         """ Отбор тела"""
         self.pageUpdate('Бражка: перегон<br><br>%s'%(self.Duration()), 'ABORT.html')
-        #установить целевую температуру верха колонны на отбор тела
-        thermometers.setTtrigger('Верх', config['PARAMETERS']['T_Body']['value'])
+        #установить целевую температуру дефлегматора на отбор тела
+        thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['T_Body']['value'])
         count_end = 0
         while True:
             #нажата кнопка Останов
@@ -229,8 +229,8 @@ class Wash(threading.Thread):
         power.value = 0 #отключить нагрев
         #установить порог срабатывания клапана конденсатора 15°C
         thermometers.setTtrigger('Конденсатор',15)
-        #установить целевую температуру верха колонны
-        thermometers.setTtrigger('Верх',15)
+        #установить целевую температуру дефлегматора
+        thermometers.setTtrigger('Дефлегматор',15)
         tBgn=time.time()        #фиксация времени начала этапа
         while (time.time()-tBgn) < 60:
             #нажата кнопка Останов
@@ -244,7 +244,7 @@ class Wash(threading.Thread):
         #установить нормальный порог срабатывания клапана конденсатора
         thermometers.setTtrigger('Конденсатор', config['PARAMETERS']['Tcond']['value'])
         #установить целевую температуру затворения дефлегматора
-        thermometers.setTtrigger('Верх', config['PARAMETERS']['Tdephlock']['value'])
+        thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['Tdephlock']['value'])
 
         # Остановить всё
         self.stop()

@@ -215,7 +215,7 @@ class Thermometers(threading.Thread):
                     objT.Name=config['LOCATIONS']["locations"][T[0]]
                     if objT.Name=='Конденсатор':
                         objT.Ttrigger=config['PARAMETERS']['Tcond']['value']
-                    if objT.Name=='Верх':
+                    if objT.Name=='Дефлегматор':
                         objT.Ttrigger=config['PARAMETERS']['Tdephlock']['value']
                 else:
                     self.needAutoLocation=True

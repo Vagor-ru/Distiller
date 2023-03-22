@@ -28,6 +28,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Distiller\actuators\condensator.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Distiller\actuators\cools.py" />
     <Compile Include="Distiller\actuators\dephlegmator.py">
       <SubType>Code</SubType>
@@ -40,6 +43,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Distiller\helpers\bresenham.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Distiller\helpers\condReg.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Distiller\helpers\coolsRegulator.py" />
