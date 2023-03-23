@@ -1,6 +1,6 @@
 import threading
 from simple_pid import PID
-from Distiller import config, thermometers, cond_Reg
+from Distiller import config, thermometers, dbLock
 #from Distiller.actuators.condensator import CondRun
 
 class StabTop(threading.Thread):
@@ -32,8 +32,10 @@ class StabTop(threading.Thread):
                               config['PARAMETERS']['Kit']['value'],\
                               config['PARAMETERS']['Kdt']['value'])
             self.pidT.setpoint = self.value
+            dbLock.acquire()    # захватить единоличный доступ
             #рассчитать и установить необходимую для стабилизации температуру дефлегматора
-            thermometers.setTtrigger('Верх', self.pidT(thermometers.getValue('Верх')))
+            thermometers.setTtrigger('Дефлегматор', self.pidT(thermometers.getValue('Верх')))
+            dbLock.release()    # освободить доступ
 
     def stop(self):
         """Останов регулирования"""
