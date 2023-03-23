@@ -33,7 +33,7 @@ class StabTop(threading.Thread):
                               config['PARAMETERS']['Kdt']['value'])
             self.pidT.setpoint = self.value
             #рассчитать и установить необходимую для стабилизации температуру дефлегматора
-            thermometers.setTtrigger('Верх', self.pidT(thermometers.getValue('Верх'))
+            thermometers.setTtrigger('Верх', self.pidT(thermometers.getValue('Верх')))
 
     def stop(self):
         """Останов регулирования"""
