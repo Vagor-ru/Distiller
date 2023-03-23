@@ -10,9 +10,8 @@ C-Bell (VAGor).
 import threading
 import time
 from flask import render_template
-from Distiller import app, coolsRegulator,power,thermometers,config
+from Distiller import app, power,thermometers,config
 from Distiller.helpers.transmitter import Transmit
-from Distiller.helpers.coolsRegulator import CoolsRegulator
 from Distiller.helpers.log import Logging
 
 
