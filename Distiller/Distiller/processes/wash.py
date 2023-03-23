@@ -11,7 +11,7 @@ import threading
 from flask import render_template
 from simple_pid import PID
 from Distiller import app, dbLock,config
-from Distiller import power, condensator, dephlegmator, coolsRegulator, thermometers
+from Distiller import power, condensator, dephlegmator, thermometers
 from Distiller.helpers.transmitter import Transmit
 from Distiller.actuators.dephlegmator import DephRun
 from Distiller.helpers.log import Logging
