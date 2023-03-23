@@ -1,4 +1,3 @@
-
 import threading
 from simple_pid import PID
 from Distiller import config, thermometers
