@@ -234,16 +234,16 @@ class Wash(threading.Thread):
         """Охлаждение холодильников"""
         self.pageUpdate('Охлаждение колонны<br><br>%s'%(self.Duration()), 'ABORT.html')
         power.value = 0 #отключить нагрев
-        #установить порог срабатывания клапана конденсатора 15°C
-        thermometers.setTtrigger('Конденсатор',15)
-        #установить целевую температуру дефлегматора
-        thermometers.setTtrigger('Дефлегматор',15)
         tBgn=time.time()        #фиксация времени начала этапа
         while (time.time()-tBgn) < 60:
             #нажата кнопка Останов
             if app.config['AB_CON']=='Abort':
                 self.abort()
                 return
+            #установить порог срабатывания клапана конденсатора 15°C
+            thermometers.setTtrigger('Конденсатор',15)
+            #установить целевую температуру дефлегматора
+            thermometers.setTtrigger('Дефлегматор',15)
             # Освежить дисплей
             self.pageUpdate('Охлаждение колонны<br><br>%s'%(self.Duration()))
             # Отдохнуть секундочку
