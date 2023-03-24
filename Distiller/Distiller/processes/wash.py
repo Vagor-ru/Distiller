@@ -229,7 +229,7 @@ class Wash(threading.Thread):
             #завершение перегона по температуре низа колонны
             if thermometers.getValue('Низ')+1.0>config['PARAMETERS']['T_H2O']['value']:
                 break
-        self.Stab_Top.stop()
+        self.Stab_Top.stop()    # остановить стабилизацию верха колонны
 
         """Охлаждение холодильников"""
         self.pageUpdate('Охлаждение колонны<br><br>%s'%(self.Duration()), 'ABORT.html')
