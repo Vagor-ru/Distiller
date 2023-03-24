@@ -21,6 +21,7 @@ class ManualMode(threading.Thread):
     # Для сохранения состояния дисплея и кнопок
     Display = ''
     Buttons = ''
+    _Run=False
 
     def __init__(self):
         #threading.Thread.__init__(self)

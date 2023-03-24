@@ -217,17 +217,17 @@ class Wash(threading.Thread):
             power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
                 (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             thermometers.Tmeasured.wait()   #ожидать следующего измерения температуры
-            #Новый критерий завершения перегона
-            #if (thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
-            #    (thermometers.getValue('Низ')-thermometers.getValue('Середина'))>2:
-            #    count_end += 1
-            #    if count_end > 15:
-            #        break
-            #else:
-            #    """сброс числа обнаружения критериев"""
-            #    count_end = 0
+            # Новый критерий завершения перегона
+            if (thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
+                (thermometers.getValue('Низ')-thermometers.getValue('Середина')) > 5.7:
+                count_end += 1
+                if count_end > 15:
+                    break
+            else:
+                """сброс числа обнаружения критериев"""
+                count_end = 0
             #завершение перегона по температуре низа колонны
-            if thermometers.getValue('Низ')+0.2>config['PARAMETERS']['T_H2O']['value']:
+            if thermometers.getValue('Низ')+1.0>config['PARAMETERS']['T_H2O']['value']:
                 break
         self.Stab_Top.stop()
 

@@ -6,6 +6,8 @@ from Distiller.actuators.dephlegmator import DephRun
 class DephReg(threading.Thread):
     u"""Класс-поток PID-регулирования температуры дефлегматора"""
 
+    _Run = False
+
     def __init__(self):
         #пуск родительской инициализации
         super(DephReg, self).__init__()

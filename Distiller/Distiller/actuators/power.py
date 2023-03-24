@@ -29,6 +29,7 @@ class Power(threading.Thread):
     '''Класс-поток регулирования мощности нагрева'''
     step=1         #Шаг установки мощности = 1%
     period=50.0    #Длительность преобразования Брезенхема (сек)
+    _Run=False
 
     def __init__(self):
         #threading.Thread.__init__(self)
@@ -37,7 +38,7 @@ class Power(threading.Thread):
         self.Bresenham = Bresenham()
         self._Pa=0
         self._Pmax=voltmeter.value**2/config['PARAMETERS']['rTEH']['value']/1000
-        self._Run=False
+        
 
     @property
     def Pmax(self):

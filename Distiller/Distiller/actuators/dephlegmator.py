@@ -5,6 +5,8 @@ from Distiller.helpers.bresenham import Bresenham
 class DephRun(threading.Thread):
     """Класс-поток регулирования интенсивности охлаждения дефлегматора с использованием алгоритма Брезенхема"""
 
+    _Run = False
+
     def __init__(self, value=0):
         """Конструктор дефлегматора"""
         super(DephRun, self).__init__()
@@ -13,7 +15,7 @@ class DephRun(threading.Thread):
         dephlegmator.Off()
         self.__value = 0
         self.value = value
-        self._Run = False
+        
 
     def run(self):
         """Запуск цикла регулирования охлаждения дефлегматора"""

@@ -6,6 +6,8 @@ from Distiller.actuators.condensator import CondRun
 class CondReg(threading.Thread):
     u"""Класс-поток PID-регулирования температуры конденсатора"""
 
+    _Run = False    # сбросить флаг исполнения
+
     def __init__(self):
         #пуск родительской инициализации
         super(CondReg, self).__init__()
@@ -16,9 +18,10 @@ class CondReg(threading.Thread):
          setpoint=config['PARAMETERS']['Tcond']['value'])
         thermometers.setTtrigger('Конденсатор', self.pidD.setpoint)
         """Установить пределы выхода PID-регулятора"""
-        self.pidD.output_limits = (0, 100)
+        self.pidD.output_limits = (0, 70)
         self.Cond = CondRun()   #Bresenham-регулятор конденсатора
         self.Cond.value=0   #отключить охлаждение конденсатора
+        self._Run = False   # сбросить флаг запуска процесса
 
 
     def run(self):

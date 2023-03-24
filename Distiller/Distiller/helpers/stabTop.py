@@ -6,6 +6,9 @@ from Distiller import config, thermometers, dbLock
 class StabTop(threading.Thread):
     u"""Класс-поток PID-стабилизации температуры верха колонны"""
 
+    # сбросить флаг запуска
+    _Run = False
+
     def __init__(self, Tstab=config['PARAMETERS']['T_Head']['value']):
         '''Инициализация объекта-потока PID-стабилизации температуры верха колонны'''
         # пуск родительской инициализации
@@ -19,8 +22,6 @@ class StabTop(threading.Thread):
         #self.pidT.output_limits = (0, 100)
         # Сохранить уставку
         self.__value = Tstab
-        # сбросить флаг запуска
-        self._Run = False
         #thermometers.setTtrigger('Конденсатор', self.pidD.setpoint)
 
     def run(self):
@@ -36,12 +37,16 @@ class StabTop(threading.Thread):
             self.pidT.setpoint = self.value
             dbLock.acquire()    # захватить единоличный доступ
             #рассчитать и установить необходимую для стабилизации температуру дефлегматора
-            thermometers.setTtrigger('Дефлегматор', self.pidT(thermometers.getValue('Верх')))
+            T = thermometers.getValue('Верх')
+            PID_T = self.pidT(T)
+            #print(f"Tверх={T}, PID_T={PID_T}, Run={self._Run}")
+            thermometers.setTtrigger('Дефлегматор', PID_T)
             dbLock.release()    # освободить доступ
 
     def stop(self):
         """Останов регулирования"""
         self._Run = False
+        #print(f"__Run={self._Run}")
 
     @property
     def value(self):
