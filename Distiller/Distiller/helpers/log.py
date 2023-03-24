@@ -22,6 +22,8 @@ from Distiller import power, condensator, dephlegmator, thermometers
 class Logging(threading.Thread):
     u"""Класс журналирования показаний датчиков, состояний нагрева и клапанов"""
 
+    __Run=False
+
     # событие записи в журнал очередных данных
     ReadyLog=threading.Event()
 

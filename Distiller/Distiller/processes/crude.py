@@ -12,6 +12,7 @@ from flask import render_template
 from Distiller import app, dbLock, config
 from Distiller import power, condensator, dephlegmator, thermometers
 from Distiller.helpers.transmitter import Transmit
+from Distiller.helpers.stabTop import StabTop
 
 
 
@@ -21,6 +22,7 @@ class Crude(threading.Thread):
     # Для сохранения состояния дисплея и кнопок
     Display = ''
     Buttons = ''
+    Stab_Top = StabTop()
 
     def __init__(self):
         #threading.Thread.__init__(self)
@@ -42,7 +44,8 @@ class Crude(threading.Thread):
         # Фиксация момента запуска процесса
         self._Begin=time.time()
 
-        #Заполнение холодильников
+
+        '''Заполнение холодильников'''
         # Вывести сообщение на дисплей и прикрутить кнопку "Останов"
         self.pageUpdate('Заполнение холодильников<br>'+self.Duration(),
                         'ABORT.html')
@@ -52,7 +55,8 @@ class Crude(threading.Thread):
         condensator.Off()
         dephlegmator.Off()
 
-        #Ожидание закипания
+
+        '''Ожидание закипания'''
         #Мощность нагрева=100%
         power.value=250**2/config['PARAMETERS']['rTEH']['value']
         while not thermometers.boiling.wait(1):
@@ -63,7 +67,8 @@ class Crude(threading.Thread):
                 self.abort()
                 return
 
-        #прогрев колонны
+
+        '''прогрев колонны'''
         tBgn=time.time()
         duration=10
         # Новый набор кнопок
@@ -85,47 +90,15 @@ class Crude(threading.Thread):
             time.sleep(1)
 
 
-        ## Выход низа на температурную полку
-        #tBgn=time.time()        #фиксация времени начала ожидания
-        #tBott=120    #длительность ожидания в сек
-        ## Новый набор кнопок
-        #self.pageUpdate(None, 'ABORT_NEXT.html')
-        ##подать максимальную мощность
-        #power.value=250**2/config['PARAMETERS']['rTEH']['value']
-        ##сравнение температур каждые 20 секунд
-        #countSec=20
-        #Tbott=thermometers.getValue('Низ')
-        ## выдержка tBott секунд после закипания
-        #while (time.time()-tBgn)<tBott:
-        #    # Вывести на дисплей состояние
-        #    sec=int(tBott-int(time.time()-tBgn))
-        #    sec_str=u'{:02}:{:02}'\
-        #       .format((sec//60)%60, sec%60)
-        #    self.pageUpdate('2-й перегон стабилизация Tниз<br>%s<br>%s'%
-        #                    (sec_str,self.Duration()))
-        #    # При получении команды прервать процесс
-        #    if app.config['AB_CON']=='Abort':
-        #        self.abort()
-        #        return
-        #    elif app.config['AB_CON']=='Next':
-        #        app.config['AB_CON']=''
-        #        break
-        #    countSec-=1    #уменьшить счетчик секунд
-        #    if(countSec==0):
-        #        countSec=20
-        #        #если температура меняется не сильно, значит температурная полка достигнута
-        #        if (thermometers.getValue('Низ')-Tbott<0.5):
-        #            break
-        #        else:
-        #            Tbott=thermometers.getValue('Низ')
-        #    # Отдохнуть секундочку
-        #    time.sleep(1)
-
-        # Отбор голов
+        '''Отбор голов'''
+        # установить температуру стабилизации верха колонны
+        self.Stab_Top.value = config['PARAMETERS']['T_Head']['value']
+        # запустить поток стабилизации температуры верха колонны
+        self.Stab_Top.start()
         tBgn=time.time()        #фиксация времени начала отбора голов
         #установка триггера дефлегматора
-        Tdeph=46.3
-        thermometers.setTtrigger('Дефлегматор',Tdeph)
+        #Tdeph=46.3
+        #thermometers.setTtrigger('Дефлегматор',Tdeph)
         while True:
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
@@ -153,7 +126,9 @@ class Crude(threading.Thread):
             #ждать завершение измерения температур
             thermometers.Tmeasured.wait()
 
-        # Отбор тела
+        '''Отбор тела'''
+        # установить температуру стабилизации верха колонны
+        self.Stab_Top.value = config['PARAMETERS']['T_Body']['value']
         self.pageUpdate('2-й перегон: тело<br><br>%s'%(self.Duration()), 'ABORT.html')
         while True:
             if app.config['AB_CON']=='Abort':
@@ -170,9 +145,9 @@ class Crude(threading.Thread):
             Tкип_воды   -температура низа колонны при кипении воды в кубе
             Tниз        -температура низа колонны
             '''
-            Tdeph=config['PARAMETERS']['Tdephlock']['value']+config['PARAMETERS']['Kdeph']['value']*\
-                (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
-            thermometers.setTtrigger('Дефлегматор',Tdeph)
+            #Tdeph=config['PARAMETERS']['Tdephlock']['value']+config['PARAMETERS']['Kdeph']['value']*\
+            #    (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
+            #thermometers.setTtrigger('Дефлегматор',Tdeph)
             '''Мощность устанавливается предзахлёбная, рассчитывается по формуле:
             P=Pводы-Kp*(Tкип_воды-Tниз), где
             Pводы       -предзахлёбная мощность при кипении воды в кубе
@@ -184,14 +159,43 @@ class Crude(threading.Thread):
                 (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             #Новый критерий завершения перегона
             if (thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
-                (thermometers.getValue('Низ')-thermometers.getValue('Середина'))>2:
+                (thermometers.getValue('Низ')-thermometers.getValue('Середина'))>5.7:
                 break
             #завершение перегона по температуре низа колонны
             if thermometers.getValue('Низ')+1.0>config['PARAMETERS']['T_H2O']['value']:
                 break
             #ждать завершение измерения температур
             thermometers.Tmeasured.wait()
-        # Остановить всё
+        # установить температуру стабилизации верха колонны
+        self.Stab_Top.value = config['PARAMETERS']['T_Body']['value']
+        self.Stab_Top.stop()
+
+
+
+        """Охлаждение холодильников"""
+        self.pageUpdate('Охлаждение колонны<br><br>%s'%(self.Duration()), 'ABORT.html')
+        power.value = 0 #отключить нагрев
+        #установить порог срабатывания клапана конденсатора 15°C
+        thermometers.setTtrigger('Конденсатор',15)
+        #установить целевую температуру дефлегматора
+        thermometers.setTtrigger('Дефлегматор',15)
+        tBgn=time.time()        #фиксация времени начала этапа
+        while (time.time()-tBgn) < 60:
+            #нажата кнопка Останов
+            if app.config['AB_CON']=='Abort':
+                self.abort()
+                return
+            # Освежить дисплей
+            self.pageUpdate('Охлаждение колонны<br><br>%s'%(self.Duration()))
+            # Отдохнуть секундочку
+            time.sleep(1)
+        #установить нормальный порог срабатывания клапана конденсатора
+        thermometers.setTtrigger('Конденсатор', config['PARAMETERS']['Tcond']['value'])
+        #установить целевую температуру затворения дефлегматора
+        thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['Tdephlock']['value'])
+
+
+        '''Остановить всё'''
         self.stop()
         self.pageUpdate('Второй перегон завершен<br>%s'%(self.Duration()),
                         'END.html')

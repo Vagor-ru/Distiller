@@ -6,6 +6,8 @@ class CondRun(threading.Thread):
     """Класс-поток регулирования интенсивности охлаждения конденсатора
    с использованием алгоритма Брезенхема"""
 
+    _Run = False
+
     def __init__(self, value=0):
         """Конструктор регулятора конденсатора"""
         super(CondRun, self).__init__()
@@ -13,7 +15,6 @@ class CondRun(threading.Thread):
         condensator.Off()
         self.__value = 0
         self.value = value
-        self._Run = False
 
     def run(self):
         """Запуск цикла регулирования охлаждения конденсатора"""

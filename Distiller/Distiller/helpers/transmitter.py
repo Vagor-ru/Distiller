@@ -12,6 +12,8 @@ class SendGaugesValues(threading.Thread):
     Передача происходит с каждым обновлением значений температур.
     '''
 
+    _Run=False
+
     def __init__(self):
         super(SendGaugesValues, self).__init__()
         self._Run=False
@@ -33,3 +35,6 @@ class SendGaugesValues(threading.Thread):
         dataFromServer.update(dephlegmator.dataFromServer)  #Дефлегматор
         #print(dataFromServer)
         return dataFromServer
+
+    def stop(self):
+        self._Run = False
