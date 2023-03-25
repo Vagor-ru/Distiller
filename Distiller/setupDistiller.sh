@@ -14,6 +14,7 @@ python3 -m venv "/home/pi/Distiller/env"
 #Активация и наполнение виртуального окружения
 cd "/home/pi/Distiller"
 source "env/bin/activate"
+pip install --upgrade pip
 pip install -r requirements.txt
 #mv "/home/pi/Desktop/startDistiller.sh /home/pi/Distiller"
 rm "/home/pi/Desktop/setupDistiller.sh"

@@ -1,5 +1,12 @@
 """
 The flask application package.
+
+!!!
+В файл requirements.txt должны быть включены строки:
+smbus
+RPi.GPIO
+!!!
+
 """
 
 import os
