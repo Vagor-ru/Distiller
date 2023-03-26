@@ -194,12 +194,12 @@ class Wash(threading.Thread):
         self.pageUpdate('Бражка: перегон<br><br>%s'%(self.Duration()), 'ABORT.html')
         #установить целевую температуру дефлегматора на отбор тела
         #thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['T_Body']['value'])
-        # установить температуру стабилизации верха колонны
-        self.Stab_Top.value = config['PARAMETERS']['T_Body']['value']
         # запустить поток стабилизации температуры верха колонны
         self.Stab_Top.start()
         count_end = 0   # счётчик
         while True:
+            # установить температуру стабилизации верха колонны
+            self.Stab_Top.value = config['PARAMETERS']['T_Body']['value']
             #нажата кнопка Останов
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -219,7 +219,8 @@ class Wash(threading.Thread):
             thermometers.Tmeasured.wait()   #ожидать следующего измерения температуры
             # Новый критерий завершения перегона
             if (thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
-                (thermometers.getValue('Низ')-thermometers.getValue('Середина')) > 5.7:
+                (thermometers.getValue('Низ')-thermometers.getValue('Середина')) >\
+                config['PARAMETERS']['Ratio']['value']:
                 count_end += 1
                 if count_end > 15:
                     break

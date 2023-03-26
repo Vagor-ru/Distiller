@@ -91,8 +91,6 @@ class Crude(threading.Thread):
 
 
         '''Отбор голов'''
-        # установить температуру стабилизации верха колонны
-        self.Stab_Top.value = config['PARAMETERS']['T_Head']['value']
         # запустить поток стабилизации температуры верха колонны
         self.Stab_Top.start()
         tBgn=time.time()        #фиксация времени начала отбора голов
@@ -100,6 +98,8 @@ class Crude(threading.Thread):
         #Tdeph=46.3
         #thermometers.setTtrigger('Дефлегматор',Tdeph)
         while True:
+            # установить температуру стабилизации верха колонны
+            self.Stab_Top.value = config['PARAMETERS']['T_Head']['value']
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -127,10 +127,10 @@ class Crude(threading.Thread):
             thermometers.Tmeasured.wait()
 
         '''Отбор тела'''
-        # установить температуру стабилизации верха колонны
-        self.Stab_Top.value = config['PARAMETERS']['T_Body']['value']
         self.pageUpdate('2-й перегон: тело<br><br>%s'%(self.Duration()), 'ABORT.html')
         while True:
+            # установить температуру стабилизации верха колонны
+            self.Stab_Top.value = config['PARAMETERS']['T_Body']['value']
             if app.config['AB_CON']=='Abort':
                 self.abort()
                 return
