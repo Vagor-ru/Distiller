@@ -261,6 +261,7 @@ class Wash(threading.Thread):
         return
 
     def stop(self):
+        self.Stab_Top.stop()    # остановить стабилизацию верха колонны
         power.value = 0 #отключаем нагрев
         condensator.Off()   #отключаем клапан конденсатора
         dephlegmator.Off()  #отключаем клапан дефлегматора
