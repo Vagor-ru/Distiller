@@ -13,6 +13,7 @@ from Distiller import app, dbLock, config
 from Distiller import power, condensator, dephlegmator, thermometers
 from Distiller.helpers.transmitter import Transmit
 from Distiller.helpers.stabTop import StabTop
+from Distiller.helpers.log import Logging
 
 
 
@@ -27,6 +28,7 @@ class Crude(threading.Thread):
     def __init__(self):
         #threading.Thread.__init__(self)
         super(Crude, self).__init__()
+        self.log = Logging('Crude')
         self._Begin=time.time()
 
     def Duration(self):
@@ -43,17 +45,32 @@ class Crude(threading.Thread):
         self.Buttons = app.config['Buttons']
         # Фиксация момента запуска процесса
         self._Begin=time.time()
-
-
-        '''Заполнение холодильников'''
         # Вывести сообщение на дисплей и прикрутить кнопку "Останов"
         self.pageUpdate('Заполнение холодильников<br>'+self.Duration(),
                         'ABORT.html')
-        condensator.On()
-        dephlegmator.On()
-        time.sleep(2)
-        condensator.Off()
-        dephlegmator.Off()
+        self.log.start()    #старт записи лога
+
+
+        #Заполнение холодильников
+        tBgn=time.time()        #фиксация времени начала заполнения
+        #установить порог срабатывания клапана конденсатора 15°C
+        thermometers.setTtrigger('Конденсатор',15)
+        #установить температуру удержания Дефлегматора
+        thermometers.setTtrigger('Дефлегматор', 15)
+        while (time.time()-tBgn) < config['PARAMETERS']['tFillCoolers']['value']:
+            '''цикл заполнения холодильников'''
+            # При получении команды прервать процесс
+            if app.config['AB_CON']=='Abort':
+                self.abort()
+                return
+            elif app.config['AB_CON']=='Next':
+                app.config['AB_CON']=''
+                break
+            # Отдохнуть секундочку
+            time.sleep(1)
+        #установить порог срабатывания клапана конденсатора из конфига
+        thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
+        thermometers.setTtrigger('Дефлегматор',config['PARAMETERS']['Tdephlock']['value'])
 
 
         '''Ожидание закипания'''
@@ -98,6 +115,9 @@ class Crude(threading.Thread):
         #Tdeph=46.3
         #thermometers.setTtrigger('Дефлегматор',Tdeph)
         while True:
+            '''Цикл отбора голов'''
+            #установить порог срабатывания клапана конденсатора из конфига
+            thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
             # установить температуру стабилизации верха колонны
             self.Stab_Top.value = config['PARAMETERS']['T_Head']['value']
             # При получении команды прервать процесс
@@ -129,6 +149,9 @@ class Crude(threading.Thread):
         '''Отбор тела'''
         self.pageUpdate('2-й перегон: тело<br><br>%s'%(self.Duration()), 'ABORT.html')
         while True:
+            '''Цикл отбора тела'''
+            #установить порог срабатывания клапана конденсатора из конфига
+            thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
             # установить температуру стабилизации верха колонны
             self.Stab_Top.value = config['PARAMETERS']['T_Body']['value']
             if app.config['AB_CON']=='Abort':
@@ -202,10 +225,10 @@ class Crude(threading.Thread):
         return
 
     def stop(self):
-        self.Stab_Top.stop()
         power.value = 0 #отключаем нагрев
         condensator.Off()   #отключаем клапан конденсатора
         dephlegmator.Off()  #отключаем клапан дефлегматора
+        self.log.stop()     #остановить лог
 
     def abort(self):
         self.stop()
