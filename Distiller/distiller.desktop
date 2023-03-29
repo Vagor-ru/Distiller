@@ -1,0 +1,8 @@
+[Desktop Entry]
+Comment=Управление перегонным аппаратом
+Terminal=false
+Name=Distiller
+Exec=chromium-browser http://localhost:5555/
+Type=Application
+Icon=/home/pi/Distiller/Distiller/static/img/favicon.ico
+GenericName=Дистиллятор

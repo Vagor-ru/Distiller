@@ -198,6 +198,9 @@ class Wash(threading.Thread):
         self.Stab_Top.start()
         count_end = 0   # счётчик
         while True:
+            '''Цикл отбора тела'''
+            #установить порог срабатывания клапана конденсатора из конфига
+            thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
             # установить температуру стабилизации верха колонны
             self.Stab_Top.value = config['PARAMETERS']['T_Body']['value']
             #нажата кнопка Останов
@@ -261,7 +264,6 @@ class Wash(threading.Thread):
         return
 
     def stop(self):
-        self.Stab_Top.stop()    # остановить стабилизацию верха колонны
         power.value = 0 #отключаем нагрев
         condensator.Off()   #отключаем клапан конденсатора
         dephlegmator.Off()  #отключаем клапан дефлегматора

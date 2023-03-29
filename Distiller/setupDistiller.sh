@@ -17,5 +17,13 @@ source "env/bin/activate"
 pip install --upgrade pip
 pip install -r requirements.txt
 #mv "/home/pi/Desktop/startDistiller.sh /home/pi/Distiller"
+
+#Копирование файла автозапуска сервера
+sudo cp 'distiller.service' '/etc/systemd/system/'
+
+#Копирование файла запуска браузера в меню
+sudo cp 'distiller.desktop' '/home/pi/.local/share/applications/'
+
+#удаление установочных файлов
 rm "/home/pi/Desktop/setupDistiller.sh"
 rm "/home/pi/Desktop/Distiller.zip"
