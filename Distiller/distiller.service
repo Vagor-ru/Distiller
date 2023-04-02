@@ -1,12 +1,12 @@
 [Unit]
-Description=Управление дистиллятором
+Description=Управление дистиллятором (сервер)
 After=multi-user.target
  
 [Service]
 User=pi
 Type=simple
 Restart=always
-ExecStart=bash /home/pi/Distiller/startDistiller.sh
+ExecStart=sudo bash /home/pi/Distiller/startDistiller.sh
  
 [Install]
 WantedBy=multi-user.target
