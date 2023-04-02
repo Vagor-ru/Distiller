@@ -101,6 +101,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="configDistiller.json" />
+    <Content Include="distiller.desktop" />
+    <Content Include="distiller.service" />
     <Content Include="Distiller\static\content\dashboard.css" />
     <Content Include="Distiller\static\fonts\icomoon.woff" />
     <Content Include="Distiller\static\img\Background.jpg" />
@@ -122,6 +124,8 @@
     <Content Include="Distiller\static\fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="Distiller\static\fonts\glyphicons-halflings-regular.woff" />
     <Content Include="Distiller\templates\layout.html" />
+    <Content Include="setupDistiller.sh" />
+    <Content Include="startDistiller.sh" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="env\">

@@ -220,16 +220,24 @@ class Wash(threading.Thread):
             power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
                 (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             thermometers.Tmeasured.wait()   #ожидать следующего измерения температуры
-            # Новый критерий завершения перегона
-            if (thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
-                (thermometers.getValue('Низ')-thermometers.getValue('Середина')) >\
-                config['PARAMETERS']['Ratio']['value']:
+            # Новый критерий завершения перегона по температуре затворения дефлегматора
+            if thermometers.getTtrigger("Дефлегматор") < config['PARAMETERS']["Tdephlock"]["value"]:
                 count_end += 1
                 if count_end > 15:
                     break
             else:
                 """сброс числа обнаружения критериев"""
                 count_end = 0
+            # Критерий завершения по соотношению температур
+            #if (thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
+            #    (thermometers.getValue('Низ')-thermometers.getValue('Середина')) >\
+            #    config['PARAMETERS']['Ratio']['value']:
+            #    count_end += 1
+            #    if count_end > 15:
+            #        break
+            #else:
+            #    """сброс числа обнаружения критериев"""
+            #    count_end = 0
             #завершение перегона по температуре низа колонны
             if thermometers.getValue('Низ')+1.0>config['PARAMETERS']['T_H2O']['value']:
                 break
