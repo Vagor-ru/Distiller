@@ -1,6 +1,7 @@
 import threading
+import time
 from simple_pid import PID
-from Distiller import config, thermometers
+from Distiller import config, thermometers,app
 from Distiller.actuators.condensator import CondRun
 
 class CondReg(threading.Thread):
@@ -29,6 +30,8 @@ class CondReg(threading.Thread):
         self._Run = True
         # запустить регулятор конденсатора
         self.Cond.start()
+        # время старта охлаждения
+        coolingStartTime = time.time()
         while self._Run:
             '''цикл регулирования'''
             thermometers.Tmeasured.wait()   #ожидать следующего измерения температуры
@@ -42,9 +45,22 @@ class CondReg(threading.Thread):
             PID_D = self.pidD(thermometers.getValue('Конденсатор'))
             #print('Дефлегматор=', PID_D)
             self.Cond.value = PID_D
+            if thermometers.getTtrigger('Конденсатор')+1 < thermometers.getValue('Конденсатор'):
+                if time.time() - coolingStartTime > config['PARAMETERS']['tCooling']['value']:
+                    # гасить всё и выдавать ошипку
+                    app.config['Display'] = 'Error: нет охлаждения'
+                    for th in threading.enumerate():
+                        if th.name == 'Wash' or th.name == 'Crude' or th.name == 'ManualMode':
+                            th.stop
+                        #print(th.name)
+                    pass
+            else:
+                coolingStartTime = time.time()
+
         self.Cond.value=0   #отключить охлаждение дефлегматора
         self.Cond.stop()
 
     def stop(self):
         """Останов регулирования"""
+        self.Cond.value = 0
         self._Run = False

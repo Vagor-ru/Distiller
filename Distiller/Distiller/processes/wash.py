@@ -272,9 +272,9 @@ class Wash(threading.Thread):
         return
 
     def stop(self):
-        power.value = 0 #отключаем нагрев
-        condensator.Off()   #отключаем клапан конденсатора
-        dephlegmator.Off()  #отключаем клапан дефлегматора
+        power.value = 0     #отключить нагрев
+        condensator.Off()   #отключить клапан конденсатора
+        dephlegmator.Off()  #отключить клапан дефлегматора
         self.log.stop()     #остановить лог
 
     def abort(self):

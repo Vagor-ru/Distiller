@@ -46,4 +46,5 @@ class DephReg(threading.Thread):
 
     def stop(self):
         """Останов регулирования"""
+        self.Deph.value = 0
         self._Run = False

@@ -736,11 +736,7 @@ class Thermometer extends EventTarget {
 
         //создание и отрисовка столбика термометра
         let defs = document.createElementNS(Thermometer.SVG_NS, "defs");
-        defs.innerHTML = `    <filter id="Shadow" x="0" y="0" >
-      <feOffset result="offOut" in="SourceGraphic" dx="2" dy="2"/>
-      <feGaussianBlur result="blurOut" in="offOut" stdDeviation="4"/>
-      <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
-    </filter>
+        defs.innerHTML = `    
     <linearGradient id="Bar" x1="0" y1="1" x2="0" y2="0" spreadMethod="pad">
       <stop stop-color="#ff0000" offset="0%"/>
       <stop stop-color="#f9a7a7" offset="60%"/>
