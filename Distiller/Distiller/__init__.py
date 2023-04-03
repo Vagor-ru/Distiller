@@ -17,9 +17,14 @@ from flask_socketio import SocketIO
 
 from Distiller.config import Config
 
+from Distiller.helpers.deletingOldLogs import DeletingOldLogs
+
 # Создание папки для логов
 if not os.path.isdir('logs'):
     os.mkdir('logs')
+
+# Удаление журналов старше 7 дней
+DeletingOldLogs()
 
 # Объект для блокировки потоков при доступе к совместным ресурсам
 dbLock = threading.Lock()
