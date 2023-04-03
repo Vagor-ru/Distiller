@@ -5,8 +5,15 @@
 #Переименование предыдущего конфигурационного файла
 mv -f "/home/pi/Distiller/configDistiller.json" "/home/pi/Distiller/preconfigDistiller.json"
 
+#Скачивание архива программы
+wget https://github.com/Vagor-ru/Distiller/blob/Distiller3/Distiller/Distiller.zip
+
 #Распаковка архива
 unzip -u "Distiller.zip" -d "/home/pi/Distiller"
+
+#удаление установочных файлов
+rm "Distiller.zip"
+rm "setupDistiller.sh"
 
 #Создание виртуального окружения
 python3 -m venv "/home/pi/Distiller/env"
@@ -24,6 +31,5 @@ sudo cp 'distiller.service' '/etc/systemd/system/'
 #Копирование файла запуска браузера в меню
 sudo cp 'distiller.desktop' '/home/pi/.local/share/applications/'
 
-#удаление установочных файлов
-rm "/home/pi/Desktop/setupDistiller.sh"
-rm "/home/pi/Desktop/Distiller.zip"
+#Перезагрузка
+sudo reboot
