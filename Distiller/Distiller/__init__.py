@@ -114,19 +114,21 @@ condensator=Condensator()
 #coolsRegulator.name='coolsRegulator'
 #coolsRegulator.start()
 
-#запуск потока PID-регулятора температуры конденсатора
-thermometers.setTtrigger('Конденсатор', config['PARAMETERS']['Tcond']['value'])
-from Distiller.helpers.condReg import CondReg
-cond_Reg = CondReg()
-cond_Reg.name = 'cond_Reg'
-cond_Reg.start()
+# если термометры уже определены, то запускаем потоки регулирования
+if app.config['Mode'] == 'WAIT':
+    #запуск потока PID-регулятора температуры конденсатора
+    thermometers.setTtrigger('Конденсатор', config['PARAMETERS']['Tcond']['value'])
+    from Distiller.helpers.condReg import CondReg
+    cond_Reg = CondReg()
+    cond_Reg.name = 'cond_Reg'
+    cond_Reg.start()
 
-#запуск потока PID-регулятора температуры дефлегматора
-thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['Tdephlock']['value'])
-from Distiller.helpers.DephReg import DephReg
-deph_Reg = DephReg()
-deph_Reg.name = 'deph_Reg'
-deph_Reg.start()
+    #запуск потока PID-регулятора температуры дефлегматора
+    thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['Tdephlock']['value'])
+    from Distiller.helpers.DephReg import DephReg
+    deph_Reg = DephReg()
+    deph_Reg.name = 'deph_Reg'
+    deph_Reg.start()
 
 #Запуск потока, отправляющего значения приборов клиенту
 from Distiller.helpers.transmitter import SendGaugesValues

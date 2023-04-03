@@ -57,6 +57,10 @@ class ManualMode(threading.Thread):
         app.config['Buttons']=self.Buttons
         self.pageUpdate(app.config['Display'],app.config['Buttons'])
         return
+
+    def stop(self):
+        '''Функция останавливает ручной режим'''
+        self._Run = False
     
     def pageUpdate(self, Display=None, Buttons=None):
         DataFromServer={}
