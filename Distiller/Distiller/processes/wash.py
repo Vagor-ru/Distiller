@@ -197,6 +197,7 @@ class Wash(threading.Thread):
         # запустить поток стабилизации температуры верха колонны
         self.Stab_Top.start()
         count_end = 0   # счётчик
+        delta = thermometers.getValue('Низ') - thermometers.getValue('Середина')
         while True:
             '''Цикл отбора тела'''
             #установить порог срабатывания клапана конденсатора из конфига
@@ -225,8 +226,8 @@ class Wash(threading.Thread):
             # если температура меньше, чем уставка уменьшенная на полградуса, сбрасываем PID
             if thermometers.getValue('Верх') < self.Stab_Top.value - 0.5:
                 self.Stab_Top.reset()
-            # Новый критерий завершения перегона по температуре затворения дефлегматора
-            if thermometers.getTtrigger("Дефлегматор") < config['PARAMETERS']["Tdephlock"]["value"]:
+            # Новый критерий завершения перегона по соотношению разниц температур
+            if (thermometers.getValue('Низ') - thermometers.getValue('Середина')) / delta > config['PARAMETERS']["Ratio"]["value"]:
                 count_end += 1
                 if count_end > 15:
                     break
@@ -258,9 +259,9 @@ class Wash(threading.Thread):
                 self.abort()
                 return
             #установить порог срабатывания клапана конденсатора 15°C
-            thermometers.setTtrigger('Конденсатор',15)
+            thermometers.setTtrigger('Конденсатор',16)
             #установить целевую температуру дефлегматора
-            thermometers.setTtrigger('Дефлегматор',15)
+            thermometers.setTtrigger('Дефлегматор',16)
             # Освежить дисплей
             self.pageUpdate('Охлаждение колонны<br><br>%s'%(self.Duration()))
             # Отдохнуть секундочку
