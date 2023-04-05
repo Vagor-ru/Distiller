@@ -219,7 +219,12 @@ class Wash(threading.Thread):
             '''
             power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
                 (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
-            thermometers.Tmeasured.wait()   #ожидать следующего измерения температуры
+            #ожидать следующего измерения температуры
+            thermometers.Tmeasured.wait()
+            #если далеко до установки, сброс PID
+            # если температура меньше, чем уставка уменьшенная на полградуса, сбрасываем PID
+            if thermometers.getValue('Верх') < self.Stab_Top.value - 0.5:
+                self.Stab_Top.reset()
             # Новый критерий завершения перегона по температуре затворения дефлегматора
             if thermometers.getTtrigger("Дефлегматор") < config['PARAMETERS']["Tdephlock"]["value"]:
                 count_end += 1
@@ -239,7 +244,7 @@ class Wash(threading.Thread):
             #    """сброс числа обнаружения критериев"""
             #    count_end = 0
             #завершение перегона по температуре низа колонны
-            if thermometers.getValue('Низ')+1.0>config['PARAMETERS']['T_H2O']['value']:
+            if thermometers.getValue('Низ')+1.0 > config['PARAMETERS']['T_H2O']['value']:
                 break
         self.Stab_Top.stop()    # остановить стабилизацию верха колонны
 

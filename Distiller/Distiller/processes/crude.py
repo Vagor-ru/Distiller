@@ -147,6 +147,10 @@ class Crude(threading.Thread):
                 (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             #ждать завершение измерения температур
             thermometers.Tmeasured.wait()
+            #если далеко до установки, сброс PID
+            # если температура меньше, чем уставка уменьшенная на полградуса, сбрасываем PID
+            if thermometers.getValue('Верх') < self.Stab_Top.value - 0.5:
+                self.Stab_Top.reset()
 
         '''Отбор тела'''
         self.pageUpdate('2-й перегон: тело<br><br>%s'%(self.Duration()), 'ABORT_NEXT.html')
