@@ -56,6 +56,7 @@ class CondReg(threading.Thread):
                     pass
             else:
                 coolingStartTime = time.time()
+                app.config['Display'] = ''
 
         self.Cond.value=0   #отключить охлаждение дефлегматора
         self.Cond.stop()

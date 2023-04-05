@@ -31,6 +31,8 @@ pip install -r requirements.txt
 
 #Копирование файла автозапуска сервера
 sudo cp 'distiller.service' '/etc/systemd/system/'
+#Разрешение запуска службы
+sudo systemctl enable distiller
 
 #Копирование файла запуска браузера в меню
 sudo cp 'distiller.desktop' '/home/pi/.local/share/applications/'
