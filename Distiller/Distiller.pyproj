@@ -106,6 +106,7 @@
     <Content Include="configDistiller.json" />
     <Content Include="distiller.desktop" />
     <Content Include="distiller.service" />
+    <Content Include="delDistiller.sh" />
     <Content Include="Distiller\static\content\dashboard.css" />
     <Content Include="Distiller\static\fonts\icomoon.woff" />
     <Content Include="Distiller\static\img\Background.jpg" />
