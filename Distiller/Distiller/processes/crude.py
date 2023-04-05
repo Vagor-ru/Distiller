@@ -185,8 +185,8 @@ class Crude(threading.Thread):
             '''
             power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
                 (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
-            # Новый критерий завершения перегона по соотношению разниц температур
-            if (thermometers.getValue('Низ') - thermometers.getValue('Середина')) / delta > config['PARAMETERS']["Ratio"]["value"]:
+            # Новый критерий завершения перегона по разнице температур
+            if (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > config['PARAMETERS']["Ratio"]["value"]:
                 count_end += 1
                 if count_end > 15:
                     break
