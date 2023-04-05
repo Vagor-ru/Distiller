@@ -6,14 +6,14 @@
 mv -f "/home/pi/Distiller/configDistiller.json" "/home/pi/Distiller/preconfigDistiller.json"
 
 #Скачивание архива программы
-wget https://github.com/Vagor-ru/Distiller/blob/Distiller3/Distiller/Distiller.zip
+wget -O '/home/pi/Downloads/Distiller.zip' 'https://github.com/Vagor-ru/Distiller/blob/Distiller3/Distiller/Distiller.zip?raw=true'
 
 #Распаковка архива
-unzip -u "Distiller.zip" -d "/home/pi/Distiller"
+unzip -u "/home/pi/Downloads/Distiller.zip" -d "/home/pi/Distiller"
 
 #удаление установочных файлов
-rm "Distiller.zip"
-rm "setupDistiller.sh"
+#rm "/home/pi/Downloads/Distiller.zip"
+#rm "setupDistiller.sh"
 
 #Создание виртуального окружения
 python3 -m venv "/home/pi/Distiller/env"
@@ -21,7 +21,11 @@ python3 -m venv "/home/pi/Distiller/env"
 #Активация и наполнение виртуального окружения
 cd "/home/pi/Distiller"
 source "env/bin/activate"
+
+#Обновление pip
 pip install --upgrade pip
+
+#Установка в виртуальное окружение необходимых пакетов
 pip install -r requirements.txt
 #mv "/home/pi/Desktop/startDistiller.sh /home/pi/Distiller"
 
