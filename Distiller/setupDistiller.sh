@@ -2,6 +2,19 @@
 # Скрипт разворачивания проекта Distiller
 # Запуск: bash setupDistiller.sh
 
+#Настройка конфигурации raspberry pi
+#отключить оверскан у дисплея
+sudo raspi-config nonint do_overscan 1
+#разрешение экрана 800х600 60Гц 4:3
+sudo raspi-config nonint do_resolution 2 9
+#разрешить VNC
+sudo raspi-config nonint do_vnc 0
+#разрешить I2C
+sudo raspi-config nonint do_i2c 0
+#разрешить 1-wire
+sudo raspi-config nonint do_onewire 0
+#
+
 #Переименование предыдущего конфигурационного файла
 mv -f "/home/pi/Distiller/configDistiller.json" "/home/pi/Distiller/preconfigDistiller.json"
 

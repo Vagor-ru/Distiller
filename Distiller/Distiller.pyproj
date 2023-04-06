@@ -127,7 +127,6 @@
     <Content Include="Distiller\static\fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="Distiller\static\fonts\glyphicons-halflings-regular.woff" />
     <Content Include="Distiller\templates\layout.html" />
-    <Content Include="delDistiller.sh" />
     <Content Include="setupDistiller.sh" />
     <Content Include="setupDistiller.zip" />
     <Content Include="startDistiller.sh" />

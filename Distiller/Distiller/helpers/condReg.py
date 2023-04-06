@@ -8,6 +8,8 @@ class CondReg(threading.Thread):
     u"""Класс-поток PID-регулирования температуры конденсатора"""
 
     _Run = False    # сбросить флаг исполнения
+    # Для сохранения состояния дисплея
+    Display = ''
 
     def __init__(self):
         #пуск родительской инициализации
@@ -32,6 +34,7 @@ class CondReg(threading.Thread):
         self.Cond.start()
         # время старта охлаждения
         coolingStartTime = time.time()
+        Display = app.config['Display']
         while self._Run:
             '''цикл регулирования'''
             thermometers.Tmeasured.wait()   #ожидать следующего измерения температуры
@@ -48,6 +51,7 @@ class CondReg(threading.Thread):
             if thermometers.getTtrigger('Конденсатор')+1 < thermometers.getValue('Конденсатор'):
                 if time.time() - coolingStartTime > config['PARAMETERS']['tCooling']['value']:
                     # гасить всё и выдавать ошипку
+                    Display = app.config['Display']
                     app.config['Display'] = 'Error: нет охлаждения'
                     for th in threading.enumerate():
                         if th.name == 'Wash' or th.name == 'Crude' or th.name == 'ManualMode':
@@ -55,8 +59,10 @@ class CondReg(threading.Thread):
                         #print(th.name)
                     pass
             else:
+                #сбросить засечку времени
                 coolingStartTime = time.time()
-                app.config['Display'] = ''
+                #восстановить дисплей
+                app.config['Display'] = Display
 
         self.Cond.value=0   #отключить охлаждение дефлегматора
         self.Cond.stop()
