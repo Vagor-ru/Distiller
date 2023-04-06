@@ -104,6 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="configDistiller.json" />
+    <Content Include="delDistiller.sh" />
     <Content Include="distiller.desktop" />
     <Content Include="distiller.service" />
     <Content Include="Distiller\static\content\dashboard.css" />
