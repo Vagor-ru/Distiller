@@ -1,17 +1,17 @@
 """
-$Id: coolsRegulator.py,v 1.1 2017/07/03 $
+$Id: coolsRegulator.py,v 1.1 2020/07/09 $
 
-Copyright (c) C-Bell (VAGor). All rights reserved.
+By C-Bell (VAGor).
 
-Класс-поток обеспечивает запись значений параметров
-устройства в журнал с фиксацией времени.
+Класс-поток обеспечивает регулировку
+конденсатора и дефлегматора.
 """
 
 import time
 import threading
-from Distiller import models, dbLock
+from Distiller import config
 from Distiller import condensator, dephlegmator
-from Distiller import ds18B20toDB
+from Distiller import thermometers
 
 
 class CoolsRegulator(threading.Thread):
@@ -20,18 +20,15 @@ class CoolsRegulator(threading.Thread):
     def __init__(self,
                  Tdeph=None,
                  Tcond=None):
-        threading.Thread.__init__(self)
+        #threading.Thread.__init__(self)
+        super(CoolsRegulator, self).__init__()
         self.Run=False
         if Tdeph==None:
-            dbLock.acquire()
-            self._Tdeph=models.Parameters1.query.filter(models.Parameters1.Symbol==u'Tdephlock').first().Value
-            dbLock.release()
+            self._Tdeph=config['PARAMETERS']['Tdephlock']
         else:
             self._Tdeph=Tdeph
         if Tcond==None:
-            dbLock.acquire()
-            self._Tcond=models.Parameters1.query.filter(models.Parameters1.Symbol==u'Tcond').first().Value
-            dbLock.release()
+            self._Tcond=config['PARAMETERS']['Tcond']['value']
         else:
             self._Tcond=Tcond
 
@@ -43,8 +40,8 @@ class CoolsRegulator(threading.Thread):
     def Tdeph(self, tdeph):
         if tdeph>85:
             tdeph=85
-        if tdeph<4:
-            tdeph=4
+        if tdeph<12:
+            tdeph=12
         self._Tdeph=tdeph
 
     @property
@@ -55,24 +52,26 @@ class CoolsRegulator(threading.Thread):
     def Tcond(self, tcond):
         if tcond>85:
             tcond=85
-        if tcond<4:
-            tcond=4
+        if tcond<10:
+            tcond=10
         self._Tcond=Tcond
 
     def run(self):
         self.Run=True
         while self.Run:
-            ds18B20toDB.ReadyDS18B20.wait()
-            dbLock.acquire()
-            if models.DS18B20.query.filter_by(Name='Деф').first().T>self._Tdeph:
-                dephlegmator.On()
-            else:
-                dephlegmator.Off()
-            if models.DS18B20.query.filter_by(Name='Конд').first().T>self._Tcond:
-                condensator.On()
-            else:
-                condensator.Off()
-            dbLock.release()
+            thermometers.Tmeasured.wait() #ждать срабатывание триггера
+            #dataFromServer=None
+            for Th in thermometers.Tlist:
+                if Th.Name=='Конденсатор':
+                    if Th.trigger:
+                        condensator.On()
+                    else:
+                        condensator.Off()
+                if Th.Name=='Дефлегматор':
+                    if Th.trigger:
+                        dephlegmator.On()
+                    else:
+                        dephlegmator.Off()
         dephlegmator.Off()
         condensator.Off()
         return

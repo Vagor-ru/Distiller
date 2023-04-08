@@ -2,58 +2,73 @@
 The flask application package.
 """
 
+import os
 import threading
+import json
 from flask import Flask
 from flask_socketio import SocketIO
 
-import Distiller.models
 from Distiller.config import Config
-from Distiller.database import db
 
 # Объект для блокировки потоков при доступе к совместным ресурсам
 dbLock = threading.Lock()
 
 # Объект flask
 app = Flask(__name__)
-# Загрузка конфигурации из config.py
+# Подгрузка конфигурации приложения из config.py
 app.config.from_object(Config)
+
+#Попытка получить uname. Если она неудачна, считаем,
+#что запущены не на Raspberry Pi. Если uname содержит
+#и 'Linux' и 'armv7l', наиболее вероятно, что программа
+#выполняется на Raspberry Pi
+try:
+    _os=os.uname()
+    if 'Linux' in _os and 'armv7l' in _os:
+        app.config['RPI']=True
+    else:
+        app.config['RPI']=False
+except Exception as exp:
+    app.config['RPI']=False
+
+# Чтение объекта конфигурации устройства из конфигурационного файла
+with open('configDistiller.json','r',encoding="utf-8") as f:
+    config=json.load(f)
+    '''содержит настраиваемые параметры устройства'''
+
+'''Сохранение config:
+ with open('configDistiller.json','w',encoding="utf-8") as f:
+    json.dump(config,f,ensure_ascii=False, indent=2)
+'''
 
 #Создание приложения flask_socketio из flask-приложения
 socketio = SocketIO(app)
 
-# Подключение, инициализация и создание (при необходимости) базы данных
-db.app=app
-db.init_app(app)
-# Создать базу данных
-db.create_all(bind='Distiller') 
-db.create_all(bind='log') 
-
-#Проверка параметров колонны, при необходимости - заполнение баз из файла config.py
-dbLock.acquire()
-ListParameters1=models.Parameters1.query.all()
-ListParameters2=models.Parameters2.query.all()
-#Если в БД нет записей, добавляем их из конфига
-if len(ListParameters1)==0:
-    for Prmtr in Config.PARAMETERS1:
-        Row=models.Parameters1(Symbol=Prmtr[0], Value=Prmtr[1], Note=Prmtr[2])
-        db.session.add(Row)
-    db.session.commit()
-if len(ListParameters2)==0:
-    for Prmtr in Config.PARAMETERS2:
-        Row=models.Parameters2(Symbol=Prmtr[0], Value=Prmtr[1], Note=Prmtr[2])
-        db.session.add(Row)
-    db.session.commit()
-dbLock.release()
-
-
-# Запуск потока, записывающего температурные значения в БД
+# Запуск потока, измеряющего температурные значения
 try:
-    from Distiller.helpers.DS18B20toDB import DS18B20toDB
-    ds18B20toDB=DS18B20toDB()
-    ds18B20toDB.name='ds18B20toDB'
-    ds18B20toDB.start()
+    from Distiller.sensors.DS18B20 import Thermometers
+    thermometers=Thermometers()
+    if thermometers.needAutoLocation:
+        app.config['Mode']='WAITAL'
+        app.config['Display']='Требуется автоопределение мест установки DS18B20'
+        app.config['Buttons']='WAITAL.html'
+    else:
+        app.config['Mode']='WAIT'
+        app.config['Display']='Жду команду'
+        app.config['Buttons']='WAIT.html'
+
+    thermometers.name='thermometers'
+    thermometers.start()
+    pass
 except Exception as ex:
     app.config['Display'] = 'Error: ' + str(ex)
+
+#Запуск вольтметра
+from Distiller.sensors.Voltmeter import Voltmeter
+voltmeter=Voltmeter()
+voltmeter.name='voltmeter'
+voltmeter.start()
+#print(voltmeter.value)
 
 # Запуск регулятора мощности
 from Distiller.actuators.power import Power
@@ -66,6 +81,20 @@ from Distiller.actuators.cools import Condensator, Dephlegmator
 dephlegmator=Dephlegmator()
 condensator=Condensator()
 
+#запуск потока регулирования охладителей
+from Distiller.helpers.coolsRegulator import CoolsRegulator
+coolsRegulator=CoolsRegulator()
+coolsRegulator.name='coolsRegulator'
+coolsRegulator.start()
+
+#Запуск потока, отправляющего значения приборов клиенту
+from Distiller.helpers.transmitter import SendGaugesValues
+sendGaugesValues=SendGaugesValues()
+sendGaugesValues.name='sendGaugesValues'
+sendGaugesValues.start()
+
+for Thread in threading.enumerate():
+    print(Thread.name)
 
 # Подключение функций представления веб-страниц
 import Distiller.views

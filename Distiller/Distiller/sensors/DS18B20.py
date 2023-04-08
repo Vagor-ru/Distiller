@@ -1,17 +1,12 @@
 """
-$Id: DS18B20.py, 2017/01/23
-Copyright (c) 2017 C-Bell (VAGor).
-Программа-фэйк.
-Имитирует выдачу показаний цифровых термометров DS18B20
-значения температур формируются случайным образом.
-Количество термометров - 5 с предустановленными номерами.
-
+$Id: DS18B20.py, 2020/07/03
+C-Bell (VAGor).
+Снимает показания цифровых термометров DS18B20
 
 Использование:
 import DS18B20
 DS18B20list=DS18B20.Measure()
-где DS18B20list - список кортежей (ID термометра, значение температуры,
-                  момент фиксации температуры)
+где DS18B20list - список кортежей (ID термометра, значение температуры)
 
 Особенности:
 используется модуль threading для "одновременного"
@@ -26,6 +21,7 @@ import glob     #находит все пути, совпадающие с за�
 import time     #Модуль для работы со временем
 import datetime #Модуль для работы с датой и временем
 import threading    #Модуль для работы с потоками
+from Distiller import app, config, dbLock
 
 #Шаблон ID термометра
 TemplateDS18B20="28-000000"
@@ -46,37 +42,38 @@ class TimeOutDS18B20Error(Exception):
     pass
 
 #Проверка наличия шины 1-wire (редкий случай)
-if random.random()>0.99:
+#Проверка наличия шины 1-wire
+if app.config['RPI'] and not os.path.isdir('/sys/bus/w1'):
     #Генерить исключение.
     raise NoOneWireError('No 1-wire bus')
-    print(u"Включите поддержку 1-Wire в  конфигурации Raspberry!")
+    print("Включите поддержку 1-Wire в  конфигурации Raspberry!")
     exit()
 
-#Создание списка термометров
+#Создание фейкового списка термометров
 Tlist=[]    #Пустой список термометров
-NumbT=5  #Количество термометров
-#Создать ID каждому термометру
-for i in range(NumbT):
-    Tlist.append(TemplateDS18B20+chr(ord('E')-i)*6)
-    
-#Генерирует и возвращает значение температуры с указанного термометра
-def read_temp_raw(device_folder):
-    u'''Возвращает сгенерированное значение температуры'''
-    time.sleep(1+random.random()*0.05)  #Имитируем процесс измерения
-    return (device_folder, round(random.random()*100,1), datetime.datetime.utcnow())
-#--------------------
+if not app.config['RPI']:
+    NumbT=5  #Количество термометров
+    #Создать ID каждому термометру
+    for i in range(NumbT):
+        Tlist.append("28-000000"+chr(ord('E')-i)*6)
+    #print(Tlist)
+
+#Каталог, отражающий устройства на шине 1-wire
+base_dir = '/sys/bus/w1/devices/'
+
 
 class T(threading.Thread):
     u'''Класс для получения температуры от одного цифрового термометра'''
     def __init__(self, device_folder):
         '''Инициализация класса'''
-        threading.Thread.__init__(self)
+        #threading.Thread.__init__(self)
+        super(T, self).__init__()
         self._device_folder = device_folder
         #self.name = device_folder
         self._T = None
     def run(self):
         u'''Функция, вызываемая при старте потока'''
-        self._T = read_temp_raw(self._device_folder)
+        self._T = self.read_temp_raw(self._device_folder)
     @property
     def T(self):
         u"""Возвращает текущее значение температуры"""
@@ -85,14 +82,47 @@ class T(threading.Thread):
     def name(self):
         u'''Возвращает название папки термометра'''
         return self._device_folder
+
+    #Читает и возвращает значение температуры с указанного термометра
+    def read_temp_raw(self, device_folder):
+        '''Читает и возвращает текущее значение температуры'''
+        #Если не на Raspberry Pi, вернуть фейк
+        if not app.config['RPI']:
+            return self.temp_fake(device_folder)
+        device_file = device_folder + '/temperature'
+        #dbLock.acquire()
+        temp_c=0.0
+        while True:
+            f = open(device_file, 'r')
+            val = f.read()
+            f.close()
+            try:
+                temp_c = float(val) / 1000.0
+                break
+            except ValueError:
+                pass
+        #dbLock.release()
+        return (os.path.basename(device_folder),
+                round(temp_c, 1),
+                datetime.datetime.now())
+
+    def temp_fake(self, device_folder):
+        u'''Возвращает сгенерированное значение температуры'''
+        time.sleep(1+random.random()*0.05)  #Имитируем процесс измерения
+        return (device_folder, round(random.random()*100,1))
+
+#--------------------
     
-#Возвращает кортеж из списка кортежей названий термометров с температурами
+#Возвращает список кортежей названий термометров с температурами
 #и временем измерения
 def Measure(Sort=False, SortByT=False, TimeOut=None):
     u'''Функция Measure() ищет все цифровые термометры DS18B20 на шине 1-wire
     читает значения измеренных ими температур и возвращает в виде кортежа
     (список кортежей (ID термометра, температура), момент времени измерения)'''
-    device_folders = Tlist
+    if app.config['RPI']:
+        device_folders = glob.glob(base_dir + '28*')
+    else:
+        device_folders = Tlist
     #Если термометры DS18B20 на шине не найдены, генерировать исключение
     if len(device_folders)==0:
         #Генерить исключение.
@@ -133,7 +163,161 @@ def Measure(Sort=False, SortByT=False, TimeOut=None):
     #Если заказано отсортировать по температуре, сортируемо
     if SortByT: DS18B20list.sort(key=sortByT, reverse=True)
     #Выдача результатов
+    #print(DS18B20list)
     return DS18B20list
+
+class DS18B20:
+    '''класс термометра'''
+    def __init__(self, ID):
+        self.ID=ID          #фабричный номер термометра вида 28-000000c57def
+        self.Name=None      #Наименование (место установки) термометра
+        self.T=None         #текущая температура
+        self.Tpre=None      #предыдущая температура
+        self.V_T=0.0        #скорость роста температуры
+        self.Ttrigger=None  #установка порога срабатывания
+        self.boiling=False  #флаг закипания
+        self.trigger=False  #флаг сработки по порогу
+
+class Thermometers(threading.Thread):
+    ''' Класс-поток, измеряет температуры и устанавливает флаг
+        готовности температурных данных, флаг закипания,
+        флаг срабатывания порога'''
+    # Событие "Получены новые данные о температурах"
+    Tmeasured=threading.Event()
+    #Событие закипание
+    boiling=threading.Event()
+    #Событие превышения порога
+    trigger=threading.Event()
+    #флаг необходимости автоопределения мест установки термометров
+    needAutoLocation=False
+
+    def __init__(self):
+        '''инициализация'''
+        #threading.Thread.__init__(self)
+        super(Thermometers, self).__init__()
+        self.__Run = False      #сброс флага исполнения
+        #self.CheckTlist()
+        self.Tmeasured.clear()  #сброс флага завершения измерения
+        self.boiling.clear()    #сброс флага закипания
+        self.trigger.clear()    #сброс флага срабатывания порога
+        self.Tlist=[]           #Текущие температуры
+        Ts=Measure()            #сделать первое измерение
+        #создание списка объектов-термометров
+        #print(len(self.Tlist))
+        dbLock.acquire()        #всем остальным потокам ждать!
+        self.Tlist.clear()
+        for T in Ts:
+            objT=DS18B20(T[0])
+            objT.T=T[1]
+            objT.Tpre=T[1]
+            if "T_LOCATIONS" in config:
+                if T[0] in config["T_LOCATIONS"]:
+                    objT.Name=config["T_LOCATIONS"][T[0]]
+                    if objT.Name=='Конденсатор':
+                        objT.Ttrigger=config['PARAMETERS']['Tcond']['value']
+                    if objT.Name=='Дефлегматор':
+                        objT.Ttrigger=config['PARAMETERS']['Tdephlock']
+                else:
+                    self.needAutoLocation=True
+            else:
+                self.needAutoLocation=True
+            self.Tlist.append(objT)
+        dbLock.release()        #другие потоки могут читать Tlist
+        #print(len(self.Tlist))
+
+    def run(self):
+        '''Запускает поток измерения температур'''
+        self.__Run = True
+        while self.__Run:
+            # Если флаг получения температурных данных установлен,
+            # сбросить его
+            if self.Tmeasured.isSet():
+                #сохранить предыдущие температуры
+                dbLock.acquire()
+                for objT in self.Tlist:
+                    objT.Tpre=objT.T
+                dbLock.release()
+                self.Tmeasured.clear()
+            #сбросить флаги закипания и срабатывания, если были установлены
+            if self.boiling.is_set():
+                self.boiling.clear()
+            if self.trigger.is_set():
+                self.trigger.clear()
+            tBegin=time.time()
+            Ts=Measure()
+            durationMeasure=time.time()-tBegin
+            app.config['Thermometers']=self.dataFromServer
+            #print(app.config['Thermometers'])
+            # сравнение температур и установка флага если закипание
+            dbLock.acquire()    #монополизировать выполнение на время сохранения температур
+            for T in Ts:
+                objT=list(filter(lambda objT: objT.ID==T[0],self.Tlist))[0]
+                objT.T=T[1]
+                objT.V_T=(objT.T-objT.Tpre)/durationMeasure
+                #если скорость роста температуры больше 1°C в секунду, закипание
+                if objT.V_T>1:
+                    objT.boiling=True
+                    self.boiling.set()
+                else:
+                    objT.boiling=False
+                #если превышение порога, выбросить флаг
+                if objT.Ttrigger!=None and objT.T>objT.Ttrigger:
+                    objT.trigger=True
+                    self.trigger.set()
+                else:
+                    objT.trigger=False
+            dbLock.release()    #разрешить исполнение другим потокам
+            self.Tmeasured.set()
+            #если сброшен флаг работы, рвем цикл
+            if not self.__Run:
+                break
+
+    def getTtrigger(self, name):
+        '''Возвращает установку триггера заданного термометра'''
+        objT=list(filter(lambda objT: objT.Name==name,self.Tlist))[0]
+        return objT.Ttrigger
+
+    def setTtrigger(self, name, Ttr):
+        '''Устанавливает температуру триггера заданного термометра'''
+        objT=list(filter(lambda objT: objT.Name==name,self.Tlist))[0]
+        objT.Ttrigger=float(Ttr)
+        pass
+
+    def getValue(self, name):
+        '''возвращает значение температуры указанного термометра'''
+        objT=list(filter(lambda objT: objT.Name==name,self.Tlist))[0]
+        return objT.T
+
+    def getObjT(self, name):
+        '''возвращает объект термометра по его имени'''
+        objT=list(filter(lambda objT: objT.Name==name,self.Tlist))[0]
+        return objT
+
+
+    @property
+    def values(self):
+        return self.Tlist
+
+    @property
+    def dataFromServer(self):
+        Tlist=[]
+        dbLock.acquire()
+        if self.needAutoLocation:
+            for Th in self.Tlist:
+                Tlist.append((Th.ID,Th.T))
+        else:
+            for Name in config['LOCATIONS']:
+                objT=list(filter(lambda objT: objT.Name==Name,self.Tlist))[0]
+                if objT.Ttrigger!=None:
+                    Tlist.append((objT.Name,objT.T,objT.Ttrigger))
+                else:
+                    Tlist.append((objT.Name,objT.T))
+        dbLock.release()
+        return {'Thermometers':Tlist}
+
+    def stop(self):
+            self.__Run=False
+
 
 def main():
     u'''Тестовая функция, работающая при запуске модуля непосредственно'''
@@ -146,10 +330,11 @@ def main():
         tMeasure=time.time()
         #os.system('clear')
         for DS18B20 in DS18B20list:
-            print(u"%s\t%3.1f градC %s" % DS18B20)
-        print(u'Время измерения=%ssec' % (tMeasure-timeBegin))
+            print("%s\t%3.1f градC %s" % DS18B20)
+            #print(DS18B20)
+        print('Время измерения=%ssec' % (tMeasure-timeBegin))
         t+=(tMeasure-timeBegin)
-        print(u'Среднее время измерения=%ssec' % (t/i))
+        print('Среднее время измерения=%ssec' % (t/i))
         if (tMax<(tMeasure-timeBegin)):
               tMax=(tMeasure-timeBegin)
         print(u'(mt)Максимальная продолжительность измерения=%ssec' % tMax)

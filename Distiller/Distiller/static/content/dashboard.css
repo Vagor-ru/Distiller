@@ -79,15 +79,25 @@ div.Display_up {
     border: groove;
     border-radius: 7px;
     margin: 5px;
+    margin-left:10px;
+    padding:3px;
+    padding-left:5px;
+    float: left;
+    display: inline-block;
+}
+/******************************/
+/*********** Gauges ***********/
+#Gauges {
+    position: relative;
+    margin: 5px;
+    padding: 1px;
+    border: groove;
+    border-radius: 7px;
+    display: inline-block;
 }
 /******************************/
 /*********** Power ************/
 #Power {
-    float: left;
-    position: relative;
-    margin-left: 5px;
-    border: groove;
-    border-radius: 7px;
 }
 /******************************/
 /******** Mode buttons ********/
@@ -95,12 +105,9 @@ div.Display_up {
     float: left;
     position: relative;
     margin-left: 10px;
+    /*border:3px solid red;*/
     border-radius: 7px;
 }
-
-    #ModeButtons p {
-        padding: 0 30px 0 24px;
-    }
 /******************************/
 /******** right panel *********/
 .right_content {
@@ -111,15 +118,16 @@ div.Display_up {
     display: inline-block;
 }
 /******************************/
-/******** Cools *********/
-#Cools {
-    border: groove;
-    border-radius: 7px;
-    font-weight: bold;
-    color: #3E8282;
-    text-align: center;
-    color: darkcyan;
-    font-weight: 700;
+/*********** LED **************/
+#Condensator:hover::after {
+    color: #00ff00;
+    font-size: 16px; /* Размер текста подсказки */
+    content: "Конденсатор";
+}
+#Dephlegmator:hover::after {
+    color: #00ff00;
+    font-size: 16px; /* Размер текста подсказки */
+    content: "Дефлегматор";
 }
 .round {
     width: 20px;
@@ -137,13 +145,18 @@ div.Display_up {
 }
 
 /******************************/
-/******* Buttons panel ********/
-#Buttons {
+/******* Parameters button ********/
+#Parameters {
     float: right;
-    position: relative;
+    /*position: relative;*/
 }
 /******************************/
 /******** Buttons *********/
+#Buttons{
+    display:inline-block;
+    width:100%;
+    /*border:3px solid green;*/
+}
 .knopka {
     display: inline-block;
     height: 50px;

@@ -4,54 +4,61 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }} - Distiller</title>
+    <link rel="icon" href="../static/img/favicon.ico" type="image/x-icon" />
     <link href="../static/content/dashboard.css" rel="stylesheet" />
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script src="../static/scripts/gauge.min.js"></script>
     <script src="../static/scripts/socket.io.js"></script>
-    <script src="/static/scripts/jquery-1.10.2.js"></script>
+    <script src="../static/scripts/dialGauge.js"></script>
 
     <script type="text/javascript" charset="utf-8">
-        // Загрузка пакета gauge
-        google.charts.load('current', { 'packages': ['gauge'] });
+
+        //создание объета веб-сокетов
+        socket = io();
 
         // Функция отображения данных, поступивших от сервера, на html странице
         function ShowDeviceData(msg) {
             //Отображение значений температур
             if ('Thermometers' in msg) {
-                drawGauge.ShowThermometers(msg.Thermometers);
+                //console.log(msg.Thermometers);
+                ShowThermometers(msg.Thermometers);
+            }
+            //Отображение вольтметра
+            if ('Voltmeter' in msg) {
+                ShowVoltmeter(msg.Voltmeter[0]);
             }
             //Отображение мощности нагрева
             if ('Power' in msg) {
                 //alert(msg.Power);
-                drawGauge.ShowPower(msg.Power);
+                ShowPower(msg.Power[0]);
             }
             //Отображение надписи на дисплее-табло
             if (msg.Display) {
-                $('.Display_text').html(msg.Display);
+                document.querySelector(`div.Display>div.Display_text`).innerHTML = msg.Display
+                //$('.Display_text').html(msg.Display);
             }
             //Отображение состояния клапана дефлегматора
             if ('DephState' in msg) {
                 //alert(msg.DephState);
                 if (msg.DephState) {
-                    $('#Dephlegmator').css('background', '#00ff00');
+                    Dephlegmator.style.background = '#00ff00';
                 }
                 else {
-                    $('#Dephlegmator').css('background', 'rgb(50,80,50)');
+                    Dephlegmator.style.background = 'rgb(50,80,50)';
                 }
             }
             //Отображение состояния клапана конденсатора
             if ('CondState' in msg) {
                 //alert(msg.CondState);
                 if (msg.CondState) {
-                    $('#Condensator').css('background', '#00ff00');
+                    Condensator.style.background = '#00ff00';
                 }
                 else {
-                    $('#Condensator').css('background', 'rgb(50,80,50)');
+                    Condensator.style.background = 'rgb(50,80,50)';
                 }
             }
             //Отображение кнопок
             if (msg.ModeButtons) {
-                $('#ModeButtons').html(msg.ModeButtons);
+                document.querySelector(`#ModeButtons`).innerHTML = msg.ModeButtons
+                //$('#ModeButtons').html(msg.ModeButtons);
             }
         }
     </script>
@@ -68,7 +75,7 @@
             <div class="right_content">
                 <button id="Shutdown" class="knopka" title="Отключение питания"><span class="icon-switch"></span></button>
             </div>
-</div>
+        </div>
 
         <!--Дисплей в виде светодиодной панели-->
         <div class="Display">
@@ -76,39 +83,23 @@
             <div class="Display_cover"></div>
         </div>
 
-        <!--Панель приборов и кнопок-->
-        <div id="Gauges">
-            <!--Стрелочные термометры-->
-            <div id="Thermometers">
+        <!--Панель приборов-->
+        <div id="Dashboard">
+            <!--Термометры и индикаторы клапанов дефлегматора и конденсатора-->
+            <div id="Thermometers"></div>
+
+            <!--Стрелочные индикаторы мощности нагрева и напряжения сети-->
+            <div id="Gauges">
+                <div id="Voltmeter"></div>
+                <div id="Power"></div>
             </div>
 
-            <!--Стрелочный индикатор мощности нагрева-->
-            <div id="Power"></div>
 
-            <!--Панель с кнопками режимов работы-->
-            <div id="ModeButtons" class="engrav">
-            </div>
-
-            <!--Контейнер с индикаторами холодильников и постоянными кнопками, прижат вправо-->
-            <div class="right_content">
-                <!--Блок отображения состояния клапанов холодильников-->
-                <div id="Cools">
-                    <table style="width:100%;">
-                        <tr>
-                            <td><div class="round" id="Dephlegmator"></div></td>
-                            <td><div class="round" id="Condensator"></div></td>
-                        </tr>
-                        <tr>
-                            <td><label style="text-align:center;">Дефлегматор</label></td>
-                            <td><label style="text-align:center;">Конденсатор</label></td>
-                        </tr>
-                    </table>
-                </div>
-
-                <!--Блок с кнопками, отображаемыми постоянно-->
-                <div id="Buttons">
-                    <button id="Parameters" class="knopka">Параметры</button>
-                </div>
+            <!--Блок с кнопками-->
+            <div id="Buttons">
+                <!--Панель с кнопками режимов работы-->
+                <div id="ModeButtons" class="engrav"></div>
+                <button id="Parameters" class="knopka">Параметры</button>
             </div>
         </div>
 
@@ -123,99 +114,218 @@
                 Самогонщики всех стран объединяйтесь!
             </p>
         </div>
-
     </div>
 
     <script type="text/javascript" charset="utf-8">
-        $(document).ready(
-            function () {
-                $('div.Display_text').html('Загрузка...');
-                try {
-                    google.charts.setOnLoadCallback(drawGauge.start);
-                }
-                catch (ex) { alert(ex); }
+        /**
+         * код ниже будет исполняться после загрузки окна
+         **/
+        window.addEventListener("load", function () {
+            this.document.querySelector('div.Display_text').textContent = 'Загрузка...'
+            //Запрос актуальных данных от сервера
+            let dataToServer = { sid: socket.id };
+            socket.emit('GiveDeviceData', dataToServer, (data) => {
+                //alert(data.DateTime);
+                ShowDeviceData(data);
+            });
+        });
 
-                //создание объета веб-сокетов
-                socket = io();
 
-                // Веб-сокет, принимающий и отображающий данные с сервера
-                socket.on('DataFromServer', (data) => {
-                    //alert('Получены данные');
-                    ShowDeviceData(data);
-                });
+        // Веб-сокет, принимающий и отображающий данные с сервера
+        socket.on('DataFromServer', (data) => {
+            //alert('Получены данные');
+            ShowDeviceData(data);
+        });
 
-                //Обработчик нажатия кнопки в <div id="Gauges">
-                $(document).on('click', 'button', function (eventObject) {
-                    //alert('id=' + $(this).prop('id'));
-                    socket.emit('Control', { 'Button': $(this).prop('id')})
-                });
+        //обработчик нажатия кнопки Shutdown
+        Shutdown.addEventListener('click', function () {
+            socket.emit('Control', { 'Button': this.id });
+        });
 
-                // Показатель нагрева
-                var gauge = new RadialGauge({
-                    renderTo: document.createElement('canvas'),
-                    width: 300,
-                    height: 300
-                }).draw();
-
+        //Обработчик нажатия кнопки в <div id="Buttons">
+        Buttons.addEventListener('click', function (eventObject) {
+            //alert('id=' + $(this).prop('id'));
+            let clickedItem;
+            if (eventObject.target !== eventObject.currentTarget) {
+                clickedItem = eventObject.target.id;
+                console.log('id=' + eventObject.target.id);
+                //alert("Hello " + clickedItem);
             }
-        );
+            eventObject.stopPropagation();  //остановить распространение события
+            
+            socket.emit('Control', { 'Button': clickedItem });
+        });
 
-        // Объект для отображения стрелочных приборов
-        drawGauge = {
-            // Настройка термометров
-            //options определяет вид стрелочного термометра
-            options: {
-                greenFrom: 0, greenTo: 80,
-                yellowFrom: 80, yellowTo: 90,
-                redFrom: 90, redTo: 100,
-                minorTicks: 10
-            },
-            // Функция отображения термометров
-            ShowThermometers: function (Thermometers) {
-                try { var TempData = new google.visualization.DataTable(); }
-                catch (ex) { return; }
-                TempData.addColumn('string', 'Thermometer');
-                TempData.addColumn('number', 'Temperature');
-                // показания стрелочных приборов
-                TempData.addRows(Thermometers);
-                //Объект chartT, привязанный к тегу div - отображает температурные данные с сервера (бакэнда)
-                try { chartT.draw(TempData, this.options); }
-                catch (ex) { }
-            },
-
-            // настройка ваттметра
-            optionsP: {
-                greenFrom: 0, greenTo: 25,
-                yellowFrom: 25, yellowTo: 35,
-                redFrom: 35, redTo: 100,
-                minorTicks: 5
-            },
-            // Функция отображения ваттметра
-            ShowPower: function (Power) {
-                try { var PwrData = new google.visualization.DataTable(); }
-                catch (ex) { return; }
-                PwrData.addColumn('string', 'Power');
-                PwrData.addColumn('number', 'Value');
-                PwrData.addRows(Power);
-                //Объект chartT, привязанный к тегу div - отображает данные о мощности нагрева с сервера (бакэнда)
-                try { chartP.draw(PwrData, this.optionsP); }
-                catch (ex) { }
-            },
-
-            // функция, создающая объект отображения приборов
-            start: function () {
-                //По готовности всей Google API Visualization создать объект отображения стрелочных приборов
-                this['chartT'] = new google.visualization.Gauge(document.getElementById('Thermometers'));
-                this['chartP'] = new google.visualization.Gauge(document.getElementById('Power'));
-                //Запрос актуальных данных от сервера
-                var dataToServer = { sid: socket.id };
-                socket.emit('GiveDeviceData', dataToServer, (data) => {
-                    //alert(data.DateTime);
-                    ShowDeviceData(data);
+        /**
+         * Отображает/изменяет значение вольтметра
+         * @param Voltmeter значение напряжения
+         */
+        function ShowVoltmeter(Voltmeter) {
+            //console.log(Voltmeter);
+            //если ещё нет вольтметра на странице, создать его
+            //console.log('gauges' in document);
+            //console.log('Voltmeter' in document);
+            if (!('gauges' in document) || !('Voltmeter' in document.gauges)) {
+                let VoltMeter = new DialGauge({
+                    id: `Voltmeter`,
+                    height: 110,
+                    majorTicks: 8,
+                    minorTicks: 5,
+                    minValue: 180,
+                    maxValue: 260,
+                    value: Voltmeter[1],
+                    title: Voltmeter[0],
+                    units: "V",
                 });
+            }
+            else {
+                //console.log(document.gauges)
+                document.gauges['Voltmeter'].value = Voltmeter[1];
+            }
+        }
 
-            },
-        };
+        /**
+         * Отображает/изменяет значение ваттметра
+         * @param Power
+         */
+        function ShowPower(Power) {
+            //console.log(Power);
+            if (!('gauges' in document) || !('Power' in document.gauges)) {
+                let WattMeter = new DialGauge({
+                    id: 'Power',
+                    height: 140,
+                    majorTicks: 8,
+                    minorTicks: 5,
+                    minValue: 0,
+                    maxValue: 4.000,
+                    value: +Power[1].toFixed(2),
+                    title: Power[0],
+                    units: "kW",
+                    canBeChanged: true,
+                });
+                WattMeter.addEventListener('changeValue', function (event) {
+                    console.log(`${this.Attributes.id}=${this.value}${this.Attributes.units}`);
+                    socket.emit('Control', { 'SetValue': [this.Attributes.id, this.value] });
+                }, false);
+            }
+            else {
+                document.gauges['Power'].value = +Power[1].toFixed(2);
+            }
+        }
+
+        /**
+         * если ещё не отображены термометры, создает их и устанавливает значения
+         * @param Thermometers список термометров со значениями температур и триггеров
+         * вида [['Низ, 68.4], ['Дефлегматор', 52.3, 53.1]] (третье значение - триггер)
+         */
+        function ShowThermometers(Ths) {
+            //проверить необходимость перерисовки термометров
+            let redraw = false;
+            for (let Thermometer of Ths) {
+                if (!document.querySelector(`[id="${Thermometer[0]}"]`)) {
+                    redraw = true;
+                    break;
+                }
+            }
+            //если нужно перерисуть
+            if (redraw) {
+                //удалить термометры из списка приборов
+                for (let div in document.querySelectorAll(`.thermometerRow`)) {
+                    if (div.firstChild) {
+                        id = div.firstChild.id;
+                        delete document.gauges[id];
+                    }
+                }
+                //очистить div Thermometers
+                //let Ths = document.querySelector(`#Thermometers`);
+                //while (Ths.firstChild) { Ths.removeChild(Ths.firstChild); }
+                while (Thermometers.firstChild) { Thermometers.removeChild(Thermometers.firstChild); }
+                //нарисовать термометры заново
+                for (let Thermometer of Ths) {
+                    createThermometer(Thermometer);
+                }
+            }
+            //задать новые значения термометрам
+            else {
+                //console.log(Ths)
+                for (let Th of Ths) {
+                    //console.log(Ths[0])
+                    //console.log(Th)
+                    document.gauges[Th[0]].value = +Th[1].toFixed(1);
+                    if (Th.length > 2) {
+                        document.gauges[Th[0]].triggerValue = +Th[2].toFixed(1);
+                    }
+                }
+            }
+
+        }
+
+        /**
+         * Создает термометр с указанным наименованием и значением температуры
+         * Для термометров конденсатора и дефлегматора дополнительно устанавливаются
+         * индексы триггеров, определяющих порог срабатывания клапанов этих
+         * холодильников
+         * @param Thermometer массив пар (название, значение)
+         */
+        function createThermometer(thermometer) {
+            //параметры термометра
+            let options = {
+                id: thermometer[0],
+                title: thermometer[0],
+                units: "°C",
+                value: +thermometer[1].toFixed(1),
+                triggerValue: 100,
+                width: 400,
+                minorTicks: 5,
+            };
+            //если задано значение триггера, включить его
+            if (thermometer.length > 2) {
+                options.withTrigger = true;
+                options.triggerValue = +thermometer[2].toFixed(1);
+            }
+            //создать строку термометра
+            let divRow = document.createElement('div');
+            divRow.className = 'thermometerRow';
+            divRow.style.display = 'table-row';
+            //создать ячейку для термометра
+            let divCel = document.createElement('div');
+            divCel.style.display = 'table-cell';
+            //id ячейки совпадает с id и наименованием термометра
+            divCel.id = thermometer[0];
+            divRow.appendChild(divCel);
+            document.querySelector(`#Thermometers`).appendChild(divRow);
+            //создать объект термометра
+            let Thrmr = new Thermometer(options);
+            //если есть триггер, привязать обработчика изменения значения триггера
+            if (thermometer.length > 2) {
+                Thrmr.addEventListener('changeTrigger', function (event) {
+                    console.log(`Триггер термометра ${event.detail.id} запрошен ${event.detail.value}`)
+                    socket.emit('Control', { 'SetTrigger': [event.detail.id, event.detail.value]});
+                }, false);
+            }
+            //добавить ячейку для светодиодов клапанов холодильников
+            let divCelLed = document.createElement('div');
+            divCelLed.className = 'LED';
+            divCelLed.style = 'vertical-align:middle; display : table-cell';
+            divRow.appendChild(divCelLed);
+            //если ещё нет индикатора конденсатора, смонтировать его
+            if (!document.querySelector(`#Condensator`)) {
+                let divLed = document.createElement('div');
+                divLed.id = 'Condensator';
+                divLed.className = 'round';
+                divCelLed.appendChild(divLed);
+            }
+            //если ещё нет индикатора дефлегматора, собрать и его
+            else if(!document.querySelector(`#Dephlegmator`)) {
+                let divLed = document.createElement('div');
+                divLed.id = 'Dephlegmator';
+                divLed.className = 'round';
+                divCelLed.appendChild(divLed);
+            }
+
+
+        }
+
     </script>
 </body>
 </html>

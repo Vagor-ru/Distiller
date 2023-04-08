@@ -28,25 +28,15 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Distiller\actuators\cools%28RPi%29.py" />
     <Compile Include="Distiller\actuators\cools.py" />
-    <Compile Include="Distiller\actuators\power%28RPi%29.py" />
-    <Compile Include="Distiller\actuators\power.py">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Distiller\actuators\power.py" />
     <Compile Include="Distiller\actuators\__init__.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Distiller\config.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Distiller\database.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Distiller\helpers\coolsRegulator.py" />
-    <Compile Include="Distiller\helpers\DS18B20toDB.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Distiller\helpers\logging.py" />
     <Compile Include="Distiller\helpers\transmitter.py">
       <SubType>Code</SubType>
@@ -54,10 +44,10 @@
     <Compile Include="Distiller\helpers\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Distiller\models.py">
+    <Compile Include="Distiller\processes\autolacation.py" />
+    <Compile Include="Distiller\processes\manualMode.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Distiller\processes\autolacation.py" />
     <Compile Include="Distiller\processes\crude.py" />
     <Compile Include="Distiller\processes\wash.py">
       <SubType>Code</SubType>
@@ -65,8 +55,8 @@
     <Compile Include="Distiller\processes\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Distiller\sensors\DS18B20%28RPi%29.py" />
-    <Compile Include="Distiller\sensors\DS18B20.py">
+    <Compile Include="Distiller\sensors\DS18B20.py" />
+    <Compile Include="Distiller\sensors\Voltmeter.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Distiller\sensors\__init__.py">
@@ -90,18 +80,18 @@
     <Folder Include="Distiller\templates\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Distiller\helpers\DS18B20toDB.txt" />
+    <Content Include="configDistiller.json" />
     <Content Include="Distiller\static\content\dashboard.css" />
     <Content Include="Distiller\static\fonts\icomoon.woff" />
     <Content Include="Distiller\static\img\Background.jpg" />
     <Content Include="Distiller\static\img\favicon.ico" />
     <Content Include="Distiller\static\img\Net.png" />
-    <Content Include="Distiller\static\scripts\gauge.min.js" />
-    <Content Include="Distiller\static\scripts\loader.js" />
+    <Content Include="Distiller\static\scripts\dialGauge.js" />
     <Content Include="Distiller\static\scripts\socket.io.js" />
     <Content Include="Distiller\static\scripts\socket.io.js.map" />
     <Content Include="Distiller\templates\ABORT.html" />
     <Content Include="Distiller\templates\ABORT_NEXT.html" />
+    <Content Include="Distiller\templates\dialGauge.html" />
     <Content Include="Distiller\templates\END.html" />
     <Content Include="Distiller\templates\WAIT.html" />
     <Content Include="Distiller\templates\WAITAL.html" />
@@ -110,16 +100,13 @@
     <Content Include="Distiller\static\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Distiller\static\fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="Distiller\static\fonts\glyphicons-halflings-regular.woff" />
-    <Content Include="Distiller\static\scripts\jquery-1.10.2.js" />
-    <Content Include="Distiller\static\scripts\jquery-1.10.2.min.js" />
-    <Content Include="Distiller\static\scripts\jquery-1.10.2.min.map" />
     <Content Include="Distiller\templates\layout.html" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="env\">
       <Id>env</Id>
-      <Version>3.6</Version>
-      <Description>env (Python 3.6 (64-bit))</Description>
+      <Version>3.7</Version>
+      <Description>env (Python 3.7 (64-bit))</Description>
       <InterpreterPath>Scripts\python.exe</InterpreterPath>
       <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
       <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>

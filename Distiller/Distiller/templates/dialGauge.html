@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>DashBoard</title>
+    <style>
+        .round {
+            width: 20px;
+            height: 20px;
+            background: rgb(50,80,50);
+            border: 1px solid #939393;
+            line-height: 20px;
+            text-align: center;
+            font-size: 10px;
+            color: blue;
+            border-radius: 10px;
+            border-color: darkgreen;
+            position: relative;
+            margin: 0 auto;
+            
+        }
+
+    </style>
+    <script src="dialGauge.js"></script>
+</head>
+<body>
+    <div id="DashBoard">
+        <div id="Termometers" style="display: inline-block;"></div>
+        <div id="Gauges" style="display: inline-block;"></div>
+    </div>
+
+    <script type="text/javascript" charset="utf-8">
+        let dataFromServer = {
+            Thermometers: [['Низ', 69.1], ['Середина', 67.8], ['Верх', 66.2], ['Дефлегматор', 59.4], ['Конденсатор', 28.6],],
+            Power: ['Нагрев', 0.756], Volt: ['Сеть', 211], DephState: false, CondState:false, DefTrigger: 45.8, CondTrigger:29,
+        };
+        let DataFromServer = {
+            Thermometers: [
+                [ 'Низ', 69.1 ],
+                ['Середина', 67.8],
+                ['Верх', 66.2],
+                ['Дефлегматор', 59.4, 45.8, 'DephState'],
+                ['Конденсатор', 28.6, 29, 'CondState'],
+            ],
+            Power: ['Нагрев', 0.756],
+            Volt: ['Сеть', 211],
+            DephState: false,
+            CondState: false,
+        };
+
+        //код ниже будет исполняться после загрузки окна
+        window.addEventListener("load", function () {
+
+            for (let i = DataFromServer.Thermometers.length - 1; i >= 0; i--) {
+                createThermometer(DataFromServer.Thermometers[i]);
+            }
+
+            if ('Volt' in DataFromServer) {
+                //console.log(DataFromServer.Volt[0] + '=' + dataFromServer.Volt[1]);
+                let divRow = this.document.createElement('div');
+                divRow.style.display = 'table-row';
+                divRow.id = DataFromServer.Volt[0];
+                this.document.querySelector('#Gauges').appendChild(divRow);
+                let VoltMeter=new DialGauge({
+                    id: DataFromServer.Volt[0],
+                    height: 110,
+                    majorTicks: 10,
+                    minorTicks: 5,
+                    minValue: 170,
+                    maxValue: 270,
+                    value: DataFromServer.Volt[1],
+                    title: DataFromServer.Volt[0],
+                    units: "V",
+                });
+            }
+
+            if ('Power' in DataFromServer) {
+                let divRow = this.document.createElement('div');
+                divRow.style.display = 'table-row';
+                divRow.id = DataFromServer.Power[0];
+                this.document.querySelector('#Gauges').appendChild(divRow);
+                let WattMeter = new DialGauge({
+                    id: DataFromServer.Power[0],
+                    height: 150,
+                    majorTicks: 8,
+                    minorTicks: 5,
+                    minValue: 0,
+                    maxValue: 4.000,
+                    value: 2.55,
+                    title: DataFromServer.Power[0],
+                    units: "kW",
+                    canBeChanged:true,
+                });
+                WattMeter.addEventListener('changeValue', function (event) { console.log(`${this.Attributes.id}=${this.value}${this.Attributes.units}`); }, false);
+            }
+
+        });
+
+        /**
+         * Создает термометр с указанным наименованием и значением температуры
+         * Для термометров конденсатора и дефлегматора дополнительно устанавливаются
+         * индексы триггеров, определяющих порог срабатывания клапанов этих
+         * холодильников
+         * @param Thermometer массив пары название, значение
+         */
+        function createThermometer(thermometer) {
+            let options = {
+                id: thermometer[0],
+                title: thermometer[0],
+                units: "°C",
+                value: thermometer[1],
+                triggerValue: 100,
+                width: 400,
+                minorTicks: 5,
+            };
+            if (thermometer.length>2) {
+                options.withTrigger = true;
+                options.triggerValue = thermometer[2];
+            }
+            let divRow = document.createElement('div');
+            divRow.style.display = 'table-row';
+            let divCel = document.createElement('div');
+            divCel.style.display = 'table-cell';
+            divCel.id = thermometer[0];
+            divRow.appendChild(divCel);
+            document.querySelector(`#Termometers`).appendChild(divRow);
+            let Thrmr = new Thermometer(options);
+            if (thermometer.length > 2) {
+                Thrmr.addEventListener('', function (event) { }, false);
+            }
+            if (thermometer.length > 3) {
+                let divCelLed = document.createElement('div');
+                divCelLed.style = 'vertical-align:middle; display : table-cell';
+                let divLed = document.createElement('div');
+                divLed.id = thermometer[3];
+                divLed.className = 'round';
+                divCelLed.appendChild(divLed);
+                divRow.appendChild(divCelLed);
+            }
+        }
+    </script>
+</body>
+</html>
