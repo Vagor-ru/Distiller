@@ -6,7 +6,7 @@
 #отключить оверскан у дисплея
 sudo raspi-config nonint do_overscan 1
 #разрешение экрана 800х600 60Гц 4:3
-sudo raspi-config nonint do_resolution 2 9
+#sudo raspi-config nonint do_resolution 6 0
 #разрешить VNC
 sudo raspi-config nonint do_vnc 0
 #разрешить I2C
