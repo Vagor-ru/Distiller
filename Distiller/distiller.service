@@ -1,5 +1,7 @@
 [Unit]
 Description=Управление дистиллятором (сервер)
+After=syslog.target
+After=network.target
 After=multi-user.target
  
 [Service]
