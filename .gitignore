@@ -241,5 +241,6 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 /Distiller/env
+env
 *.pyc
 /Distiller/env1
