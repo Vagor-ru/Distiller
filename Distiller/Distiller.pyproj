@@ -79,6 +79,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Distiller\sensors\DS18B20.py" />
+    <Compile Include="Distiller\sensors\DS18B20test.py" />
     <Compile Include="Distiller\sensors\Voltmeter.py">
       <SubType>Code</SubType>
     </Compile>
