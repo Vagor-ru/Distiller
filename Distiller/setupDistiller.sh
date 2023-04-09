@@ -29,7 +29,7 @@ unzip -u "/home/pi/Downloads/Distiller.zip" -d "/home/pi/Distiller"
 #rm "setupDistiller.sh"
 
 #Создание виртуального окружения
-python3 -m venv "/home/pi/Distiller/env"
+python3.8 -m venv "/home/pi/Distiller/env"
 
 #Активация и наполнение виртуального окружения
 cd "/home/pi/Distiller"
