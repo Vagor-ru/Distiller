@@ -270,7 +270,7 @@ class Thermometers(threading.Thread):
                     objT.trigger=False
             dbLock.release()    #разрешить исполнение другим потокам
             self.Tmeasured.set()
-            Transmit(self.dataFromServer())
+            Transmit(self.dataFromServer)
             #если сброшен флаг работы, рвем цикл
             if not self.__Run:
                 break

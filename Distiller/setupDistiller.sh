@@ -15,6 +15,14 @@ sudo raspi-config nonint do_i2c 0
 sudo raspi-config nonint do_onewire 0
 #
 
+#оказалось, Distiller не работает в среде python3.9
+#удаление конфигурационных и файлов данных python3.9 и его зависимостей
+#ломает rasspberry OS к чёртовой матери
+#sudo apt-get purge --auto-remove python3.9
+#установка python3.8
+#sudo apt-get update
+#sudo apt-get install python3.8
+
 #Переименование предыдущего конфигурационного файла
 mv -f "/home/pi/Distiller/configDistiller.json" "/home/pi/Distiller/preconfigDistiller.json"
 

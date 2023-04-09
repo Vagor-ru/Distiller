@@ -46,7 +46,7 @@ class Voltmeter(threading.Thread):
             self._V=self.GetVoltage()
             app.config['Voltmeter']=self.dataFromServer
             self.VoltReady.set()    #установить флаг готовности результатов измеерния вольтметра
-            Transmit(self.dataFromServer())
+            Transmit(self.dataFromServer)
             time.sleep(0.5)
 
     def stop(self):
