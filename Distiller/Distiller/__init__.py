@@ -136,10 +136,10 @@ if app.config['Mode'] == 'WAIT':
     deph_Reg.start()
 
 #Запуск потока, отправляющего значения приборов клиенту
-from Distiller.helpers.transmitter import SendGaugesValues
-sendGaugesValues=SendGaugesValues()
-sendGaugesValues.name='sendGaugesValues'
-sendGaugesValues.start()
+#from Distiller.helpers.transmitter import SendGaugesValues
+#sendGaugesValues=SendGaugesValues()
+#sendGaugesValues.name='sendGaugesValues'
+#sendGaugesValues.start()
 
 for Thread in threading.enumerate():
     print(Thread.name)

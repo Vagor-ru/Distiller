@@ -22,6 +22,7 @@ import time     #Модуль для работы со временем
 import datetime #Модуль для работы с датой и временем
 import threading    #Модуль для работы с потоками
 from Distiller import app, config, dbLock
+from Distiller.helpers.transmitter import Transmit
 
 #Шаблон ID термометра
 TemplateDS18B20="28-000000"
@@ -269,6 +270,7 @@ class Thermometers(threading.Thread):
                     objT.trigger=False
             dbLock.release()    #разрешить исполнение другим потокам
             self.Tmeasured.set()
+            Transmit(self.dataFromServer())
             #если сброшен флаг работы, рвем цикл
             if not self.__Run:
                 break

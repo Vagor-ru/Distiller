@@ -27,9 +27,11 @@ if app.config['RPI']:
 
 class Power(threading.Thread):
     '''Класс-поток регулирования мощности нагрева'''
+
     step=1         #Шаг установки мощности = 1%
     period=50.0    #Длительность преобразования Брезенхема (сек)
-    _Run=False
+    _Run=False      #Флаг запуска процесса регулирования мощности
+    PowerChange = threading.Event()    #событие изменения мощности
 
     def __init__(self):
         #threading.Thread.__init__(self)
@@ -38,6 +40,7 @@ class Power(threading.Thread):
         self.Bresenham = Bresenham()
         self._Pa=0
         self._Pmax=voltmeter.value**2/config['PARAMETERS']['rTEH']['value']/1000
+        self.PowerChange.clear()    #сброс флага события изменения мощности
         
 
     @property
@@ -54,12 +57,15 @@ class Power(threading.Thread):
     @value.setter
     def value(self, value):
         '''установка мощности в кВт'''
+        Pc = self._Pa
         if value<0:
             self._Pa = 0.0
         elif value > self._Pmax:
             self._Pa = self._Pmax
         else:
             self._Pa = float(value)
+        if Pc != self._Pa:      # если меняется мощность, генерировать событие
+            self.PowerChange.set()
         self.Bresenham.value = self.Bresenham.range*self.value/self.Pmax
         app.config['Power']=self.dataFromServer
         Transmit(self.dataFromServer)
@@ -69,10 +75,13 @@ class Power(threading.Thread):
         if not app.config['RPI']:
             self._Run=True
             while self._Run:
+                if self.PowerChange.isSet():    #если флаг изменения мощности установлен, сбросить его
+                    self.PowerChange.clear()
                 V=voltmeter.value
                 if self.value >= self.Pmax:
                     self._Pmax = self.value = V**2/config['PARAMETERS']['rTEH']['value']/1000
                     Transmit(self.dataFromServer)
+                    self.PowerChange.set()
                 else:
                     self._Pmax = V**2/config['PARAMETERS']['rTEH']['value']/1000
                 self.Bresenham.value = self.Bresenham.range*self.value/self.Pmax
@@ -82,10 +91,13 @@ class Power(threading.Thread):
         GPIO.setup(self.HEATER_PIN, GPIO.OUT, GPIO.PUD_OFF, GPIO.LOW)
         self._Run=True
         while self._Run:
+            if self.PowerChange.isSet():    #если флаг изменения мощности установлен, сбросить его
+                self.PowerChange.clear()
             V=voltmeter.value
             if self.value >= self.Pmax:
                 self._Pmax = self.value = V**2/config['PARAMETERS']['rTEH']['value']/1000
                 Transmit(self.dataFromServer)
+                self.PowerChange.set()
             else:
                 self._Pmax = V**2/config['PARAMETERS']['rTEH']['value']/1000
             #self.Bresenham.value = self.Bresenham.range*self.value/self.Pmax
@@ -97,11 +109,13 @@ class Power(threading.Thread):
         #print('штырек HEATER_PIN освобожден')
 
     def stop(self):
+        '''Останавливает поток регулирования мощности нагрева'''
         self.value=0
         self._Run=False
 
     @property
     def dataFromServer(self):
+        '''Возвращает словарь для передачи в веб-интерфейс'''
         return {'Power':[('Нагрев',self._Pa)]}
 
 

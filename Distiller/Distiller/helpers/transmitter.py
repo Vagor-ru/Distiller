@@ -1,5 +1,6 @@
 import threading
-from Distiller import socketio, thermometers, voltmeter
+import time
+from Distiller import socketio
 #from Distiller import power
 
 def Transmit(DataFromServer):
@@ -21,18 +22,21 @@ class SendGaugesValues(threading.Thread):
     def run(self):
         self._Run=True
         while(self._Run):
-            thermometers.Tmeasured.wait()
-            socketio.emit('DataFromServer', self.CollectData())
+            #from Distiller import thermometers
+            #thermometers.Tmeasured.wait()
+            #socketio.emit('DataFromServer', self.CollectData())
+            time.sleep(1)
+            pass
 
     def CollectData(self):
-        from Distiller import condensator
-        from Distiller import dephlegmator
+        #from Distiller import condensator
+        #from Distiller import dephlegmator
         dataFromServer={}
-        dataFromServer.update(thermometers.dataFromServer)  #термометры
-        dataFromServer.update(voltmeter.dataFromServer)     #Вольтметр
+        #dataFromServer.update(thermometers.dataFromServer)  #термометры
+        #dataFromServer.update(voltmeter.dataFromServer)     #Вольтметр
         #dataFromServer.update(power.dataFromServer)         #Ваттметр
-        dataFromServer.update(condensator.dataFromServer)   #Конденсатор
-        dataFromServer.update(dephlegmator.dataFromServer)  #Дефлегматор
+        #dataFromServer.update(condensator.dataFromServer)   #Конденсатор
+        #dataFromServer.update(dephlegmator.dataFromServer)  #Дефлегматор
         #print(dataFromServer)
         return dataFromServer
 
