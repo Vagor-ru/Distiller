@@ -22,6 +22,25 @@ sudo raspi-config nonint do_onewire 0
 #установка python3.8
 #sudo apt-get update
 #sudo apt-get install python3.8
+#установка pyenv:
+#curl https://pyenv.run | bash
+#настройка pyenv:
+#файл ~/.bashrc:
+#echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+#echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+#echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+#файл ~/.profile:
+#echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.profile
+#echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.profile
+#echo 'eval "$(pyenv init -)"' >> ~/.profile
+#зависимости:
+#sudo apt update; sudo apt install build-essential libssl-dev zlib1g-dev \
+#libbz2-dev libreadline-dev libsqlite3-dev curl \
+#libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+#установка python 3.8.7:
+#pyenv install 3.8.7
+#назначить глобальной эту версию: (нужно ли?)
+#pyenv global 3.8.7
 
 #Переименование предыдущего конфигурационного файла
 mv -f "/home/pi/Distiller/configDistiller.json" "/home/pi/Distiller/preconfigDistiller.json"
@@ -37,11 +56,15 @@ unzip -u "/home/pi/Downloads/Distiller.zip" -d "/home/pi/Distiller"
 #rm "setupDistiller.sh"
 
 #Создание виртуального окружения
-python3.8 -m venv "/home/pi/Distiller/env"
+#python3.8 -m venv "/home/pi/Distiller/env"
+
+#переход в рабочий каталог
+cd "/home/pi/Distiller"
+#создание локальной версии питона посредством pyenv:
+pyenv local 3.8.7
 
 #Активация и наполнение виртуального окружения
-cd "/home/pi/Distiller"
-source "env/bin/activate"
+#source "env/bin/activate"
 
 #Обновление pip
 pip install --upgrade pip

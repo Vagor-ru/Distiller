@@ -3,5 +3,4 @@
 # Запуск: bash startDistiller.sh
 
 cd "/home/pi/Distiller"
-source "env/bin/activate"
-python3 runserver.py
+python runserver.py
