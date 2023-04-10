@@ -34,6 +34,8 @@ echo 'eval "$(pyenv init -)"' >> ~/.profile
 #libbz2-dev libreadline-dev libsqlite3-dev curl \
 #libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
 
+#---------------------------------------------нужно закрыть терминальное окно, команды ниже уже во вновь открытом окне
+
 #установка python 3.8.0:
 pyenv install 3.8.0
 #назначить глобальной эту версию: (нужно ли?)
