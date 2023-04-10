@@ -63,6 +63,13 @@ pyenv local 3.8.7
 #Обновление pip
 #pip install --upgrade pip
 
+#создание виртуальной среды venv (env - название виртуального каталога)
+#python -m venv env
+#активация виртуальной среды
+#source env/bin/activate
+#деактивация виртуальной среды
+#deactivate
+
 #Установка в виртуальное окружение необходимых пакетов
 pip install -r requirements.txt
 
