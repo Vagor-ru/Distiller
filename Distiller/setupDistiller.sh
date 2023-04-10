@@ -36,10 +36,10 @@ echo 'eval "$(pyenv init -)"' >> ~/.profile
 
 #---------------------------------------------нужно закрыть терминальное окно, команды ниже уже во вновь открытом окне
 
-#установка python 3.8.0:
-pyenv install 3.8.0
+#установка python 3.8.7:
+pyenv install 3.8.7
 #назначить глобальной эту версию: (нужно ли?)
-#pyenv global 3.8.0
+#pyenv global 3.8.7
 
 #Переименование предыдущего конфигурационного файла
 mv -f "/home/pi/Distiller/configDistiller.json" "/home/pi/Distiller/preconfigDistiller.json"
@@ -54,7 +54,7 @@ unzip -u "/home/pi/Downloads/Distiller.zip" -d "/home/pi/Distiller"
 cd "/home/pi/Distiller"
 
 #создание локальной версии питона посредством pyenv:
-pyenv local 3.8.0
+pyenv local 3.8.7
 
 #удаление установочных файлов
 #rm "/home/pi/Downloads/Distiller.zip"
