@@ -240,6 +240,8 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
-**/env
-*.pyc
 
+#python files
+env
+*.pyc
+__pycache__
