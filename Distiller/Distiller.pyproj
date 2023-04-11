@@ -130,18 +130,17 @@
     <Content Include="Distiller\static\fonts\glyphicons-halflings-regular.woff" />
     <Content Include="Distiller\templates\layout.html" />
     <Content Include="setupDistiller.sh" />
-    <Content Include="setupDistiller.zip" />
     <Content Include="startDistiller.sh" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="env\">
       <Id>env</Id>
-      <Version>3.8</Version>
-      <Description>env (Python 3.8 (32-bit))</Description>
+      <Version>3.9</Version>
+      <Description>env (Python 3.9)</Description>
       <InterpreterPath>Scripts\python.exe</InterpreterPath>
       <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
       <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
-      <Architecture>X86</Architecture>
+      <Architecture>X64</Architecture>
     </Interpreter>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.Web.targets" />
