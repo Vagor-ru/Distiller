@@ -745,7 +745,7 @@ class Thermometer extends EventTarget {
         `;
         this.SVG.appendChild(defs);
         this.Bar = document.createElementNS(Thermometer.SVG_NS, "rect");
-        this.Bar.style = `fill : url(#Bar); filter:url(#Shadow); opacity : 0.7`;
+        this.Bar.style = `fill : red; opacity : 0.7`;
         let barAttr = {
             class: "bar",
             x: bx,

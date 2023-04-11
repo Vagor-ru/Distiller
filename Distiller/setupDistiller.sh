@@ -61,12 +61,12 @@ pyenv local 3.8.7
 #rm "setupDistiller.sh"
 
 #Обновление pip
-#pip install --upgrade pip
+pip install --upgrade pip
 
 #создание виртуальной среды venv (env - название виртуального каталога)
-#python -m venv env
+python -m venv env
 #активация виртуальной среды
-#source env/bin/activate
+source env/bin/activate
 #деактивация виртуальной среды
 #deactivate
 

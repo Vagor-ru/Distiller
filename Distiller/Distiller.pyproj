@@ -123,7 +123,6 @@
     <Content Include="Distiller\templates\parameters.html" />
     <Content Include="Distiller\templates\WAIT.html" />
     <Content Include="Distiller\templates\WAITAL.html" />
-    <Content Include="requirements%28old%29.txt" />
     <Content Include="Distiller\static\fonts\glyphicons-halflings-regular.eot" />
     <Content Include="Distiller\static\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Distiller\static\fonts\glyphicons-halflings-regular.ttf" />
