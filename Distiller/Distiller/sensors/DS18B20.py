@@ -149,7 +149,7 @@ def Measure(Sort=False, SortByT=False, TimeOut=None):
 
     # Проверить таймауты потоков
     for eashT in Threads:
-        if eashT.isAlive():
+        if eashT.is_alive():
             raise TimeOutDS18B20Error('Timeout of measure of temperature at %s'%eashT.name)
 
     #Сбор значений температур термометров

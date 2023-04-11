@@ -240,9 +240,8 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
-/Distiller/env
-\Distiller\Distiller\env
-\Distiller\env
+
+#python files
 env
 *.pyc
-/Distiller/env1
+__pycache__
