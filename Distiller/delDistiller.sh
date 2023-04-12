@@ -1,3 +1,7 @@
+#!/bin/bash
+# Скрипт удаления Distiller
+# Запуск: sudo bash '/home/pi/Distiller/startDistiller.sh'
+
 #Удаление файла автозапуска сервера
 sudo rm '/etc/systemd/system/distiller.service'
 

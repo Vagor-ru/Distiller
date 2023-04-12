@@ -1,5 +1,5 @@
 #!/bin/bash
-# Скрипт разворачивания проекта Distiller
+# Скрипт разворачивания проекта Distiller, команды в терминале
 #Скачивание: 
 #wget -O '/home/pi/Downloads/setupDistiller.sh' 'https://github.com/Vagor-ru/Distiller/raw/master/Distiller/setupDistiller.sh'
 # Запуск: sudo bash '/home/pi/Downloads/setupDistiller.sh'
