@@ -226,8 +226,9 @@ class Wash(threading.Thread):
             # если температура меньше, чем уставка уменьшенная на полградуса, сбрасываем PID
             #if thermometers.getValue('Верх') < self.Stab_Top.value - 0.5:
             #    self.Stab_Top.reset()
-            # Новый критерий завершения перегона по разнице температур
-            if (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > config['PARAMETERS']["Ratio"]["value"]:
+            # Новый критерий завершения перегона по отношению разниц температур
+            if (thermometers.getValue('Середина') - thermometers.getValue('Верх')) / \
+                (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > 4.7:
                 count_end += 1
                 if count_end > 15:
                     break

@@ -1,8 +1,10 @@
 #!/bin/bash
-# Скрипт разворачивания проекта Distiller
+# Скрипт разворачивания проекта Distiller, команды в терминале
 #Скачивание: 
 #wget -O '/home/pi/Downloads/setupDistiller.sh' 'https://github.com/Vagor-ru/Distiller/raw/master/Distiller/setupDistiller.sh'
 # Запуск: sudo bash '/home/pi/Downloads/setupDistiller.sh'
+#можно и так:
+# curl 'https://github.com/Vagor-ru/Distiller/raw/master/Distiller/setupDistiller.sh' | bash
 
 #Настройка конфигурации raspberry pi
 #отключить оверскан у дисплея
@@ -17,18 +19,18 @@ sudo raspi-config nonint do_i2c 0
 sudo raspi-config nonint do_onewire 0
 #
 
-#оказалось, Distiller не работает в среде python3.9
-#установка pyenv:
-curl https://pyenv.run | bash
+#Distiller доработан для python3.9
+#установка pyenv (это не нужно):
+#curl https://pyenv.run | bash
 #настройка pyenv:
 #файл ~/.bashrc:
-echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
-echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
-echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+#echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+#echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+#echo 'eval "$(pyenv init -)"' >> ~/.bashrc
 #файл ~/.profile:
-echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.profile
-echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.profile
-echo 'eval "$(pyenv init -)"' >> ~/.profile
+#echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.profile
+#echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.profile
+#echo 'eval "$(pyenv init -)"' >> ~/.profile
 #зависимости:
 #sudo apt update; sudo apt install build-essential libssl-dev zlib1g-dev \
 #libbz2-dev libreadline-dev libsqlite3-dev curl \
@@ -37,15 +39,15 @@ echo 'eval "$(pyenv init -)"' >> ~/.profile
 #---------------------------------------------нужно закрыть терминальное окно, команды ниже уже во вновь открытом окне
 
 #установка python 3.8.7:
-pyenv install 3.8.7
+#pyenv install 3.8.7
 #назначить глобальной эту версию: (нужно ли?)
 #pyenv global 3.8.7
 
 #Переименование предыдущего конфигурационного файла
-mv -f "/home/pi/Distiller/configDistiller.json" "/home/pi/Distiller/preconfigDistiller.json"
+#mv -f "/home/pi/Distiller/configDistiller.json" "/home/pi/Distiller/preconfigDistiller.json"
 
 #Скачивание архива программы
-wget -O '/home/pi/Downloads/Distiller.zip' 'https://github.com/Vagor-ru/Distiller/raw/master/Distiller/Distiller.zip'
+sudo wget -O '/home/pi/Downloads/Distiller.zip' 'https://github.com/Vagor-ru/Distiller/raw/master/Distiller/Distiller.zip'
 
 #Распаковка архива
 unzip -u "/home/pi/Downloads/Distiller.zip" -d "/home/pi/Distiller"
@@ -53,8 +55,8 @@ unzip -u "/home/pi/Downloads/Distiller.zip" -d "/home/pi/Distiller"
 #переход в рабочий каталог
 cd "/home/pi/Distiller"
 
-#создание локальной версии питона посредством pyenv:
-pyenv local 3.8.7
+#создание локальной версии питона посредством pyenv (не нужно):
+#pyenv local 3.8.7
 
 #удаление установочных файлов
 #rm "/home/pi/Downloads/Distiller.zip"

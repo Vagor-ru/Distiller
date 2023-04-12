@@ -1,5 +1,5 @@
 Flask
-Flask-SocketIO
+flask-socketio==5.2.0
 simple-pid
 smbus
 RPi.GPIO
