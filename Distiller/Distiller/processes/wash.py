@@ -111,7 +111,7 @@ class Wash(threading.Thread):
         pidH = PID(config['PARAMETERS']['Kph']['value'],\
            config['PARAMETERS']['Kih']['value'],\
           config['PARAMETERS']['Kdh']['value'],\
-         setpoint=thermometers.getValue('Низ'))
+         setpoint=thermometers.getValue('Середина'))
         #Установка диапазона рассчитываемой PID-регулятором мощности
         #print('МаксиМощь=', power.Pmax)
         pidH.output_limits = (0, power.Pmax)
@@ -129,7 +129,7 @@ class Wash(threading.Thread):
                config['PARAMETERS']['Kih']['value'],\
               config['PARAMETERS']['Kdh']['value'])
             #расчёт PID-регулятором необходимой мощности для поддержания температуры низа колонны
-            power.value=pidH(thermometers.getValue('Низ'))
+            power.value=pidH(thermometers.getValue('Середина'))
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
