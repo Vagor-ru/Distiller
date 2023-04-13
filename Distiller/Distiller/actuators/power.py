@@ -85,7 +85,7 @@ class Power(threading.Thread):
                 else:
                     self._Pmax = V**2/config['PARAMETERS']['rTEH']['value']/1000
                 self.Bresenham.value = self.Bresenham.range*self.value/self.Pmax
-                time.sleep(1)
+                time.sleep(0.2)
             return
         #штырек HEATER_PIN на вывод, подтяжка отключена, низкий уровень
         GPIO.setup(self.HEATER_PIN, GPIO.OUT, GPIO.PUD_OFF, GPIO.LOW)
