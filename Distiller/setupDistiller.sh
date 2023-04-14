@@ -3,7 +3,7 @@
 #Скачивание: 
 #wget -O '/home/pi/Downloads/setupDistiller.sh' 'https://github.com/Vagor-ru/Distiller/raw/master/Distiller/setupDistiller.sh'
 # Запуск: sudo bash '/home/pi/Downloads/setupDistiller.sh'
-#можно и так:
+#НЕ можно так:
 # curl 'https://github.com/Vagor-ru/Distiller/raw/master/Distiller/setupDistiller.sh' | bash
 
 #Настройка конфигурации raspberry pi
