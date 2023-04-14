@@ -7,6 +7,8 @@ sudo rm '/etc/systemd/system/distiller.service'
 
 #Удаление файла запуска браузера в меню
 sudo rm '/home/pi/.local/share/applications/distiller.desktop'
+#Удаление пункта меню "Удаление Distiller"
+sudo rm '/home/pi/.local/share/applications/delDistiller.desktop'
 
 #Удаление каталога distiller
 sudo rm -R '/home/pi/Distiller'

@@ -3,7 +3,7 @@
 #Скачивание: 
 #wget -O '/home/pi/Downloads/setupDistiller.sh' 'https://github.com/Vagor-ru/Distiller/raw/master/Distiller/setupDistiller.sh'
 # Запуск: sudo bash '/home/pi/Downloads/setupDistiller.sh'
-#можно и так:
+#НЕ можно так:
 # curl 'https://github.com/Vagor-ru/Distiller/raw/master/Distiller/setupDistiller.sh' | bash
 
 #Настройка конфигурации raspberry pi
@@ -47,10 +47,15 @@ sudo raspi-config nonint do_onewire 0
 #mv -f "/home/pi/Distiller/configDistiller.json" "/home/pi/Distiller/preconfigDistiller.json"
 
 #Скачивание архива программы
-sudo wget -O '/home/pi/Downloads/Distiller.zip' 'https://github.com/Vagor-ru/Distiller/raw/master/Distiller/Distiller.zip'
+#sudo wget -O '/home/pi/Downloads/Distiller.zip' 'https://github.com/Vagor-ru/Distiller/raw/master/Distiller/Distiller.zip'
+sudo wget -O '/home/pi/Downloads/Distiller.zip' 'https://github.com/Vagor-ru/Distiller/archive/refs/heads/master.zip'
+
 
 #Распаковка архива
-unzip -u "/home/pi/Downloads/Distiller.zip" -d "/home/pi/Distiller"
+#unzip -u "/home/pi/Downloads/Distiller.zip" -d "/home/pi/Distiller"
+unzip '/home/pi/Downloads/Distiller.zip' -d '/home/pi/'
+mv '/home/pi/Distiller-master/Distiller/' '/home/pi/'
+rm -R '/home/pi/Distiller-master/'
 
 #переход в рабочий каталог
 cd "/home/pi/Distiller"
@@ -82,6 +87,8 @@ sudo systemctl enable distiller
 
 #Копирование файла запуска браузера в меню
 sudo cp 'distiller.desktop' '/home/pi/.local/share/applications/'
+#Копирование пункта удаление
+sudo cp 'delDistiller.desktop' '/home/pi/.local/share/applications/'
 
 #Перезагрузка
 sudo reboot
