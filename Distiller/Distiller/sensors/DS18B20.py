@@ -175,6 +175,7 @@ class DS18B20:
         self.T=None         #текущая температура
         self.Tpre=None      #предыдущая температура
         self.V_T=0.0        #скорость роста температуры
+        self.V_Tpre=0.0     #предыдущая скорость роста температуры
         self.Ttrigger=None  #установка порога срабатывания
         self.boiling=False  #флаг закипания
         self.trigger=False  #флаг сработки по порогу
@@ -233,10 +234,11 @@ class Thermometers(threading.Thread):
             # Если флаг получения температурных данных установлен,
             # сбросить его
             if self.Tmeasured.isSet():
-                #сохранить предыдущие температуры
+                #сохранить предыдущие температуры и скорости изменения
                 dbLock.acquire()
                 for objT in self.Tlist:
-                    objT.Tpre=objT.T
+                    objT.Tpre = objT.T
+                    objT.V_Tpre = objT.V_T
                 dbLock.release()
                 self.Tmeasured.clear()
             #сбросить флаги закипания и срабатывания, если были установлены
@@ -244,10 +246,10 @@ class Thermometers(threading.Thread):
                 self.boiling.clear()
             if self.trigger.is_set():
                 self.trigger.clear()
-            tBegin=time.time()
-            Ts=Measure()
+            tBegin=time.time()  #засечь время
+            Ts=Measure()        #измерить температуры
             #print(Ts)
-            durationMeasure=time.time()-tBegin
+            durationMeasure=time.time()-tBegin  #вычислить затраченное на измерение время
             app.config['Thermometers']=self.dataFromServer
             #print(app.config['Thermometers'])
             # сравнение температур и установка флага если закипание
@@ -255,9 +257,9 @@ class Thermometers(threading.Thread):
             for T in Ts:
                 objT=list(filter(lambda objT: objT.ID==T[0],self.Tlist))[0]
                 objT.T=T[1]
-                objT.V_T=(objT.T-objT.Tpre)/durationMeasure
-                #если скорость роста температуры больше 0.6°C в секунду, закипание
-                if objT.V_T > 0.6:
+                objT.V_T=(objT.T-objT.Tpre)/durationMeasure #вычислить скорость изменения температуры
+                #если скорость роста температуры, увеличенная на ошибку, начала уменьшаться, значит закипание
+                if objT.V_T + 0.2/durationMeasure < objT.V_Tpre:
                     objT.boiling=True
                     self.boiling.set()
                 else:
