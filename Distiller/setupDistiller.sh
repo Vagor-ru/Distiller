@@ -87,6 +87,8 @@ sudo systemctl enable distiller
 
 #Копирование файла запуска браузера в меню
 sudo cp 'distiller.desktop' '/home/pi/.local/share/applications/'
+#Копирование пункта удаление
+sudo cp 'delDistiller.desktop' '/home/pi/.local/share/applications/'
 
 #Перезагрузка
 sudo reboot

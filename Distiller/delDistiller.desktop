@@ -1,0 +1,8 @@
+[Desktop Entry]
+Comment=Управление перегонным аппаратом (web-интерфейс)
+Terminal=false
+Name=delDistiller
+Exec=sudo bash '/home/pi/Distiller/delDistiller.sh'
+Type=Application
+Icon=/home/pi/Distiller/Distiller/static/img/delDistiller.png
+GenericName=Удаление пакета Дистиллятор
