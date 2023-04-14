@@ -258,8 +258,8 @@ class Thermometers(threading.Thread):
                 objT=list(filter(lambda objT: objT.ID==T[0],self.Tlist))[0]
                 objT.T=T[1]
                 objT.V_T=(objT.T-objT.Tpre)/durationMeasure #вычислить скорость изменения температуры
-                #если скорость роста температуры, увеличенная на ошибку, начала уменьшаться, значит закипание
-                if objT.V_T + 0.6/durationMeasure < objT.V_Tpre:
+                #если скорость роста температуры больше 0.4°C в секунду, значит закипание
+                if objT.V_T > 0.4:
                     objT.boiling=True
                     self.boiling.set()
                 else:
