@@ -47,10 +47,15 @@ sudo raspi-config nonint do_onewire 0
 #mv -f "/home/pi/Distiller/configDistiller.json" "/home/pi/Distiller/preconfigDistiller.json"
 
 #Скачивание архива программы
-sudo wget -O '/home/pi/Downloads/Distiller.zip' 'https://github.com/Vagor-ru/Distiller/raw/master/Distiller/Distiller.zip'
+#sudo wget -O '/home/pi/Downloads/Distiller.zip' 'https://github.com/Vagor-ru/Distiller/raw/master/Distiller/Distiller.zip'
+sudo wget -O '/home/pi/Downloads/Distiller.zip' 'https://github.com/Vagor-ru/Distiller/archive/refs/heads/master.zip'
+
 
 #Распаковка архива
-unzip -u "/home/pi/Downloads/Distiller.zip" -d "/home/pi/Distiller"
+#unzip -u "/home/pi/Downloads/Distiller.zip" -d "/home/pi/Distiller"
+unzip '/home/pi/Downloads/Distiller.zip' -d '/home/pi/'
+mv '/home/pi/Distiller-master/Distiller/' '/home/pi/'
+rm -R '/home/pi/Distiller-master/'
 
 #переход в рабочий каталог
 cd "/home/pi/Distiller"
