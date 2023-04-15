@@ -146,6 +146,8 @@ class Wash(threading.Thread):
         #подать максимальную мощность
         power.value=power.Pmax
         tBgn=time.time()        #фиксация времени начала этапа
+        #установить срабатывание триггера верха на отбор голов
+        thermometers.setTtrigger('Верх', config['PARAMETERS']['T_Head']['value'])
         while True:
             # Вывести на дисплей состояние
             sec=int(time.time()-tBgn)
