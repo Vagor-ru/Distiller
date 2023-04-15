@@ -159,6 +159,8 @@ class Wash(threading.Thread):
             elif app.config['AB_CON']=='Next':
                 app.config['AB_CON']=''
                 break
+            # Ждать свежих температурных данных
+            thermometers.Tmeasured.wait(1.3)
             if thermometers.boiling.wait(1) and thermometers.getObjT('Верх').boiling:
                 thermometers.values
                 break    #поймали закипание на верхнем термометре
