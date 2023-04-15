@@ -161,8 +161,7 @@ class Wash(threading.Thread):
                 break
             # Ждать свежих температурных данных
             thermometers.Tmeasured.wait(1.3)
-            if thermometers.boiling.wait(1) and thermometers.getObjT('Верх').boiling:
-                thermometers.values
+            if thermometers.getObjT('Верх').boiling:
                 break    #поймали закипание на верхнем термометре
             if thermometers.getValue('Верх') > thermometers.getTtrigger('Верх'):
                 break    #выше не нужно
@@ -289,6 +288,7 @@ class Wash(threading.Thread):
         self.stop()
         #Восстановление состояния интерфейса
         self.pageUpdate(self.Display, self.Buttons)
+        app.config['AB_CON']=''
 
     def pageUpdate(self, Display=None, Buttons=None):
         DataFromServer={}
