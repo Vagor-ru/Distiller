@@ -147,7 +147,7 @@ class Wash(threading.Thread):
         power.value=power.Pmax
         tBgn=time.time()        #фиксация времени начала этапа
         #установить срабатывание триггера верха на отбор голов
-        thermometers.setTtrigger('Верх', config['PARAMETERS']['T_Head']['value'])
+        #thermometers.setTtrigger('Верх', config['PARAMETERS']['T_Head']['value'])
         while True:
             # Вывести на дисплей состояние
             sec=int(time.time()-tBgn)
@@ -165,7 +165,7 @@ class Wash(threading.Thread):
             thermometers.Tmeasured.wait(1.3)
             if thermometers.getObjT('Верх').boiling:
                 break    #поймали закипание на верхнем термометре
-            if thermometers.getValue('Верх') > thermometers.getTtrigger('Верх'):
+            if thermometers.getValue('Дефлегматор') > thermometers.getTtrigger('Дефлегматор'):
                 break    #выше не нужно
         power.value=0   #отключить нагрев
 
