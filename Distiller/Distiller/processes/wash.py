@@ -185,6 +185,9 @@ class Wash(threading.Thread):
                 break
             # Ждать свежих температурных данных
             thermometers.Tmeasured.wait(1.3)
+            # если дефлегматор прогрелся, переходим на перегон
+            if thermometers.getObjT("Дефлегматор").trigger:
+                break
 
         """ Отбор тела"""
         self.pageUpdate('Бражка: перегон<br><br>%s'%(self.Duration()), 'ABORT.html')
