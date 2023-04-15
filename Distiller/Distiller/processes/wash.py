@@ -111,7 +111,7 @@ class Wash(threading.Thread):
         pidH = PID(config['PARAMETERS']['Kph']['value'],\
            config['PARAMETERS']['Kih']['value'],\
           config['PARAMETERS']['Kdh']['value'],\
-         setpoint=thermometers.getValue('Середина'))
+         setpoint=thermometers.getValue('Низ'))
         #Установка диапазона рассчитываемой PID-регулятором мощности
         #print('МаксиМощь=', power.Pmax)
         pidH.output_limits = (0, power.Pmax)
@@ -129,7 +129,7 @@ class Wash(threading.Thread):
                config['PARAMETERS']['Kih']['value'],\
               config['PARAMETERS']['Kdh']['value'])
             #расчёт PID-регулятором необходимой мощности для поддержания температуры низа колонны
-            power.value=pidH(thermometers.getValue('Середина'))
+            power.value=pidH(thermometers.getValue('Низ'))
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -166,29 +166,25 @@ class Wash(threading.Thread):
         #        break    #выше не нужно
         #power.value=0   #отключить нагрев
 
-        #"""Стабилизация колонны"""
-        #duration = 60   #Продолжительность этапа стабилизации (сек)
-        #tBgn=time.time()        #фиксация времени начала этапа
-        #while (time.time()-tBgn) < duration:
-        #    #установить мощность, соответствующую температуре низа колонны
-        #    power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
-        #        (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
-        #    # Вывести на дисплей состояние
-        #    sec=int(time.time()-tBgn)
-        #    sec_str=u'{:02}:{:02}'\
-        #       .format((sec//60)%60, sec%60)
-        #    self.pageUpdate('Бражка: Cтабилизация %s<br>%s'%(sec_str,self.Duration()))
-        #    # При получении команды прервать процесс
-        #    if app.config['AB_CON']=='Abort':
-        #        self.abort()
-        #        return
-        #    elif app.config['AB_CON']=='Next':
-        #        app.config['AB_CON']=''
-        #        break
-        #    #Заново подгрузить коэффициенты PID-регулятора дефлегматора (вдруг изменились)
-        #    thermometers.setTtrigger('Дефлегматор',config['PARAMETERS']['T_Head']['value'])
-        #    # Отдохнуть секундочку
-        #    time.sleep(1)
+        """Стабилизация колонны"""
+        while thermometers.getValue("Верх") < config['PARAMETERS']['T_Body']['value']-2:
+            #установить мощность, соответствующую температуре низа колонны
+            power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
+                (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
+            # Вывести на дисплей состояние
+            sec=int(time.time()-tBgn)
+            sec_str=u'{:02}:{:02}'\
+               .format((sec//60)%60, sec%60)
+            self.pageUpdate('Бражка: Cтабилизация %s<br>%s'%(sec_str,self.Duration()))
+            # При получении команды прервать процесс
+            if app.config['AB_CON']=='Abort':
+                self.abort()
+                return
+            elif app.config['AB_CON']=='Next':
+                app.config['AB_CON']=''
+                break
+            # Ждать свежих температурных данных
+            thermometers.Tmeasured.wait(1.3)
 
         """ Отбор тела"""
         self.pageUpdate('Бражка: перегон<br><br>%s'%(self.Duration()), 'ABORT.html')
@@ -197,7 +193,6 @@ class Wash(threading.Thread):
         # запустить поток стабилизации температуры верха колонны
         self.Stab_Top.start()
         count_end = 0   # счётчик
-        delta = thermometers.getValue('Низ') - thermometers.getValue('Середина')
         while True:
             '''Цикл отбора тела'''
             #установить порог срабатывания клапана конденсатора из конфига
