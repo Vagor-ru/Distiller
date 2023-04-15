@@ -142,31 +142,32 @@ class Wash(threading.Thread):
             # Отдохнуть секундочку
             #time.sleep(1)
 
-        #"""Прогрев колонны"""
-        ##подать максимальную мощность
-        #power.value=power.Pmax
-        #tBgn=time.time()        #фиксация времени начала этапа
-        #while True:
-        #    # Вывести на дисплей состояние
-        #    sec=int(time.time()-tBgn)
-        #    sec_str=u'{:02}:{:02}'\
-        #       .format((sec//60)%60, sec%60)
-        #    self.pageUpdate('Бражка: Подогрев %s<br>%s'%(sec_str,self.Duration()))
-        #    # При получении команды прервать процесс
-        #    if app.config['AB_CON']=='Abort':
-        #        self.abort()
-        #        return
-        #    elif app.config['AB_CON']=='Next':
-        #        app.config['AB_CON']=''
-        #        break
-        #    if thermometers.boiling.wait(1) and thermometers.getObjT('Верх').boiling:
-        #        thermometers.values
-        #        break    #поймали закипание на верхнем термометре
-        #    if thermometers.getValue('Верх') > thermometers.getTtrigger('Верх'):
-        #        break    #выше не нужно
-        #power.value=0   #отключить нагрев
+        """Прогрев колонны"""
+        #подать максимальную мощность
+        power.value=power.Pmax
+        tBgn=time.time()        #фиксация времени начала этапа
+        while True:
+            # Вывести на дисплей состояние
+            sec=int(time.time()-tBgn)
+            sec_str=u'{:02}:{:02}'\
+               .format((sec//60)%60, sec%60)
+            self.pageUpdate('Бражка: Подогрев %s<br>%s'%(sec_str,self.Duration()))
+            # При получении команды прервать процесс
+            if app.config['AB_CON']=='Abort':
+                self.abort()
+                return
+            elif app.config['AB_CON']=='Next':
+                app.config['AB_CON']=''
+                break
+            if thermometers.boiling.wait(1) and thermometers.getObjT('Верх').boiling:
+                thermometers.values
+                break    #поймали закипание на верхнем термометре
+            if thermometers.getValue('Верх') > thermometers.getTtrigger('Верх'):
+                break    #выше не нужно
+        power.value=0   #отключить нагрев
 
         """Стабилизация колонны"""
+        tBgn=time.time()        #фиксация времени начала этапа
         while thermometers.getValue("Верх") < config['PARAMETERS']['T_Body']['value']-2:
             #установить мощность, соответствующую температуре низа колонны
             power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
