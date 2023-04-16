@@ -187,7 +187,8 @@ class Crude(threading.Thread):
                 (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             # Новый критерий завершения перегона по разнице температур
             if (thermometers.getValue('Середина') - thermometers.getValue('Верх')) / \
-                (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > 4.7:
+                (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > \
+                config['PARAMETERS']['Ratio']['value']:
                 count_end += 1
                 if count_end > 15:
                     break

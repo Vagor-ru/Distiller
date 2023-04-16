@@ -230,7 +230,8 @@ class Wash(threading.Thread):
             #    self.Stab_Top.reset()
             # Новый критерий завершения перегона по отношению разниц температур
             if (thermometers.getValue('Середина') - thermometers.getValue('Верх')) / \
-                (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > 2.8:
+                (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > \
+                config['PARAMETERS']['Ratio']['value']:
                 count_end += 1
                 if count_end > 15:
                     break
