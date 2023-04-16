@@ -19,7 +19,7 @@ class StabTop(threading.Thread):
             config['PARAMETERS']['Kdt']['value'],\
             setpoint=Tstab)
         # Установить пределы выхода PID-регулятора
-        self.pidT.output_limits = (30, 65)
+        self.pidT.output_limits = (30, 60)
         # Сохранить уставку
         self.__value = Tstab
         #thermometers.setTtrigger('Конденсатор', self.pidD.setpoint)
