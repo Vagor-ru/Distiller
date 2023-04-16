@@ -287,6 +287,9 @@ class Wash(threading.Thread):
         power.value = 0     #отключить нагрев
         condensator.Off()   #отключить клапан конденсатора
         dephlegmator.Off()  #отключить клапан дефлегматора
+        #Восстановление состояния веб-интерфейса
+        app.config['Display'] = self.Display
+        app.config['Buttons'] = self.Buttons
         self.log.stop()     #остановить лог
 
     def abort(self):

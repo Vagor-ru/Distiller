@@ -60,6 +60,10 @@ class ManualMode(threading.Thread):
 
     def stop(self):
         '''Функция останавливает ручной режим'''
+        power.value=0
+        #Восстановление состояния веб-интерфейса
+        app.config['Display'] = self.Display
+        app.config['Buttons'] = self.Buttons
         self._Run = False
     
     def pageUpdate(self, Display=None, Buttons=None):
