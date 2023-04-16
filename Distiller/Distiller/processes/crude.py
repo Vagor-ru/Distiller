@@ -30,6 +30,7 @@ class Crude(threading.Thread):
         super(Crude, self).__init__()
         self.log = Logging('Crude')
         self._Begin=time.time()
+        self.Stab_Top.name = 'StabTop'
 
     def Duration(self):
         sec=int(time.time()-self._Begin)
@@ -251,7 +252,7 @@ class Crude(threading.Thread):
 
         # установить температуру стабилизации верха колонны
         self.Stab_Top.value = config['PARAMETERS']['Tdephlock']['value']
-        self.Stab_Top.stop()
+        #self.Stab_Top.stop()
 
 
 
@@ -285,6 +286,7 @@ class Crude(threading.Thread):
         return
 
     def stop(self):
+        self.Stab_Top.stop()    #остановить стабилизацию верха колонны
         power.value = 0     #отключить нагрев
         condensator.Off()   #отключить клапан конденсатора
         dephlegmator.Off()  #отключить клапан дефлегматора

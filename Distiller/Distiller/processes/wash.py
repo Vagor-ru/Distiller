@@ -30,6 +30,7 @@ class Wash(threading.Thread):
         self._Begin=time.time()
         self.log = Logging('Wash')
         self.Stab_Top = StabTop()
+        self.Stab_Top.name = 'StabTop'
 
     def Duration(self):
         sec=int(time.time()-self._Begin)
@@ -251,7 +252,7 @@ class Wash(threading.Thread):
             #завершение перегона по температуре низа колонны
             if thermometers.getValue('Низ')+1.0 > config['PARAMETERS']['T_H2O']['value']:
                 break
-        self.Stab_Top.stop()    # остановить стабилизацию верха колонны
+        #self.Stab_Top.stop()    # остановить стабилизацию верха колонны
 
         """Охлаждение холодильников"""
         self.pageUpdate('Охлаждение колонны<br><br>%s'%(self.Duration()), 'ABORT.html')
@@ -282,6 +283,7 @@ class Wash(threading.Thread):
         return
 
     def stop(self):
+        self.Stab_Top.stop()    #остановить стабилизацию верха колонны
         power.value = 0     #отключить нагрев
         condensator.Off()   #отключить клапан конденсатора
         dephlegmator.Off()  #отключить клапан дефлегматора
