@@ -175,7 +175,7 @@ class Crude(threading.Thread):
                 self.abort()
                 return
             # Освежить дисплей
-            self.pageUpdate('2-й перегон тело<br><br>%s'%(self.Duration()))
+            self.pageUpdate('2-й перегон: тело<br><br>%s'%(self.Duration()))
             # Регулировать нагрев
             '''Мощность устанавливается предзахлёбная, рассчитывается по формуле:
             P=Pводы-Kp*(Tкип_воды-Tниз), где
