@@ -42,7 +42,7 @@ class StabTop(threading.Thread):
             #print(f"Tверх={T}, PID_T={PID_T}, Run={self._Run}")
             thermometers.setTtrigger('Дефлегматор', PID_T)
             dbLock.release()    # освободить доступ
-
+        return
 
     def stop(self):
         """Останов регулирования"""
