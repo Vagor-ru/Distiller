@@ -76,7 +76,7 @@ class Crude(threading.Thread):
 
         '''Ожидание закипания'''
         #Мощность нагрева=100%
-        power.value=250**2/config['PARAMETERS']['rTEH']['value']
+        power.value = power.Pmax
         while not thermometers.boiling.wait(1):
             # Вывести на дисплей состояние
             self.pageUpdate('2-й перегон: ожидание закипания<br>'+self.Duration())
@@ -84,7 +84,10 @@ class Crude(threading.Thread):
             if app.config['AB_CON']=='Abort':
                 self.abort()
                 return
-
+            elif app.config['AB_CON']=='Next':
+                app.config['AB_CON']=''
+                break
+        power.value = 0
 
         '''прогрев колонны'''
         #tBgn=time.time()
