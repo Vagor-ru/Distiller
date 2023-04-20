@@ -198,8 +198,12 @@ class Wash(threading.Thread):
         self.pageUpdate('Бражка: перегон<br><br>%s'%(self.Duration()), 'ABORT.html')
         #установить целевую температуру дефлегматора на отбор тела
         #thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['T_Body']['value'])
-        # запустить поток стабилизации температуры верха колонны
-        self.Stab_Top.start()
+        # пробывать запустить поток стабилизации температуры верха колонны
+        try:
+            self.Stab_Top.start()
+        except Exception as ex:
+            if ex != 'threads can only be started once':
+                print(ex)
         count_end = 0   # счётчик
         while True:
             '''Цикл отбора тела'''

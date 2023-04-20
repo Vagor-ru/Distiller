@@ -114,8 +114,12 @@ class Crude(threading.Thread):
         '''Отбор голов'''
         # Новый набор кнопок
         self.pageUpdate(None, 'ABORT_NEXT.html')
-        # запустить поток стабилизации температуры верха колонны
-        self.Stab_Top.start()
+        # пробывать запустить поток стабилизации температуры верха колонны
+        try:
+            self.Stab_Top.start()
+        except Exception as ex:
+            if ex != 'threads can only be started once':
+                print(ex)
         tBgn=time.time()        #фиксация времени начала отбора голов
         #установка триггера дефлегматора
         #Tdeph=46.3
