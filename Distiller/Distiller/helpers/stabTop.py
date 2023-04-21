@@ -27,19 +27,28 @@ class StabTop(threading.Thread):
     def run(self):
         """Запуск цикла регулирования температуры конденсатора"""
         self._Run = True
+        mult = 10   # множитель агрессии PID-регулятора для подвода к целевой температуре
+        threshold = 2   #порог действия агрессии (град)
         while self._Run:
             '''цикл регулирования'''
             thermometers.Tmeasured.wait()   #ожидать следующего измерения температуры
-            #Заново подгрузить коэффициенты (вдруг изменились)
-            self.pidT.tunings = (config['PARAMETERS']['Kpt']['value'],\
-                              config['PARAMETERS']['Kit']['value'],\
-                              config['PARAMETERS']['Kdt']['value'])
-            self.pidT.setpoint = self.value
-            dbLock.acquire()    # захватить единоличный доступ
             #рассчитать и установить необходимую для стабилизации температуру дефлегматора
             T = thermometers.getValue('Верх')
-            PID_T = self.pidT(T)
+            if abs(self.value - T) < threshold:
+                # подгрузить нормальные коэффициенты 
+                self.pidT.tunings = (config['PARAMETERS']['Kpt']['value'],\
+                                  config['PARAMETERS']['Kit']['value'],\
+                                  config['PARAMETERS']['Kdt']['value'])
+            else:
+                # подгрузить агрессивные коэффициенты 
+                self.pidT.tunings = (config['PARAMETERS']['Kpt']['value']*mult,\
+                                  config['PARAMETERS']['Kit']['value']*mult,\
+                                  config['PARAMETERS']['Kdt']['value']*mult)
+            self.pidT.setpoint = self.value # уставка
+            PID_T = self.pidT(T)            # расчитать PID
             #print(f"Tверх={T}, PID_T={PID_T}, Run={self._Run}")
+            dbLock.acquire()    # захватить единоличный доступ
+            # установить триггер верхнего термометра
             thermometers.setTtrigger('Дефлегматор', PID_T)
             dbLock.release()    # освободить доступ
         return

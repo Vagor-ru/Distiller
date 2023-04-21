@@ -121,9 +121,6 @@ class Crude(threading.Thread):
             if ex != 'threads can only be started once':
                 print(ex)
         tBgn=time.time()        #фиксация времени начала отбора голов
-        #установка триггера дефлегматора
-        #Tdeph=46.3
-        #thermometers.setTtrigger('Дефлегматор',Tdeph)
         while True:
             '''Цикл отбора голов'''
             #установить порог срабатывания клапана конденсатора из конфига
@@ -193,16 +190,16 @@ class Crude(threading.Thread):
             '''
             power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
                 (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
-            # Новый критерий завершения перегона по разнице температур
-            if (thermometers.getValue('Середина') - thermometers.getValue('Верх')) / \
-                (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > \
-                config['PARAMETERS']['Ratio']['value']:
-                count_end += 1
-                if count_end > 15:
-                    break
-            else:
-                """сброс числа обнаружения критериев"""
-                count_end = 0
+            # Новый критерий завершения перегона по температуре низа и отношению разниц температур
+            if thermometers.getValue('Низ') > 80:
+                if (thermometers.getValue('Середина') - thermometers.getValue('Верх')) / \
+                    (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > 0.6:
+                    count_end += 1
+                    if count_end > 20:
+                        break
+                else:
+                    """сброс числа обнаружения критериев"""
+                    count_end = 0
             # Критерий завершения по соотношению температур
             #if (thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
             #    (thermometers.getValue('Низ')-thermometers.getValue('Середина'))>5.7:
