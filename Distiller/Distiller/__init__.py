@@ -93,7 +93,10 @@ try:
     thermometers.start()
     pass
 except Exception as ex:
+    #print(str(ex))
+    app.config['Mode']='WAIT'
     app.config['Display'] = 'Error: ' + str(ex)
+    app.config['Buttons']='END.html'
 
 #Запуск вольтметра
 from Distiller.sensors.Voltmeter import Voltmeter

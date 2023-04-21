@@ -160,7 +160,7 @@ class Crude(threading.Thread):
         '''Отбор тела'''
         self.pageUpdate('2-й перегон: тело<br><br>%s'%(self.Duration()), 'ABORT_NEXT.html')
         count_end = 0
-        delta = thermometers.getValue('Низ') - thermometers.getValue('Середина')
+        tBgn=time.time()        #фиксация времени начала отбора голов
         while True:
             '''Цикл отбора тела'''
             #установить порог срабатывания клапана конденсатора из конфига
@@ -178,8 +178,11 @@ class Crude(threading.Thread):
             if app.config['AB_CON']=='Abort':
                 self.abort()
                 return
-            # Освежить дисплей
-            self.pageUpdate('2-й перегон: тело<br><br>%s'%(self.Duration()))
+            # Вывести состояние на дисплей
+            sec=int(time.time()-tBgn)
+            sec_str=u'{}:{:02}:{:02}'\
+               .format(sec//3600, (sec//60)%60, sec%60)
+            self.pageUpdate('2-й перегон: тело<br>%s<br>%s'%(sec_str,self.Duration()))
             # Регулировать нагрев
             '''Мощность устанавливается предзахлёбная, рассчитывается по формуле:
             P=Pводы-Kp*(Tкип_воды-Tниз), где
