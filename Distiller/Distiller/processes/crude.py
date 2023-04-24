@@ -95,13 +95,13 @@ class Crude(threading.Thread):
         # Новый набор кнопок
         self.pageUpdate(None, 'ABORT_NEXT.html')
         power.value = power.Pmax
-        while thermometers.getValue('Верх') < config['PARAMETERS']['T_Head']['value']-5:
+        while thermometers.getValue('Верх') < config['PARAMETERS']['T_Head']['value']-6:
             # Вывести на дисплей состояние
             sec=int(int(time.time()-tBgn))
             sec_str=u'{:02}:{:02}'\
                .format((sec//60)%60, sec%60)
             self.pageUpdate('2-й перегон: прогрев колонны %s<br>%s'%(sec_str,self.Duration()))
-            if thermometers.getValue('Верх') > config['PARAMETERS']['T_Head']['value']-12:
+            if thermometers.getValue('Верх') > config['PARAMETERS']['T_Head']['value']-14:
                 power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
                     (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             # При получении команды прервать процесс
