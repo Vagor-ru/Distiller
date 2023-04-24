@@ -113,7 +113,7 @@ class Crude(threading.Thread):
                 break
             # ждать свежих температурных жанных
             thermometers.Tmeasured.wait(1.3)
-            power.value = 0
+        power.value = 0
 
         '''Отбор голов'''
         # Новый набор кнопок
