@@ -94,7 +94,7 @@ class Crude(threading.Thread):
         duration=10
         # Новый набор кнопок
         self.pageUpdate(None, 'ABORT_NEXT.html')
-        while thermometers.getValue('Верх') < config['PARAMETERS']['T_Head']['value']-8:
+        while thermometers.getValue('Верх') < config['PARAMETERS']['T_Head']['value']-4:
             # Вывести на дисплей состояние
             sec=int(int(time.time()-tBgn))
             sec_str=u'{:02}:{:02}'\
@@ -123,6 +123,7 @@ class Crude(threading.Thread):
         except Exception as ex:
             if ex != 'threads can only be started once':
                 print(ex)
+        self.Stab_Top.reset()
         tBgn=time.time()        #фиксация времени начала отбора голов
         while True:
             '''Цикл отбора голов'''

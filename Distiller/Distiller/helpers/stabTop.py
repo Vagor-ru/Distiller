@@ -60,6 +60,7 @@ class StabTop(threading.Thread):
         #print(f"__Run={self._Run}")
 
     def reset(self):
+        '''Сброс PID'''
         self.pidT.reset()
 
     @property
