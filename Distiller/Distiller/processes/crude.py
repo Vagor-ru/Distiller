@@ -94,6 +94,7 @@ class Crude(threading.Thread):
         duration=10
         # Новый набор кнопок
         self.pageUpdate(None, 'ABORT_NEXT.html')
+        boiling = False
         power.value = power.Pmax
         while thermometers.getValue('Верх') < config['PARAMETERS']['T_Head']['value']-6:
             # Вывести на дисплей состояние
@@ -101,7 +102,7 @@ class Crude(threading.Thread):
             sec_str=u'{:02}:{:02}'\
                .format((sec//60)%60, sec%60)
             self.pageUpdate('2-й перегон: прогрев колонны %s<br>%s'%(sec_str,self.Duration()))
-            if thermometers.getValue('Верх') > config['PARAMETERS']['T_Head']['value']-14:
+            if boiling:
                 power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
                     (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             # При получении команды прервать процесс
@@ -114,6 +115,8 @@ class Crude(threading.Thread):
                 break
             # ждать свежих температурных жанных
             thermometers.Tmeasured.wait(1.3)
+            if thermometers.getObjT('Верх').boiling:
+                boiling = True
         power.value = 0
 
         '''Отбор голов'''
