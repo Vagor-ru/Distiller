@@ -96,7 +96,8 @@ class Crude(threading.Thread):
         self.pageUpdate(None, 'ABORT_NEXT.html')
         boiling = False
         power.value = power.Pmax
-        while thermometers.getValue('Верх') < config['PARAMETERS']['T_Head']['value']-6:
+        thermometers.setTtrigger('Дефлегматор', 30) # ограничить нагрев дефлегматора
+        while thermometers.getValue('Верх') < config['PARAMETERS']['T_Head']['value']-4:
             # Вывести на дисплей состояние
             sec=int(int(time.time()-tBgn))
             sec_str=u'{:02}:{:02}'\
