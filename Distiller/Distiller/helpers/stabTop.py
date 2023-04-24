@@ -34,16 +34,17 @@ class StabTop(threading.Thread):
             thermometers.Tmeasured.wait()   #ожидать следующего измерения температуры
             #рассчитать и установить необходимую для стабилизации температуру дефлегматора
             T = thermometers.getValue('Верх')
-            if abs(self.value - T) < threshold:
-                # подгрузить нормальные коэффициенты 
-                self.pidT.tunings = (config['PARAMETERS']['Kpt']['value'],\
+            # подгрузить нормальные коэффициенты 
+            self.pidT.tunings = (config['PARAMETERS']['Kpt']['value'],\
                                   config['PARAMETERS']['Kit']['value'],\
                                   config['PARAMETERS']['Kdt']['value'])
-            else:
-                # подгрузить агрессивные коэффициенты 
-                self.pidT.tunings = (config['PARAMETERS']['Kpt']['value']*mult,\
-                                  config['PARAMETERS']['Kit']['value']*mult,\
-                                  config['PARAMETERS']['Kdt']['value']*mult)
+            #if abs(self.value - T) < threshold:
+            #    pass
+            #else:
+            #    # подгрузить агрессивные коэффициенты 
+            #    self.pidT.tunings = (config['PARAMETERS']['Kpt']['value']*mult,\
+            #                      config['PARAMETERS']['Kit']['value']*mult,\
+            #                      config['PARAMETERS']['Kdt']['value']*mult)
             self.pidT.setpoint = self.value # уставка
             PID_T = self.pidT(T)            # расчитать PID
             #print(f"Tверх={T}, PID_T={PID_T}, Run={self._Run}")

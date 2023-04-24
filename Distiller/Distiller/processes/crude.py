@@ -90,25 +90,26 @@ class Crude(threading.Thread):
         power.value = 0
 
         '''прогрев колонны'''
-        #tBgn=time.time()
-        #duration=10
-        ## Новый набор кнопок
-        #self.pageUpdate(None, 'ABORT_NEXT.html')
-        #while time.time()-tBgn<duration:
-        #    # Вывести на дисплей состояние
-        #    sec=int(duration-int(time.time()-tBgn))
-        #    sec_str=u'{:02}:{:02}'\
-        #       .format((sec//60)%60, sec%60)
-        #    self.pageUpdate('2-й перегон: прогрев колонны %s<br>%s'%(sec_str,self.Duration()))
-        #    # При получении команды прервать процесс
-        #    if app.config['AB_CON']=='Abort':
-        #        self.abort()
-        #        return
-        #    # переход к отбору голов
-        #    if app.config['AB_CON']=='Next':
-        #        app.config['AB_CON']=''
-        #        break
-        #    time.sleep(1)
+        tBgn=time.time()
+        duration=10
+        # Новый набор кнопок
+        self.pageUpdate(None, 'ABORT_NEXT.html')
+        while thermometers.getValue('Верх') < config['PARAMETERS']['T_Head']['value']-8:
+            # Вывести на дисплей состояние
+            sec=int(int(time.time()-tBgn))
+            sec_str=u'{:02}:{:02}'\
+               .format((sec//60)%60, sec%60)
+            self.pageUpdate('2-й перегон: прогрев колонны %s<br>%s'%(sec_str,self.Duration()))
+            # При получении команды прервать процесс
+            if app.config['AB_CON']=='Abort':
+                self.abort()
+                return
+            # переход к отбору голов
+            if app.config['AB_CON']=='Next':
+                app.config['AB_CON']=''
+                break
+            # ждать свежих температурных жанных
+            thermometers.Tmeasured.wait(1.3)
 
 
         '''Отбор голов'''
