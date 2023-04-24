@@ -100,6 +100,8 @@ class Crude(threading.Thread):
             sec_str=u'{:02}:{:02}'\
                .format((sec//60)%60, sec%60)
             self.pageUpdate('2-й перегон: прогрев колонны %s<br>%s'%(sec_str,self.Duration()))
+            power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
+                (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -110,7 +112,7 @@ class Crude(threading.Thread):
                 break
             # ждать свежих температурных жанных
             thermometers.Tmeasured.wait(1.3)
-
+            power.value = 0
 
         '''Отбор голов'''
         # Новый набор кнопок
