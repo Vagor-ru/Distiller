@@ -3,3 +3,4 @@ flask-socketio==5.2.0
 simple-pid==1.0.1
 smbus==1.1.post2
 RPi.GPIO==0.7.1
+Werkzeug==2.2.2
