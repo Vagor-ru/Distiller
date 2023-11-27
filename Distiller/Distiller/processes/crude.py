@@ -12,7 +12,7 @@ from flask import render_template
 from Distiller import app, dbLock, config
 from Distiller import power, condensator, dephlegmator, thermometers
 from Distiller.helpers.transmitter import Transmit
-from Distiller.helpers.stabTop import StabTop
+#from Distiller.helpers.stabTop import StabTop
 from Distiller.helpers.log import Logging
 
 
@@ -23,14 +23,14 @@ class Crude(threading.Thread):
     # Для сохранения состояния дисплея и кнопок
     Display = ''
     Buttons = ''
-    Stab_Top = StabTop()
+    #Stab_Top = StabTop()
 
     def __init__(self):
         #threading.Thread.__init__(self)
         super(Crude, self).__init__()
         self.log = Logging('Crude')
         self._Begin=time.time()
-        self.Stab_Top.name = 'StabTop'
+        #self.Stab_Top.name = 'StabTop'
 
     def Duration(self):
         sec=int(time.time()-self._Begin)
@@ -124,19 +124,21 @@ class Crude(threading.Thread):
         # Новый набор кнопок
         self.pageUpdate(None, 'ABORT_NEXT.html')
         # пробывать запустить поток стабилизации температуры верха колонны
-        try:
-            self.Stab_Top.start()
-        except Exception as ex:
-            if ex != 'threads can only be started once':
-                print(ex)
-        self.Stab_Top.reset()
+        #try:
+        #    self.Stab_Top.start()
+        #except Exception as ex:
+        #    if ex != 'threads can only be started once':
+        #        print(ex)
+        #self.Stab_Top.reset()
         tBgn=time.time()        #фиксация времени начала отбора голов
         while True:
             '''Цикл отбора голов'''
-            #установить порог срабатывания клапана конденсатора из конфига
+            #установить температуру конденсатора из конфига
             thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
+            # установить температуру дефлегматора для отбора голов
+            thermometers.setTtrigger('Дефлегматор',config['PARAMETERS']['T_Head']['value'])
             # установить температуру стабилизации верха колонны
-            self.Stab_Top.value = config['PARAMETERS']['T_Head']['value']
+            #self.Stab_Top.value = config['PARAMETERS']['T_Head']['value']
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -175,8 +177,18 @@ class Crude(threading.Thread):
             '''Цикл отбора тела'''
             #установить порог срабатывания клапана конденсатора из конфига
             thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
+            '''Температура дефлегматора рассчитывается по формуле:
+            Tдеф=Tдеф_воды+Kдеф*(Tкип_воды-Tниз), где
+            Tдеф_воды   -затворяющая температура дефлегматора при кипении воды в кубе
+            Kдеф        -коэффициент изменения температуры срабатывания дефлегматора
+            Tкип_воды   -температура низа колонны при кипении воды в кубе
+            Tниз        -температура низа колонны
+            '''
+            Tdeph=config['PARAMETERS']['Tdeph_H2O']['value']+config['PARAMETERS']['Kdeph2']['value']*\
+                (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
+            thermometers.setTtrigger('Дефлегматор',Tdeph)
             # установить температуру стабилизации верха колонны
-            self.Stab_Top.value = config['PARAMETERS']['T_Body']['value']
+            #self.Stab_Top.value = config['PARAMETERS']['T_Body']['value']
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -267,8 +279,9 @@ class Crude(threading.Thread):
         #    thermometers.Tmeasured.wait()
 
 
-        # установить температуру стабилизации верха колонны
-        self.Stab_Top.value = config['PARAMETERS']['Tdephlock']['value']
+        # установить температуру затворения дефлегматора
+        thermometers.setTtrigger('Дефлегматор',config['PARAMETERS']["Tdephlock"]["value"])
+        #self.Stab_Top.value = config['PARAMETERS']['Tdephlock']['value']
         #self.Stab_Top.stop()
 
 
@@ -303,7 +316,7 @@ class Crude(threading.Thread):
         return
 
     def stop(self):
-        self.Stab_Top.stop()    #остановить стабилизацию верха колонны
+        #self.Stab_Top.stop()    #остановить стабилизацию верха колонны
         power.value = 0     #отключить нагрев
         condensator.Off()   #отключить клапан конденсатора
         dephlegmator.Off()  #отключить клапан дефлегматора
