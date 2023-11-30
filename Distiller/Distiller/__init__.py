@@ -133,7 +133,7 @@ if app.config['Mode'] == 'WAIT':
 
     #запуск потока регулятора температуры дефлегматора
     thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['Tdephlock']['value'])
-    from Distiller.helpers.dephReg import DephReg
+    from Distiller.helpers.DephReg import DephReg
     deph_Reg = DephReg()
     deph_Reg.name = 'deph_Reg'
     deph_Reg.start()
