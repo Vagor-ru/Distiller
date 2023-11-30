@@ -193,7 +193,7 @@ class Crude(threading.Thread):
             if app.config['AB_CON']=='Abort':
                 self.abort()
                 return
-            # переход к отбору тела
+            # переход к охлаждению
             if app.config['AB_CON']=='Next':
                 app.config['AB_CON']=''
                 break

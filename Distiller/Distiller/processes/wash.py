@@ -15,7 +15,7 @@ from Distiller import power, condensator, dephlegmator, thermometers
 from Distiller.helpers.transmitter import Transmit
 from Distiller.actuators.dephlegmator import DephRun
 from Distiller.helpers.log import Logging
-from Distiller.helpers.stabTop import StabTop
+#from Distiller.helpers.stabTop import StabTop
 
 class Wash(threading.Thread):
     u'''Класс, реализующий алгоритм перегонки бражки'''
@@ -29,8 +29,8 @@ class Wash(threading.Thread):
         super(Wash, self).__init__()
         self._Begin=time.time()
         self.log = Logging('Wash')
-        self.Stab_Top = StabTop()
-        self.Stab_Top.name = 'StabTop'
+        #self.Stab_Top = StabTop()
+        #self.Stab_Top.name = 'StabTop'
 
     def Duration(self):
         sec=int(time.time()-self._Begin)
@@ -199,18 +199,31 @@ class Wash(threading.Thread):
         #установить целевую температуру дефлегматора на отбор тела
         #thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['T_Body']['value'])
         # пробывать запустить поток стабилизации температуры верха колонны
-        try:
-            self.Stab_Top.start()
-        except Exception as ex:
-            if ex != 'threads can only be started once':
-                print(ex)
-        count_end = 0   # счётчик
+        #try:
+        #    self.Stab_Top.start()
+        #except Exception as ex:
+        #    if ex != 'threads can only be started once':
+        #        print(ex)
+        #count_end = 0   # счётчик
         while True:
             '''Цикл отбора тела'''
             #установить порог срабатывания клапана конденсатора из конфига
             thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
             # установить температуру стабилизации верха колонны
-            self.Stab_Top.value = config['PARAMETERS']['T_Body']['value']
+            #self.Stab_Top.value = config['PARAMETERS']['T_Body']['value']
+            #установить порог срабатывания клапана конденсатора из конфига
+            thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
+            '''Температура дефлегматора рассчитывается по формуле:
+            Tдеф=Tдеф_воды+Kдеф*(Tкип_воды-Tниз), где
+            Tдеф_воды   -затворяющая температура дефлегматора при кипении воды в кубе
+            Kдеф        -коэффициент изменения температуры срабатывания дефлегматора
+            Tкип_воды   -температура низа колонны при кипении воды в кубе
+            Tниз        -температура низа колонны
+            '''
+            Tdeph=config['PARAMETERS']['Tdeph_H2O']['value']+config['PARAMETERS']['Kdeph']['value']*\
+                (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
+            thermometers.setTtrigger('Дефлегматор',Tdeph)
+
             #нажата кнопка Останов
             if app.config['AB_CON']=='Abort':
                 self.abort()

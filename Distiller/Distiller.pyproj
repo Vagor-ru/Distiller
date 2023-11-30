@@ -56,9 +56,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Distiller\helpers\log.py" />
-    <Compile Include="Distiller\helpers\stabTop.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Distiller\helpers\transferConfig.py">
       <SubType>Code</SubType>
     </Compile>
