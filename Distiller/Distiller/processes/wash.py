@@ -172,7 +172,7 @@ class Wash(threading.Thread):
 
         """Стабилизация колонны"""
         tBgn=time.time()        #фиксация времени начала этапа
-        while thermometers.getValue("Верх") < config['PARAMETERS']['T_Body']['value']-2:
+        while thermometers.getValue("Верх") < config['PARAMETERS']['T_Head']['value']:
             #установить мощность, соответствующую температуре низа колонны
             power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
                 (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
