@@ -76,6 +76,9 @@ if os.path.isfile('preconfigDistiller.json'):
 #Создание приложения flask_socketio из flask-приложения
 socketio = SocketIO(app)
 
+#переменная конфигурации, содержащая ошибку
+app.config['Error']=''
+
 # Запуск потока, измеряющего температурные значения
 try:
     from Distiller.sensors.DS18B20 import Thermometers
@@ -95,7 +98,8 @@ try:
 except Exception as ex:
     #print(str(ex))
     app.config['Mode']='WAIT'
-    app.config['Display'] = 'Error: ' + str(ex)
+    app.config['Error']=str(ex)
+    app.config['Display'] = 'Error: ' + app.config['Error']
     app.config['Buttons']='END.html'
 
 #Запуск вольтметра

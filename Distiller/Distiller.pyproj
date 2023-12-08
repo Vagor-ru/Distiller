@@ -33,9 +33,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Distiller\actuators\cools.py" />
-    <Compile Include="Distiller\actuators\dephlegmator.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Distiller\actuators\power.py" />
     <Compile Include="Distiller\actuators\__init__.py">
       <SubType>Code</SubType>

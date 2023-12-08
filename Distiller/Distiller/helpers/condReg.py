@@ -51,18 +51,19 @@ class CondReg(threading.Thread):
             if thermometers.getTtrigger('Конденсатор')+1 < thermometers.getValue('Конденсатор'):
                 if time.time() - coolingStartTime > config['PARAMETERS']['tCooling']['value']:
                     # гасить всё и выдавать ошипку
-                    Display = app.config['Display']
-                    app.config['Display'] = 'Error: нет охлаждения'
-                    for th in threading.enumerate():
-                        if th.name == 'Wash' or th.name == 'Crude' or th.name == 'ManualMode':
-                            th.stop
-                        #print(th.name)
+                    #Display = app.config['Display']
+                    app.config['Error'] = 'Error: нет охлаждения'
+                    #for th in threading.enumerate():
+                    #    if th.name == 'Wash' or th.name == 'Crude' or th.name == 'ManualMode':
+                    #        th.stop
+                    #    #print(th.name)
                     pass
             else:
                 #сбросить засечку времени
                 coolingStartTime = time.time()
                 #восстановить дисплей
-                app.config['Display'] = Display
+                app.config['Error'] = ''
+                #app.config['Display'] = Display
 
         self.Cond.value=0   #отключить охлаждение дефлегматора
         self.Cond.stop()

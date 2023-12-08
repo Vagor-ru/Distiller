@@ -13,7 +13,7 @@ from simple_pid import PID
 from Distiller import app, dbLock,config
 from Distiller import power, condensator, dephlegmator, thermometers
 from Distiller.helpers.transmitter import Transmit
-from Distiller.actuators.dephlegmator import DephRun
+#from Distiller.actuators.dephlegmator import DephRun
 from Distiller.helpers.log import Logging
 #from Distiller.helpers.stabTop import StabTop
 
@@ -71,17 +71,24 @@ class Wash(threading.Thread):
         #установить порог срабатывания клапана конденсатора из конфига
         thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
         thermometers.setTtrigger('Дефлегматор',config['PARAMETERS']['Tdephlock']['value'])
+        # Сбросить ошибку
+        app.config['Error'] = ''
 
         """Ожидание закипания"""
         #Мощность нагрева=100%
         power.value=power.Pmax
         while not thermometers.boiling.wait(1):
-            # Вывести на дисплей состояние
-            self.pageUpdate('Бражка: Нагрев<br>'+self.Duration())
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
                 return
+            # Если поднята ошибка, вывести сообщение об ней
+            if app.config['Error'] != '':
+                power.value = 0
+                self.pageUpdate(app.config['Error'])
+                continue
+            # Вывести на дисплей состояние
+            self.pageUpdate('Бражка: Нагрев<br>'+self.Duration())
 
         """Пауза в 15 секунд для прогрева низа колонны"""
         tBgn=time.time()        #фиксация времени начала паузы
@@ -228,6 +235,13 @@ class Wash(threading.Thread):
             if app.config['AB_CON']=='Abort':
                 self.abort()
                 return
+
+            # Если поднята ошибка, вывести сообщение об ней
+            if app.config['Error'] != '':
+                power.value = 0
+                self.pageUpdate(app.config['Error'])
+                continue
+
             # Освежить дисплей
             self.pageUpdate('Бражка: перегон<br><br>%s'%(self.Duration()))
             # Регулировать нагрев
