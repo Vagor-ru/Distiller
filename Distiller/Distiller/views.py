@@ -86,18 +86,21 @@ def Controls(DataControls):
         if DataControls['Button']=='Wait':
             print('Поступила команда перейти в режим ожидания команд')
         if DataControls['Button']=='Wash':
+            app.config['Display'] = 'Жду команду'
             print('Поступила команда запуска процесса перегона бражки')
             from Distiller.processes.wash import Wash
             wash = Wash()
             wash.name = 'Wash'
             wash.start()
         if DataControls['Button']=='Crude':
+            app.config['Display'] = 'Жду команду'
             print('Поступила команда запуска процесса второго перегона')
             from Distiller.processes.crude import Crude
             crude = Crude()
             crude.name = 'Crude'
             crude.start()
         if DataControls['Button']=='ManualMode':
+            app.config['Display'] = 'Жду команду'
             print('Поступила команда запуска ручного режима')
             from Distiller.processes.manualMode import ManualMode
             manualMode=ManualMode()

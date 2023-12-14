@@ -12,6 +12,8 @@ import time
 from flask import render_template
 from Distiller import app, power,thermometers,config
 from Distiller.helpers.transmitter import Transmit
+from Distiller.helpers.condReg import CondReg
+from Distiller.helpers.dephReg import DephReg
 from Distiller.helpers.log import Logging
 
 
@@ -26,6 +28,8 @@ class ManualMode(threading.Thread):
     def __init__(self):
         #threading.Thread.__init__(self)
         super(ManualMode, self).__init__()
+        self.cond_Reg = CondReg()   #регулятор конденсатора
+        self.deph_Reg = DephReg()   #регулятор дефлегматора
         self._Run=False
         self.log = Logging('Manual')
 
@@ -41,13 +45,18 @@ class ManualMode(threading.Thread):
         self.pageUpdate('Ручной режим<br>',
                         'ABORT.html')
         self._Run=True
+        # Запустить регуляторы холодильников
+        self.cond_Reg.start()
+        self.deph_Reg.start()
+
         #Ожидание в цикле
         while self._Run:
             if app.config['AB_CON']=='Abort' or app.config['AB_CON']=='Error':
                 break
+            app.config['Error'] = ''    #сбросить ошибку
             time.sleep(0.5) #не частить
 
-        power.value=0
+        #power.value=0
         self.log.stop()
         thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
         thermometers.setTtrigger('Дефлегматор',config['PARAMETERS']['Tdephlock']['value'])
@@ -61,6 +70,8 @@ class ManualMode(threading.Thread):
     def stop(self):
         '''Функция останавливает ручной режим'''
         power.value=0
+        self.cond_Reg.stop()    # остановить регулятор конденсатора
+        self.deph_Reg.stop()    # остановить регулятор дефлегматора
         #Восстановление состояния веб-интерфейса
         app.config['Display'] = self.Display
         app.config['Buttons'] = self.Buttons

@@ -1,7 +1,7 @@
 import threading
 import time
 from simple_pid import PID
-from Distiller import config, thermometers,app
+from Distiller import config, thermometers, app
 from Distiller.actuators.condensator import CondRun
 
 class CondReg(threading.Thread):

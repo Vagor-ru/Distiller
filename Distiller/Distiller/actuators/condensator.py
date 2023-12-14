@@ -1,5 +1,5 @@
 import time, threading  #Модули для работы со временем и потоками
-from Distiller import condensator
+from Distiller import condensator, dbLock
 from Distiller.helpers.bresenham import Bresenham
 
 class CondRun(threading.Thread):
@@ -21,12 +21,16 @@ class CondRun(threading.Thread):
         self._Run = True
         while self._Run:
             #print('Сейчас Bresenham будет расчитан.')
+            dbLock.acquire()    #захватить управление текущему потоку
             if self.Bresenham(self.value):
                 condensator.On()
             else:
                 condensator.Off()
+            dbLock.release()    #освободить другие потоки на выполнение
             time.sleep(0.1)
-        condensator.Off()
+        dbLock.acquire()    #захватить управление только текущему потоку
+        condensator.Off()   # отключить (закрыть) клапан охлаждения конденсатора
+        dbLock.release()    #освободить другие потоки на выполнение
 
     @property
     def value(self):
