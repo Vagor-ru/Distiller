@@ -76,6 +76,9 @@ if os.path.isfile('preconfigDistiller.json'):
 #Создание приложения flask_socketio из flask-приложения
 socketio = SocketIO(app)
 
+#переменная конфигурации, содержащая ошибку
+app.config['Error']=''
+
 # Запуск потока, измеряющего температурные значения
 try:
     from Distiller.sensors.DS18B20 import Thermometers
@@ -95,7 +98,8 @@ try:
 except Exception as ex:
     #print(str(ex))
     app.config['Mode']='WAIT'
-    app.config['Display'] = 'Error: ' + str(ex)
+    app.config['Error']=str(ex)
+    app.config['Display'] = 'Error: ' + app.config['Error']
     app.config['Buttons']='END.html'
 
 #Запуск вольтметра
@@ -126,17 +130,17 @@ condensator=Condensator()
 if app.config['Mode'] == 'WAIT':
     #запуск потока PID-регулятора температуры конденсатора
     thermometers.setTtrigger('Конденсатор', config['PARAMETERS']['Tcond']['value'])
-    from Distiller.helpers.condReg import CondReg
-    cond_Reg = CondReg()
-    cond_Reg.name = 'cond_Reg'
-    cond_Reg.start()
+    #from Distiller.helpers.condReg import CondReg
+    #cond_Reg = CondReg()
+    #cond_Reg.name = 'cond_Reg'
+    #cond_Reg.start()
 
     #запуск потока регулятора температуры дефлегматора
     thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['Tdephlock']['value'])
-    from Distiller.helpers.DephReg import DephReg
-    deph_Reg = DephReg()
-    deph_Reg.name = 'deph_Reg'
-    deph_Reg.start()
+    #from Distiller.helpers.dephReg import DephReg
+    #deph_Reg = DephReg()
+    #deph_Reg.name = 'deph_Reg'
+    #deph_Reg.start()
 
 #Запуск потока, отправляющего значения приборов клиенту
 #from Distiller.helpers.transmitter import SendGaugesValues

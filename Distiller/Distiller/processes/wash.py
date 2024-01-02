@@ -13,7 +13,9 @@ from simple_pid import PID
 from Distiller import app, dbLock,config
 from Distiller import power, condensator, dephlegmator, thermometers
 from Distiller.helpers.transmitter import Transmit
-from Distiller.actuators.dephlegmator import DephRun
+from Distiller.helpers.condReg import CondReg
+from Distiller.helpers.dephReg import DephReg
+#from Distiller.actuators.dephlegmator import DephRun
 from Distiller.helpers.log import Logging
 #from Distiller.helpers.stabTop import StabTop
 
@@ -27,7 +29,9 @@ class Wash(threading.Thread):
     def __init__(self):
         #threading.Thread.__init__(self)
         super(Wash, self).__init__()
-        self._Begin=time.time()
+        self._Begin=time.time()     #засечка времени старта
+        self.cond_Reg = CondReg()   #регулятор конденсатора
+        self.deph_Reg = DephReg()   #регулятор дефлегматора
         self.log = Logging('Wash')
         #self.Stab_Top = StabTop()
         #self.Stab_Top.name = 'StabTop'
@@ -47,18 +51,22 @@ class Wash(threading.Thread):
         # Фиксация момента запуска процесса
         self._Begin=time.time()
         # Вывести сообщение на дисплей и прикрутить кнопку "Останов"
-        self.pageUpdate('Заполнение холодильников<br>'+self.Duration(),
-                        'ABORT.html')
-        self.log.start()
-
+        self.log.start()    #запуск журналирования
+        self.pageUpdate('Бражка: Заполнение холодильников<br>%s'%(self.Duration()), 'ABORT_NEXT.html')
         #Заполнение холодильников
         tBgn=time.time()        #фиксация времени начала заполнения
         #установить порог срабатывания клапана конденсатора 15°C
-        thermometers.setTtrigger('Конденсатор',15)
+        #thermometers.setTtrigger('Конденсатор',15)
         #установить температуру удержания Дефлегматора
-        thermometers.setTtrigger('Дефлегматор', 15)
+        #thermometers.setTtrigger('Дефлегматор', 15)
+        dbLock.acquire()    #монополизировать управление
+        condensator.On()    #открыть клапан конденсатора
+        dephlegmator.On()   #открыть клапан дефлегматора
+        dbLock.release()    #снять блокировку других потоков
         while (time.time()-tBgn) < config['PARAMETERS']['tFillCoolers']['value']:
             '''цикл заполнения холодильников'''
+            # вывести состояние на дисплей
+            self.pageUpdate('Бражка: Заполнение холодильников<br>%s'%(self.Duration()))
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -68,20 +76,34 @@ class Wash(threading.Thread):
                 break
             # Отдохнуть секундочку
             time.sleep(1)
-        #установить порог срабатывания клапана конденсатора из конфига
+        dbLock.acquire()     #монополизировать управление
+        condensator.Off()    #закрыть клапан конденсатора
+        dephlegmator.Off()   #закрыть клапан дефлегматора
+        dbLock.release()     #снять блокировку других потоков
+        #установить пороги срабатывания клапанов холодильников из конфига
         thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
         thermometers.setTtrigger('Дефлегматор',config['PARAMETERS']['Tdephlock']['value'])
+        # Запустить регуляторы холодильников
+        self.cond_Reg.start()
+        self.deph_Reg.start()
+        # Сбросить ошибку
+        app.config['Error'] = ''
 
         """Ожидание закипания"""
         #Мощность нагрева=100%
         power.value=power.Pmax
         while not thermometers.boiling.wait(1):
-            # Вывести на дисплей состояние
-            self.pageUpdate('Бражка: Нагрев<br>'+self.Duration())
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
                 return
+            # Если поднята ошибка, вывести сообщение об ней
+            if app.config['Error'] != '':
+                self.Display = 'Бражка ошибка: %s<br>%s'%(app.config['Error'], self.Duration())
+                self.abort()
+                return
+            # Вывести на дисплей состояние
+            self.pageUpdate('Бражка: Нагрев<br>'+self.Duration())
 
         """Пауза в 15 секунд для прогрева низа колонны"""
         tBgn=time.time()        #фиксация времени начала паузы
@@ -95,9 +117,9 @@ class Wash(threading.Thread):
             time.sleep(1)
         power.value=0   #отключить нагрев
 
-        """Пауза в 15 секунд инерции нагрева низа колонны"""
+        """Пауза в 10 секунд инерции нагрева низа колонны"""
         tBgn=time.time()        #фиксация времени начала паузы
-        while (time.time()-tBgn) < 15:
+        while (time.time()-tBgn) < 10:
             self.pageUpdate('Бражка: Пауза<br>'+self.Duration())
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
@@ -125,6 +147,11 @@ class Wash(threading.Thread):
             sec_str=u'{:02}:{:02}'\
                .format((sec//60)%60, sec%60)
             self.pageUpdate('Бражка: Антипена<br>%s %s<br>%s'%(pidH.setpoint, sec_str, self.Duration()))
+            # Если поднята ошибка, вывести сообщение об ней
+            if app.config['Error'] != '':
+                self.Display = 'Бражка ошибка: %s<br>%s'%(app.config['Error'], self.Duration())
+                self.abort()
+                return
             #установка коэффициентов PID-регулятора (на случай, если во время антипены их кто поменял)
             pidH.tunings = (config['PARAMETERS']['Kph']['value'],\
                config['PARAMETERS']['Kih']['value'],\
@@ -155,6 +182,11 @@ class Wash(threading.Thread):
             sec_str=u'{:02}:{:02}'\
                .format((sec//60)%60, sec%60)
             self.pageUpdate('Бражка: Подогрев %s<br>%s'%(sec_str,self.Duration()))
+            # Если поднята ошибка, вывести сообщение об ней
+            if app.config['Error'] != '':
+                self.Display = 'Бражка ошибка: %s<br>%s'%(app.config['Error'], self.Duration())
+                self.abort()
+                return
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -172,15 +204,23 @@ class Wash(threading.Thread):
 
         """Стабилизация колонны"""
         tBgn=time.time()        #фиксация времени начала этапа
-        while thermometers.getValue("Верх") < config['PARAMETERS']['T_Head']['value']:
+        Tdeph = 100.0
+        while thermometers.getValue("Верх") < Tdeph:
             #установить мощность, соответствующую температуре низа колонны
             power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
+                (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
+            Tdeph=config['PARAMETERS']['Tdeph_H2O']['value']+config['PARAMETERS']['Kdeph']['value']*\
                 (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             # Вывести на дисплей состояние
             sec=int(time.time()-tBgn)
             sec_str=u'{:02}:{:02}'\
                .format((sec//60)%60, sec%60)
             self.pageUpdate('Бражка: Cтабилизация %s<br>%s'%(sec_str,self.Duration()))
+            # Если поднята ошибка, вывести сообщение об ней
+            if app.config['Error'] != '':
+                self.Display = 'Бражка ошибка: %s<br>%s'%(app.config['Error'], self.Duration())
+                self.abort()
+                return
             # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -226,6 +266,11 @@ class Wash(threading.Thread):
 
             #нажата кнопка Останов
             if app.config['AB_CON']=='Abort':
+                self.abort()
+                return
+            # Если поднята ошибка, вывести сообщение об ней
+            if app.config['Error'] != '':
+                self.Display = 'Бражка ошибка: %s<br>%s'%(app.config['Error'], self.Duration())
                 self.abort()
                 return
             # Освежить дисплей
@@ -276,6 +321,11 @@ class Wash(threading.Thread):
         power.value = 0 #отключить нагрев
         tBgn=time.time()        #фиксация времени начала этапа
         while (time.time()-tBgn) < 60:
+            # Если поднята ошибка, вывести сообщение об ней
+            if app.config['Error'] != '':
+                self.Display = 'Бражка ошибка: %s<br>%s'%(app.config['Error'], self.Duration())
+                self.abort()
+                return
             #нажата кнопка Останов
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -302,8 +352,12 @@ class Wash(threading.Thread):
     def stop(self):
         #self.Stab_Top.stop()    #остановить стабилизацию верха колонны
         power.value = 0     #отключить нагрев
+        self.cond_Reg.stop()    # остановить регулятор конденсатора
+        self.deph_Reg.stop()    # остановить регулятор дефлегматора
+        dbLock.acquire()     #монополизировать управление
         condensator.Off()   #отключить клапан конденсатора
         dephlegmator.Off()  #отключить клапан дефлегматора
+        dbLock.release()    #снять блокировку других потоков
         #Восстановление состояния веб-интерфейса
         app.config['Display'] = self.Display
         app.config['Buttons'] = self.Buttons
@@ -316,7 +370,7 @@ class Wash(threading.Thread):
         app.config['AB_CON']=''
 
     def pageUpdate(self, Display=None, Buttons=None):
-        DataFromServer={}
+        DataFromServer={}   #словарь с данными для веб-морды
         if Display != None:
             app.config['Display'] = Display
             DataFromServer['Display'] = Display
@@ -325,5 +379,5 @@ class Wash(threading.Thread):
             with app.test_request_context():
                 DataFromServer['ModeButtons'] = render_template(Buttons)
         if len(DataFromServer) > 0:
-            Transmit(DataFromServer)
+            Transmit(DataFromServer)    #передать данные веб-интерфейсу
 
