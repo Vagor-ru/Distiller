@@ -13,7 +13,7 @@ from Distiller import app, dbLock, config
 from Distiller import power, condensator, dephlegmator, thermometers
 from Distiller.helpers.transmitter import Transmit
 from Distiller.helpers.condReg import CondReg
-from Distiller.helpers.dephReg import DephReg
+from Distiller.helpers.DephReg import DephReg
 #from Distiller.helpers.stabTop import StabTop
 from Distiller.helpers.log import Logging
 
