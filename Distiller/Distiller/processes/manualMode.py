@@ -13,7 +13,7 @@ from flask import render_template
 from Distiller import app, power,thermometers,config
 from Distiller.helpers.transmitter import Transmit
 from Distiller.helpers.condReg import CondReg
-from Distiller.helpers.dephReg import DephReg
+from Distiller.helpers.DephReg import DephReg
 from Distiller.helpers.log import Logging
 
 
