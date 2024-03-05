@@ -29,10 +29,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Distiller\actuators\condensator.py">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Distiller\actuators\condensator.py" />
     <Compile Include="Distiller\actuators\cools.py" />
+    <Compile Include="Distiller\actuators\dephlegmator.py" />
     <Compile Include="Distiller\actuators\power.py" />
     <Compile Include="Distiller\actuators\__init__.py">
       <SubType>Code</SubType>
@@ -49,9 +48,7 @@
     <Compile Include="Distiller\helpers\deletingOldLogs.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Distiller\helpers\DephReg.py">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Distiller\helpers\dephReg.py" />
     <Compile Include="Distiller\helpers\log.py" />
     <Compile Include="Distiller\helpers\transferConfig.py">
       <SubType>Code</SubType>

@@ -13,7 +13,7 @@ from Distiller import app, dbLock, config
 from Distiller import power, condensator, dephlegmator, thermometers
 from Distiller.helpers.transmitter import Transmit
 from Distiller.helpers.condReg import CondReg
-from Distiller.helpers.DephReg import DephReg
+from Distiller.helpers.dephReg import DephReg
 #from Distiller.helpers.stabTop import StabTop
 from Distiller.helpers.log import Logging
 
@@ -261,7 +261,7 @@ class Crude(threading.Thread):
             #    (thermometers.getValue('Низ')-thermometers.getValue('Середина'))>5.7:
             #    break
             #завершение перегона по температуре низа колонны
-            if thermometers.getValue('Низ')+1.0>config['PARAMETERS']['T_H2O']['value']:
+            if thermometers.getValue('Низ') > 85:
                 break
             #ждать завершение измерения температур
             thermometers.Tmeasured.wait()
