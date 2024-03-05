@@ -1,6 +1,7 @@
 import threading
+import time
 from simple_pid import PID
-from Distiller import config, thermometers, dephlegmator, dbLock
+from Distiller import config, thermometers, app
 from Distiller.actuators.dephlegmator import DephRun
 
 
@@ -13,7 +14,6 @@ class DephReg(threading.Thread):
     def __init__(self):
         #пуск родительской инициализации
         super(DephReg, self).__init__()
-        dephlegmator.Off()
         """Загрузка в PID-регулятор коэффициентов и уставки из конфига"""
         self.pidD = PID(config['PARAMETERS']['Kpd']['value'],\
            config['PARAMETERS']['Kid']['value'],\
@@ -29,8 +29,8 @@ class DephReg(threading.Thread):
     def run(self):
         """Запуск цикла регулирования температуры дефлегматора"""
         self._Run = True
-        ## запустить регулятор дефлегматора
-        #self.Deph.start()
+        # запустить регулятор дефлегматора
+        self.Deph.start()
         while self._Run:
             '''цикл регулирования'''
             thermometers.Tmeasured.wait()   #ожидать следующего измерения температуры
@@ -50,9 +50,11 @@ class DephReg(threading.Thread):
             PID_D = self.pidD(thermometers.getValue('Дефлегматор'))
             #print('Дефлегматор=', PID_D)
             self.Deph.value = PID_D
-        dbLock.acquire()    #захватить управление текущему потоку
-        dephlegmator.Off()   #отключить охлаждение дефлегматора
-        dbLock.release()    #освободить другие потоки на выполнение
+        self.Deph.value = 0
+        self.Deph.stop()
+        #dbLock.acquire()    #захватить управление текущему потоку
+        #dephlegmator.Off()   #отключить охлаждение дефлегматора
+        #dbLock.release()    #освободить другие потоки на выполнение
 
     @property
     def value(self):
@@ -70,4 +72,5 @@ class DephReg(threading.Thread):
 
     def stop(self):
         """Останов регулирования"""
+        self.Deph.value = 0
         self._Run = False
