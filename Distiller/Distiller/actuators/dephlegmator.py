@@ -10,7 +10,7 @@ class DephRun(threading.Thread):
 
     def __init__(self, value=0):
         """Конструктор регулятора конденсатора"""
-        super(CondRun, self).__init__()
+        super(DephRun, self).__init__()
         self.Bresenham = Bresenham()
         dephlegmator.Off()
         self.__value = 0
