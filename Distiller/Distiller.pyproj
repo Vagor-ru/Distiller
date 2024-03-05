@@ -48,7 +48,6 @@
     <Compile Include="Distiller\helpers\deletingOldLogs.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Distiller\helpers\dephReg.py" />
     <Compile Include="Distiller\helpers\log.py" />
     <Compile Include="Distiller\helpers\transferConfig.py">
       <SubType>Code</SubType>
