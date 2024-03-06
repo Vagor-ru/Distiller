@@ -244,7 +244,7 @@ class Wash(threading.Thread):
         #except Exception as ex:
         #    if ex != 'threads can only be started once':
         #        print(ex)
-        #count_end = 0   # счётчик
+        count_end = 0   # счётчик
         while True:
             '''Цикл отбора тела'''
             #установить порог срабатывания клапана конденсатора из конфига
