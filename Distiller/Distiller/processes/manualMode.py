@@ -58,6 +58,9 @@ class ManualMode(threading.Thread):
 
         #power.value=0
         self.log.stop()
+        power.value=0
+        self.cond_Reg.stop()    # остановить регулятор конденсатора
+        self.deph_Reg.stop()    # остановить регулятор дефлегматора
         thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
         thermometers.setTtrigger('Дефлегматор',config['PARAMETERS']['Tdephlock']['value'])
         self._Run=False
@@ -69,12 +72,7 @@ class ManualMode(threading.Thread):
 
     def stop(self):
         '''Функция останавливает ручной режим'''
-        power.value=0
-        self.cond_Reg.stop()    # остановить регулятор конденсатора
-        self.deph_Reg.stop()    # остановить регулятор дефлегматора
         #Восстановление состояния веб-интерфейса
-        app.config['Display'] = self.Display
-        app.config['Buttons'] = self.Buttons
         self._Run = False
     
     def pageUpdate(self, Display=None, Buttons=None):
