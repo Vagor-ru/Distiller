@@ -21,7 +21,7 @@ class CondReg(threading.Thread):
          setpoint=config['PARAMETERS']['Tcond']['value'])
         thermometers.setTtrigger('Конденсатор', self.pidD.setpoint)
         """Установить пределы выхода PID-регулятора"""
-        self.pidD.output_limits = (0, 70)
+        self.pidD.output_limits = (0, 100)
         self.Cond = CondRun()   #Bresenham-регулятор конденсатора
         self.Cond.value=0   #отключить охлаждение конденсатора
         self._Run = False   # сбросить флаг запуска процесса
