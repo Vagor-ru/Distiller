@@ -261,7 +261,7 @@ class Crude(threading.Thread):
             #    (thermometers.getValue('Низ')-thermometers.getValue('Середина'))>5.7:
             #    break
             #завершение перегона по температуре низа колонны
-            if thermometers.getValue('Низ') > 85:
+            if thermometers.getValue('Низ') > config['PARAMETERS']['T_H2O']['value']-1:
                 break
             #ждать завершение измерения температур
             thermometers.Tmeasured.wait()

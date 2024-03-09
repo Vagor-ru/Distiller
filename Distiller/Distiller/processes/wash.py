@@ -312,7 +312,7 @@ class Wash(threading.Thread):
             #    """сброс числа обнаружения критериев"""
             #    count_end = 0
             #завершение перегона по температуре низа колонны
-            if thermometers.getValue('Низ') > 85:
+            if thermometers.getValue('Низ') > config['PARAMETERS']['T_H2O']['value']-1:
                 break
         #self.Stab_Top.stop()    # остановить стабилизацию верха колонны
 
