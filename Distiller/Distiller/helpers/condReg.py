@@ -39,11 +39,17 @@ class CondReg(threading.Thread):
             '''цикл регулирования'''
             thermometers.Tmeasured.wait()   #ожидать следующего измерения температуры
             #Заново подгрузить коэффициенты (вдруг изменились)
-            self.pidD.tunings = (config['PARAMETERS']['Kpc']['value'],\
-                              config['PARAMETERS']['Kic']['value'],\
-                              config['PARAMETERS']['Kdc']['value'])
+            '''Если разность более, чем 4°C, ужесточить PID'''
+            if thermometers.getValue('Конденсатор')-thermometers.getTtrigger('Конденсатор') > 4:
+                self.pidD.tunings = (1000*config['PARAMETERS']['Kpc']['value'],\
+                                  config['PARAMETERS']['Kic']['value'],\
+                                  config['PARAMETERS']['Kdc']['value'])
+            else:
+                self.pidD.tunings = (config['PARAMETERS']['Kpc']['value'],\
+                                  config['PARAMETERS']['Kic']['value'],\
+                                  config['PARAMETERS']['Kdc']['value'])
             self.pidD.setpoint = thermometers.getTtrigger('Конденсатор')
-            #print(thermometers.getValue('Дефлегматор'), '->', thermometers.getTtrigger('Дефлегматор'))
+            #print(thermometers.getValue('Конденсатор'), '->', thermometers.getTtrigger('Конденсатор'))
             #рассчитать и установить охлаждение
             PID_D = self.pidD(thermometers.getValue('Конденсатор'))
             #print('Дефлегматор=', PID_D)

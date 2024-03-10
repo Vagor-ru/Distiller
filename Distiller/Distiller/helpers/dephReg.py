@@ -41,9 +41,15 @@ class DephReg(threading.Thread):
             #    dephlegmator.Off()
             #dbLock.release()    #освободить другие потоки на выполнение
             '''Заново подгрузить коэффициенты (вдруг изменились)'''
-            self.pidD.tunings = (config['PARAMETERS']['Kpd']['value'],\
-                              config['PARAMETERS']['Kid']['value'],\
-                              config['PARAMETERS']['Kdd']['value'])
+            '''Если разность более, чем 4°C, ужесточить PID'''
+            if thermometers.getValue('Дефлегматор')-thermometers.getTtrigger('Дефлегматор') > 4:
+                self.pidD.tunings = (1000*config['PARAMETERS']['Kpd']['value'],\
+                                  config['PARAMETERS']['Kid']['value'],\
+                                  config['PARAMETERS']['Kdd']['value'])
+            else:
+                self.pidD.tunings = (config['PARAMETERS']['Kpd']['value'],\
+                                  config['PARAMETERS']['Kid']['value'],\
+                                  config['PARAMETERS']['Kdd']['value'])
             self.pidD.setpoint = thermometers.getTtrigger('Дефлегматор')
             #print(thermometers.getValue('Дефлегматор'), '->', thermometers.getTtrigger('Дефлегматор'))
             '''рассчитать и установить охлаждение'''
