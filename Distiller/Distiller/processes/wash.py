@@ -317,34 +317,59 @@ class Wash(threading.Thread):
         #self.Stab_Top.stop()    # остановить стабилизацию верха колонны
 
         """Охлаждение холодильников"""
-        self.pageUpdate('Охлаждение колонны<br><br>%s'%(self.Duration()), 'ABORT.html')
-        power.value = 0 #отключить нагрев
-        tBgn=time.time()        #фиксация времени начала этапа
-        while (time.time()-tBgn) < 60:
-            # Если поднята ошибка, вывести сообщение об ней
-            if app.config['Error'] != '':
-                self.Display = 'Бражка ошибка: %s<br>%s'%(app.config['Error'], self.Duration())
-                self.abort()
-                return
-            #нажата кнопка Останов
+        self.pageUpdate('Бражка: Охлаждение<br>%s'%(self.Duration()), 'ABORT_NEXT.html')
+        #Заполнение холодильников
+        tBgn=time.time()        #фиксация времени начала заполнения
+        dbLock.acquire()    #монополизировать управление
+        condensator.On()    #открыть клапан конденсатора
+        dephlegmator.On()   #открыть клапан дефлегматора
+        dbLock.release()    #снять блокировку других потоков
+        while (time.time()-tBgn) < config['PARAMETERS']['tFillCoolers']['value']:
+            '''цикл охлаждения колонны'''
+            # вывести состояние на дисплей
+            self.pageUpdate('Бражка: Охлаждение<br>%s'%(self.Duration()))
+            # При получении команды прервать процесс
             if app.config['AB_CON']=='Abort':
                 self.abort()
                 return
-            #установить порог срабатывания клапана конденсатора 15°C
-            thermometers.setTtrigger('Конденсатор',16)
-            #установить целевую температуру дефлегматора
-            thermometers.setTtrigger('Дефлегматор',16)
-            # Освежить дисплей
-            self.pageUpdate('Охлаждение колонны<br><br>%s'%(self.Duration()))
+            elif app.config['AB_CON']=='Next':
+                app.config['AB_CON']=''
+                break
             # Отдохнуть секундочку
             time.sleep(1)
+        dbLock.acquire()     #монополизировать управление
+        condensator.Off()    #закрыть клапан конденсатора
+        dephlegmator.Off()   #закрыть клапан дефлегматора
+        dbLock.release()     #снять блокировку других потоков
+        #self.pageUpdate('Охлаждение колонны<br><br>%s'%(self.Duration()), 'ABORT.html')
+        #power.value = 0 #отключить нагрев
+        #self.stopPID()      #остановить потоки PID регулирования холодильников
+        #tBgn=time.time()        #фиксация времени начала этапа
+        #while (time.time()-tBgn) < 60:
+        #    # Если поднята ошибка, вывести сообщение об ней
+        #    if app.config['Error'] != '':
+        #        self.Display = 'Бражка ошибка: %s<br>%s'%(app.config['Error'], self.Duration())
+        #        self.abort()
+        #        return
+        #    #нажата кнопка Останов
+        #    if app.config['AB_CON']=='Abort':
+        #        self.abort()
+        #        return
+        #    #установить порог срабатывания клапана конденсатора 15°C
+        #    thermometers.setTtrigger('Конденсатор',16)
+        #    #установить целевую температуру дефлегматора
+        #    thermometers.setTtrigger('Дефлегматор',16)
+        #    # Освежить дисплей
+        #    self.pageUpdate('Охлаждение колонны<br><br>%s'%(self.Duration()))
+        #    # Отдохнуть секундочку
+        #    time.sleep(1)
         #установить нормальный порог срабатывания клапана конденсатора
         thermometers.setTtrigger('Конденсатор', config['PARAMETERS']['Tcond']['value'])
         #установить целевую температуру затворения дефлегматора
         thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['Tdephlock']['value'])
 
         # Остановить всё
-        self.stop()
+        #self.stop()
         self.pageUpdate('Перегон бражки завершен<br>%s'%(self.Duration()),
                         'END.html')
         return
@@ -352,8 +377,7 @@ class Wash(threading.Thread):
     def stop(self):
         #self.Stab_Top.stop()    #остановить стабилизацию верха колонны
         power.value = 0     #отключить нагрев
-        self.cond_Reg.stop()    # остановить регулятор конденсатора
-        self.deph_Reg.stop()    # остановить регулятор дефлегматора
+        self.stopPID()      #остановить потоки PID регулирования холодильников
         dbLock.acquire()     #монополизировать управление
         condensator.Off()   #отключить клапан конденсатора
         dephlegmator.Off()  #отключить клапан дефлегматора
@@ -362,6 +386,10 @@ class Wash(threading.Thread):
         app.config['Display'] = self.Display
         app.config['Buttons'] = self.Buttons
         self.log.stop()     #остановить лог
+
+    def stopPID(self):
+        self.cond_Reg.stop()    # остановить регулятор конденсатора
+        self.deph_Reg.stop()    # остановить регулятор дефлегматора
 
     def abort(self):
         self.stop()
