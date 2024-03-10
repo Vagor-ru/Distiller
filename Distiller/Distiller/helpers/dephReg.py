@@ -42,7 +42,7 @@ class DephReg(threading.Thread):
             #dbLock.release()    #освободить другие потоки на выполнение
             '''Заново подгрузить коэффициенты (вдруг изменились)'''
             '''Если разность более, чем 4°C, ужесточить PID'''
-            if thermometers.getValue('Дефлегматор')-thermometers.getTtrigger('Дефлегматор') > 4:
+            if thermometers.getValue('Дефлегматор')-thermometers.getTtrigger('Дефлегматор') > 5:
                 self.pidD.tunings = (1000*config['PARAMETERS']['Kpd']['value'],\
                                   config['PARAMETERS']['Kid']['value'],\
                                   config['PARAMETERS']['Kdd']['value'])

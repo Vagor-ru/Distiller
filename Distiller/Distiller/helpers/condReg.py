@@ -40,7 +40,7 @@ class CondReg(threading.Thread):
             thermometers.Tmeasured.wait()   #ожидать следующего измерения температуры
             #Заново подгрузить коэффициенты (вдруг изменились)
             '''Если разность более, чем 4°C, ужесточить PID'''
-            if thermometers.getValue('Конденсатор')-thermometers.getTtrigger('Конденсатор') > 4:
+            if thermometers.getValue('Конденсатор')-thermometers.getTtrigger('Конденсатор') > 5:
                 self.pidD.tunings = (1000*config['PARAMETERS']['Kpc']['value'],\
                                   config['PARAMETERS']['Kic']['value'],\
                                   config['PARAMETERS']['Kdc']['value'])
