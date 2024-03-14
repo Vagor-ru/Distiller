@@ -158,8 +158,6 @@ class Crude(threading.Thread):
             thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
             # установить температуру дефлегматора для отбора голов
             thermometers.setTtrigger('Дефлегматор',config['PARAMETERS']['T_Head']['value'])
-            # установить температуру стабилизации верха колонны
-            #self.Stab_Top.value = config['PARAMETERS']['T_Head']['value']
             # Если поднята ошибка, вывести сообщение об ней
             if app.config['Error'] != '':
                 self.Display = '2-й перегон ошибка: %s<br>%s'%(app.config['Error'], self.Duration())
@@ -210,7 +208,7 @@ class Crude(threading.Thread):
             Tкип_воды   -температура низа колонны при кипении воды в кубе
             Tниз        -температура низа колонны
             '''
-            Tdeph=config['PARAMETERS']['Tdeph_H2O']['value']+config['PARAMETERS']['Kdeph2']['value']*\
+            Tdeph=config['PARAMETERS']['Tdeph_H2O']['value']+config['PARAMETERS']['Kdeph']['value']*\
                 (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             thermometers.setTtrigger('Дефлегматор',Tdeph)
             # установить температуру стабилизации верха колонны
@@ -249,7 +247,8 @@ class Crude(threading.Thread):
             # Новый критерий завершения перегона по температуре низа и отношению разниц температур
             if thermometers.getValue('Низ') > 80:
                 if (thermometers.getValue('Середина') - thermometers.getValue('Верх')) / \
-                    (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > 0.6:
+                    (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > \
+                    config['PARAMETERS']['Ratio']['value']:
                     count_end += 1
                     if count_end > 20:
                         break
