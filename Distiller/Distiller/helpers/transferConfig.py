@@ -5,7 +5,6 @@ class transferConfig(object):
         cfgNew['DEPH_PIN']['number']=cfgOld['DEPH_PIN']
         cfgNew['HEATER_PIN']['number']=cfgOld['HEATER_PIN']
         cfgNew['OW_PIN']['number']=cfgOld['OW_PIN']
-        cfgNew['PARAMETERS']['Kdeph']['value']=(cfgOld['PARAMETERS']['Kdeph']+cfgOld['PARAMETERS']['Kdeph2'])/2
         cfgNew['PARAMETERS']['Kp']['value']=(cfgOld['PARAMETERS']['Kp']+cfgOld['PARAMETERS']['Kp2'])/2
         cfgNew['PARAMETERS']['P_H2O']['value']=cfgOld['PARAMETERS']['P_H2O']
         cfgNew['PARAMETERS']['Tdephlock']['value']=cfgOld['PARAMETERS']['Tdephlock']
