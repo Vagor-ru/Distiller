@@ -1,6 +1,7 @@
 [Desktop Entry]
 Comment=Управление перегонным аппаратом (web-интерфейс)
 Terminal=false
+Categories=Distiller;
 Name=Distiller
 Exec=chromium-browser --disable-gpu http://localhost:5555/
 Type=Application
