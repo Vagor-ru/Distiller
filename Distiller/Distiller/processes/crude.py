@@ -244,17 +244,11 @@ class Crude(threading.Thread):
             '''
             power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
                 (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
-            # Новый критерий завершения перегона по температуре низа и отношению разниц температур
+            # Новый критерий завершения перегона по температуре низа и разнице температур
             if thermometers.getValue('Низ') > 80:
-                if (thermometers.getValue('Середина') - thermometers.getValue('Верх')) / \
-                    (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > \
-                    config['PARAMETERS']['Ratio']['value']:
-                    count_end += 1
-                    if count_end > 20:
-                        break
-                else:
-                    """сброс числа обнаружения критериев"""
-                    count_end = 0
+                if (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > \
+                    config['PARAMETERS']['dT2']['value']:
+                    break
             # Критерий завершения по соотношению температур
             #if (thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
             #    (thermometers.getValue('Низ')-thermometers.getValue('Середина'))>5.7:

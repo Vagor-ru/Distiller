@@ -291,26 +291,11 @@ class Wash(threading.Thread):
             # если температура меньше, чем уставка уменьшенная на полградуса, сбрасываем PID
             #if thermometers.getValue('Верх') < self.Stab_Top.value - 0.5:
             #    self.Stab_Top.reset()
-            # Новый критерий завершения перегона по отношению разниц температур
-            if (thermometers.getValue('Середина') - thermometers.getValue('Верх')) / \
-                (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > \
-                config['PARAMETERS']['Ratio']['value']:
-                count_end += 1
-                if count_end > 15:
+            # Новый критерий завершения перегона по разнице температур
+            if thermometers.getValue('Низ') > 80:
+                if (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > \
+                    config['PARAMETERS']['dTw']['value']:
                     break
-            else:
-                """сброс числа обнаружения критериев"""
-                count_end = 0
-            # Критерий завершения по соотношению температур
-            #if (thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
-            #    (thermometers.getValue('Низ')-thermometers.getValue('Середина')) >\
-            #    config['PARAMETERS']['Ratio']['value']:
-            #    count_end += 1
-            #    if count_end > 15:
-            #        break
-            #else:
-            #    """сброс числа обнаружения критериев"""
-            #    count_end = 0
             #завершение перегона по температуре низа колонны
             if thermometers.getValue('Низ') > config['PARAMETERS']['T_H2O']['value']-1:
                 break
