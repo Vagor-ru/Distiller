@@ -287,14 +287,14 @@ class Wash(threading.Thread):
                 (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
             #ожидать следующего измерения температуры
             thermometers.Tmeasured.wait()
-            #если далеко до установки, сброс PID
-            # если температура меньше, чем уставка уменьшенная на полградуса, сбрасываем PID
-            #if thermometers.getValue('Верх') < self.Stab_Top.value - 0.5:
-            #    self.Stab_Top.reset()
-            # Новый критерий завершения перегона по разнице температур
             if thermometers.getValue('Низ') > 80:
+                # критерий завершения перегона по разнице температур
                 if (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > \
                     config['PARAMETERS']['dTw']['value']:
+                    break
+                # критерий завершения перегона по отношению разниц температур
+                if ((thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
+                    (thermometers.getValue('Низ')-thermometers.getValue('Середина')) > 2.5):
                     break
             #завершение перегона по температуре низа колонны
             if thermometers.getValue('Низ') > config['PARAMETERS']['T_H2O']['value']-1:
