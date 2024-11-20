@@ -126,17 +126,19 @@ condensator=Condensator()
 #coolsRegulator.name='coolsRegulator'
 #coolsRegulator.start()
 
-# если термометры уже определены, то запускаем потоки регулирования
+# если термометры уже определены, то установить пороги термометров
 if app.config['Mode'] == 'WAIT':
-    #запуск потока PID-регулятора температуры конденсатора
+    # установить порог термометра конденсатора
     thermometers.setTtrigger('Конденсатор', config['PARAMETERS']['Tcond']['value'])
+    #запуск потока PID-регулятора температуры конденсатора
     #from Distiller.helpers.condReg import CondReg
     #cond_Reg = CondReg()
     #cond_Reg.name = 'cond_Reg'
     #cond_Reg.start()
 
+    # установить порог термометра верха колонны
+    thermometers.setTtrigger('Верх', config['PARAMETERS']['Tdephlock']['value'])
     #запуск потока регулятора температуры дефлегматора
-    thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['Tdephlock']['value'])
     #from Distiller.helpers.dephReg import DephReg
     #deph_Reg = DephReg()
     #deph_Reg.name = 'deph_Reg'

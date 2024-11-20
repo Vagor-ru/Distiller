@@ -215,10 +215,10 @@ class Thermometers(threading.Thread):
             if "locations" in config['LOCATIONS']:
                 if T[0] in config['LOCATIONS']["locations"]:
                     objT.Name=config['LOCATIONS']["locations"][T[0]]
-                    if objT.Name=='Конденсатор':
-                        objT.Ttrigger=config['PARAMETERS']['Tcond']['value']
-                    if objT.Name=='Дефлегматор':
-                        objT.Ttrigger=config['PARAMETERS']['Tdephlock']['value']
+                    #if objT.Name=='Конденсатор':
+                    #    objT.Ttrigger=config['PARAMETERS']['Tcond']['value']
+                    #if objT.Name=='Дефлегматор':
+                    #    objT.Ttrigger=config['PARAMETERS']['Tdephlock']['value']
                 else:
                     self.needAutoLocation=True
             else:
