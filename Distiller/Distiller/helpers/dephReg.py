@@ -7,7 +7,7 @@ from Distiller.actuators.dephlegmator import DephRun
 
 
 class DephReg(threading.Thread):
-    u"""Класс-поток регулирования температуры дефлегматора"""
+    u"""Класс-поток регулирования температуры верха колонны"""
 
     _Run = False
 
@@ -19,7 +19,7 @@ class DephReg(threading.Thread):
            config['PARAMETERS']['Kid']['value'],\
           config['PARAMETERS']['Kdd']['value'],\
          setpoint=config['PARAMETERS']['Tdephlock']['value'])
-        thermometers.setTtrigger('Дефлегматор', self.pidD.setpoint)
+        thermometers.setTtrigger('Верх', self.pidD.setpoint)
         """Установить пределы выхода PID-регулятора"""
         self.pidD.output_limits = (0, 100)
         self.Deph = DephRun()   #Bresenham-регулятор дефлегматора
@@ -41,8 +41,8 @@ class DephReg(threading.Thread):
             #    dephlegmator.Off()
             #dbLock.release()    #освободить другие потоки на выполнение
             '''Заново подгрузить коэффициенты (вдруг изменились)'''
-            '''Если разность более, чем 4°C, ужесточить PID'''
-            if thermometers.getValue('Дефлегматор')-thermometers.getTtrigger('Дефлегматор') > 5:
+            '''Если разность более, чем 5°C, ужесточить PID'''
+            if thermometers.getValue('Верх')-thermometers.getTtrigger('Верх') > 5:
                 self.pidD.tunings = (1000*config['PARAMETERS']['Kpd']['value'],\
                                   config['PARAMETERS']['Kid']['value'],\
                                   config['PARAMETERS']['Kdd']['value'])
@@ -51,9 +51,9 @@ class DephReg(threading.Thread):
                                   config['PARAMETERS']['Kid']['value'],\
                                   config['PARAMETERS']['Kdd']['value'])
             self.pidD.setpoint = thermometers.getTtrigger('Дефлегматор')
-            #print(thermometers.getValue('Дефлегматор'), '->', thermometers.getTtrigger('Дефлегматор'))
+            #print(thermometers.getValue('Верх'), '->', thermometers.getTtrigger('Верх'))
             '''рассчитать и установить охлаждение'''
-            PID_D = self.pidD(thermometers.getValue('Дефлегматор'))
+            PID_D = self.pidD(thermometers.getValue('Верх'))
             #print('Дефлегматор=', PID_D)
             self.Deph.value = PID_D
         self.Deph.value = 0
@@ -64,7 +64,7 @@ class DephReg(threading.Thread):
 
     @property
     def value(self):
-        return thermometers.getTtrigger('Дефлегматор')
+        return thermometers.getTtrigger('Верх')
     @value.setter
     def value(self, value):
         if value < 0.0:
@@ -73,10 +73,11 @@ class DephReg(threading.Thread):
             __value = 100.0
         else:
             __value = value
-        thermometers.setTtrigger('Дефлегматор', __value)
+        thermometers.setTtrigger('Верх', __value)
 
 
     def stop(self):
         """Останов регулирования"""
-        self.Deph.value = 0
+        #self.Deph.value = 0
+        #self.Deph.stop()
         self._Run = False

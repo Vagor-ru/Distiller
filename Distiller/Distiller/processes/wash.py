@@ -82,7 +82,7 @@ class Wash(threading.Thread):
         dbLock.release()     #снять блокировку других потоков
         #установить пороги срабатывания клапанов холодильников из конфига
         thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
-        thermometers.setTtrigger('Дефлегматор',config['PARAMETERS']['Tdephlock']['value'])
+        thermometers.setTtrigger('Верх',config['PARAMETERS']['T_Head']['value'])
         # Запустить регуляторы холодильников
         self.cond_Reg.start()
         self.deph_Reg.start()
@@ -198,7 +198,7 @@ class Wash(threading.Thread):
             thermometers.Tmeasured.wait(1.3)
             if thermometers.getObjT('Верх').boiling:
                 break    #поймали закипание на верхнем термометре
-            if thermometers.getValue('Дефлегматор') > thermometers.getTtrigger('Дефлегматор'):
+            if thermometers.getValue('Верх') > thermometers.getTtrigger('Верх'):
                 break    #выше не нужно
         power.value=0   #отключить нагрев
 
@@ -231,38 +231,18 @@ class Wash(threading.Thread):
             # Ждать свежих температурных данных
             thermometers.Tmeasured.wait(1.3)
             # если дефлегматор прогрелся, переходим на перегон
-            if thermometers.getObjT("Дефлегматор").trigger:
+            if thermometers.getObjT("Верх").trigger:
                 break
 
         """ Отбор тела"""
         self.pageUpdate('Бражка: перегон<br><br>%s'%(self.Duration()), 'ABORT.html')
-        #установить целевую температуру дефлегматора на отбор тела
-        #thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['T_Body']['value'])
-        # пробывать запустить поток стабилизации температуры верха колонны
-        #try:
-        #    self.Stab_Top.start()
-        #except Exception as ex:
-        #    if ex != 'threads can only be started once':
-        #        print(ex)
         count_end = 0   # счётчик
         while True:
             '''Цикл отбора тела'''
-            #установить порог срабатывания клапана конденсатора из конфига
+            #установить температуру конденсатора из конфига, эту температуру будет удерживать cond_Reg регулятор
             thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
-            # установить температуру стабилизации верха колонны
-            #self.Stab_Top.value = config['PARAMETERS']['T_Body']['value']
-            #установить порог срабатывания клапана конденсатора из конфига
-            thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
-            '''Температура дефлегматора рассчитывается по формуле:
-            Tдеф=Tдеф_воды+Kдеф*(Tкип_воды-Tниз), где
-            Tдеф_воды   -затворяющая температура дефлегматора при кипении воды в кубе
-            Kдеф        -коэффициент изменения температуры срабатывания дефлегматора
-            Tкип_воды   -температура низа колонны при кипении воды в кубе
-            Tниз        -температура низа колонны
-            '''
-            Tdeph=config['PARAMETERS']['Tdeph_H2O']['value']+config['PARAMETERS']['Kdeph']['value']*\
-                (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
-            thermometers.setTtrigger('Дефлегматор',Tdeph)
+            # установить температуру верха колонны из конфига, эту температуру будет удерживать deph_Reg регулятор
+            thermometers.setTtrigger('Верх',config['PARAMETERS']['T_Body']['value'])
 
             #нажата кнопка Останов
             if app.config['AB_CON']=='Abort':
@@ -276,15 +256,14 @@ class Wash(threading.Thread):
             # Освежить дисплей
             self.pageUpdate('Бражка: перегон<br><br>%s'%(self.Duration()))
             # Регулировать нагрев
-            '''Мощность устанавливается предзахлёбная, рассчитывается по формуле:
-            P=Pводы-Kp*(Tкип_воды-Tниз), где
-            Pводы       -предзахлёбная мощность при кипении воды в кубе
-            Kp          -коэффициент изменения мощности
-            Tкип_воды   -температура низа колонны при кипении воды в кубе
-            Tниз        -температура низа колонны
+            '''Мощность устанавливается предзахлёбная, рассчитывается из захлёбной характеристики по формуле:
+            P=Kp*(Tниз-dT)*0.95, где
+            Kp         - коэффициент изменения мощности от температуры низа колонны
+            dT         - смещение температуры (характеристика колонны)
+            Tниз       - температура низа колонны
             '''
-            power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
-                (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
+            power.value=config['PARAMETERS']['Kp']['value']*\
+                (thermometers.getValue('Низ')-config['PARAMETERS']['dT']['value'])*0,95
             #ожидать следующего измерения температуры
             thermometers.Tmeasured.wait()
             if thermometers.getValue('Низ') > 80:
@@ -343,7 +322,7 @@ class Wash(threading.Thread):
             #установить порог срабатывания клапана конденсатора 15°C
             thermometers.setTtrigger('Конденсатор',16)
             #установить целевую температуру дефлегматора
-            thermometers.setTtrigger('Дефлегматор',16)
+            thermometers.setTtrigger('Верх',16)
             # Освежить дисплей
             self.pageUpdate('Охлаждение колонны<br><br>%s'%(self.Duration()))
             # Отдохнуть секундочку
@@ -351,7 +330,7 @@ class Wash(threading.Thread):
         #установить нормальный порог срабатывания клапана конденсатора
         thermometers.setTtrigger('Конденсатор', config['PARAMETERS']['Tcond']['value'])
         #установить целевую температуру затворения дефлегматора
-        thermometers.setTtrigger('Дефлегматор', config['PARAMETERS']['Tdephlock']['value'])
+        thermometers.setTtrigger('Верх', config['PARAMETERS']['Tdephlock']['value'])
 
         # Остановить всё
         self.stop()
