@@ -1,7 +1,7 @@
 #!/bin/bash
 # Скрипт разворачивания проекта Distiller, команды в терминале
 #Скачивание: 
-#wget -O '/home/pi/Downloads/setupDistiller.sh' 'https://github.com/Vagor-ru/Distiller/raw/master/Distiller/setupDistiller.sh'
+#wget -O '/home/pi/Downloads/setupDistiller.sh' 'https://github.com/Vagor-ru/Distiller/blob/Top_PID/Distiller/setupDistiller.sh'
 # Запуск: sudo bash '/home/pi/Downloads/setupDistiller.sh'
 
 #Настройка конфигурации raspberry pi
@@ -17,8 +17,8 @@ sudo raspi-config nonint do_i2c 0
 sudo raspi-config nonint do_onewire 0
 
 #Скачивание архива программы
-#sudo wget -O '/home/pi/Downloads/Distiller.zip' 'https://github.com/Vagor-ru/Distiller/raw/master/Distiller/Distiller.zip'
-sudo wget -O '/home/pi/Downloads/Distiller.zip' 'https://github.com/Vagor-ru/Distiller/archive/refs/heads/master.zip'
+#sudo wget -O '/home/pi/Downloads/Distiller.zip' 'https://github.com/Vagor-ru/Distiller/raw/Top_PID/Distiller/Distiller.zip'
+sudo wget -O '/home/pi/Downloads/Distiller.zip' 'https://github.com/Vagor-ru/Distiller/archive/refs/heads/Top_PID.zip'
 
 
 #Распаковка архива
