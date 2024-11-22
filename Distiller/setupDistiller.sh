@@ -1,7 +1,7 @@
 #!/bin/bash
 # Скрипт разворачивания проекта Distiller, команды в терминале
 #Скачивание: 
-#wget -O '/home/pi/Downloads/setupDistiller.sh' 'https://github.com/Vagor-ru/Distiller/blob/Top_PID/Distiller/setupDistiller.sh'
+# wget -O '/home/pi/Downloads/setupDistiller.sh' 'https://github.com/Vagor-ru/Distiller/raw/refs/heads/Top_PID/Distiller/setupDistiller.sh'
 # Запуск: sudo bash '/home/pi/Downloads/setupDistiller.sh'
 
 #Настройка конфигурации raspberry pi
