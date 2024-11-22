@@ -208,7 +208,7 @@ class Wash(threading.Thread):
         while thermometers.getValue("Верх") < Tdeph:
             #установить мощность, соответствующую температуре низа колонны
             power.value=config['PARAMETERS']['Kp']['value']*\
-                (thermometers.getValue('Низ')-config['PARAMETERS']['dT']['value'])*0,95
+                (thermometers.getValue('Низ')-config['PARAMETERS']['dT']['value'])*0.95
             # Вывести на дисплей состояние
             sec=int(time.time()-tBgn)
             sec_str=u'{:02}:{:02}'\
@@ -261,7 +261,7 @@ class Wash(threading.Thread):
             Tниз       - температура низа колонны
             '''
             power.value=config['PARAMETERS']['Kp']['value']*\
-                (thermometers.getValue('Низ')-config['PARAMETERS']['dT']['value'])*0,95
+                (thermometers.getValue('Низ')-config['PARAMETERS']['dT']['value'])*0.95
             #ожидать следующего измерения температуры
             thermometers.Tmeasured.wait()
             if thermometers.getValue('Низ') > 80:
