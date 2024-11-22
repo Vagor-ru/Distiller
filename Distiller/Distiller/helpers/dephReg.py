@@ -50,7 +50,7 @@ class DephReg(threading.Thread):
                 self.pidD.tunings = (config['PARAMETERS']['Kpd']['value'],\
                                   config['PARAMETERS']['Kid']['value'],\
                                   config['PARAMETERS']['Kdd']['value'])
-            self.pidD.setpoint = thermometers.getTtrigger('Дефлегматор')
+            self.pidD.setpoint = thermometers.getTtrigger('Верх')
             #print(thermometers.getValue('Верх'), '->', thermometers.getTtrigger('Верх'))
             '''рассчитать и установить охлаждение'''
             PID_D = self.pidD(thermometers.getValue('Верх'))
