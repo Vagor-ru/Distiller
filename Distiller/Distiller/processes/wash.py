@@ -31,7 +31,7 @@ class Wash(threading.Thread):
         super(Wash, self).__init__()
         self._Begin=time.time()     #засечка времени старта
         self.cond_Reg = CondReg()   #регулятор конденсатора
-        self.deph_Reg = DephReg()   #регулятор дефлегматора
+        self.deph_Reg = DephReg()   #регулятор дефлегматора (температуры верха колонны)
         self.log = Logging('Wash')
         #self.Stab_Top = StabTop()
         #self.Stab_Top.name = 'StabTop'
@@ -204,8 +204,9 @@ class Wash(threading.Thread):
 
         """Стабилизация колонны"""
         tBgn=time.time()        #фиксация времени начала этапа
-        Tdeph = 100.0
-        while thermometers.getValue("Верх") < Tdeph:
+        #установить срабатывание триггера верха на отбор тела, уменьшенного на 1°C
+        thermometers.setTtrigger('Верх', config['PARAMETERS']['T_Body']['value']-1.0)
+        while thermometers.getValue("Верх") < thermometers.getTtrigger('Верх'):
             #установить мощность, соответствующую температуре низа колонны
             power.value=config['PARAMETERS']['Kp']['value']*\
                 (thermometers.getValue('Низ')-config['PARAMETERS']['dT']['value'])*0.95
@@ -228,7 +229,7 @@ class Wash(threading.Thread):
                 break
             # Ждать свежих температурных данных
             thermometers.Tmeasured.wait(1.3)
-            # если дефлегматор прогрелся, переходим на перегон
+            # если температура верха подошла к температуре отбора тела, переходим на перегон
             if thermometers.getObjT("Верх").trigger:
                 break
 
@@ -241,7 +242,6 @@ class Wash(threading.Thread):
             thermometers.setTtrigger('Конденсатор',config['PARAMETERS']['Tcond']['value'])
             # установить температуру верха колонны из конфига, эту температуру будет удерживать deph_Reg регулятор
             thermometers.setTtrigger('Верх',config['PARAMETERS']['T_Body']['value'])
-
             #нажата кнопка Останов
             if app.config['AB_CON']=='Abort':
                 self.abort()
@@ -264,50 +264,25 @@ class Wash(threading.Thread):
                 (thermometers.getValue('Низ')-config['PARAMETERS']['dT']['value'])*0.95
             #ожидать следующего измерения температуры
             thermometers.Tmeasured.wait()
-            if thermometers.getValue('Низ') > 80:
-                # критерий завершения перегона по разнице температур
-                if (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > \
-                    config['PARAMETERS']['dTw']['value']:
-                    break
-                # критерий завершения перегона по отношению разниц температур
-                if ((thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
-                    (thermometers.getValue('Низ')-thermometers.getValue('Середина')) > 2.5):
-                    break
+            #if thermometers.getValue('Низ') > 80:
+            #    # критерий завершения перегона по разнице температур
+            #    if (thermometers.getValue('Низ') - thermometers.getValue('Середина')) > \
+            #        config['PARAMETERS']['dTw']['value']:
+            #        break
+            #    # критерий завершения перегона по отношению разниц температур
+            #    if ((thermometers.getValue('Середина')-thermometers.getValue('Верх'))/\
+            #        (thermometers.getValue('Низ')-thermometers.getValue('Середина')) > 2.5):
+            #        break
             #завершение перегона по температуре низа колонны
-            if thermometers.getValue('Низ') > config['PARAMETERS']['T_H2O']['value']-1:
+            if thermometers.getValue('Низ') > config['PARAMETERS']['T_H2O']['value']-0.5:
                 break
         #self.Stab_Top.stop()    # остановить стабилизацию верха колонны
 
         """Охлаждение холодильников"""
-        #self.pageUpdate('Бражка: Охлаждение<br>%s'%(self.Duration()), 'ABORT_NEXT.html')
-        ##Заполнение холодильников
-        #tBgn=time.time()        #фиксация времени начала заполнения
-        #dbLock.acquire()    #монополизировать управление
-        #condensator.On()    #открыть клапан конденсатора
-        #dephlegmator.On()   #открыть клапан дефлегматора
-        #dbLock.release()    #снять блокировку других потоков
-        #while (time.time()-tBgn) < config['PARAMETERS']['tFillCoolers']['value']:
-        #    '''цикл охлаждения колонны'''
-        #    # вывести состояние на дисплей
-        #    self.pageUpdate('Бражка: Охлаждение<br>%s'%(self.Duration()))
-        #    # При получении команды прервать процесс
-        #    if app.config['AB_CON']=='Abort':
-        #        self.abort()
-        #        return
-        #    elif app.config['AB_CON']=='Next':
-        #        app.config['AB_CON']=''
-        #        break
-        #    # Отдохнуть секундочку
-        #    time.sleep(1)
-        #dbLock.acquire()     #монополизировать управление
-        #condensator.Off()    #закрыть клапан конденсатора
-        #dephlegmator.Off()   #закрыть клапан дефлегматора
-        #dbLock.release()     #снять блокировку других потоков
-
         self.pageUpdate('Охлаждение колонны<br><br>%s'%(self.Duration()), 'ABORT.html')
         power.value = 0 #отключить нагрев
         tBgn=time.time()        #фиксация времени начала этапа
-        while (time.time()-tBgn) < 60:
+        while (time.time()-tBgn) < config['PARAMETERS']['tCooling']['value']:
             # Если поднята ошибка, вывести сообщение об ней
             if app.config['Error'] != '':
                 self.Display = 'Бражка ошибка: %s<br>%s'%(app.config['Error'], self.Duration())
