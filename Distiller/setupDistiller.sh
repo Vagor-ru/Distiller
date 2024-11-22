@@ -24,8 +24,8 @@ sudo wget -O '/home/pi/Downloads/Distiller.zip' 'https://github.com/Vagor-ru/Dis
 #Распаковка архива
 #unzip -u "/home/pi/Downloads/Distiller.zip" -d "/home/pi/Distiller"
 unzip '/home/pi/Downloads/Distiller.zip' -d '/home/pi/'
-mv '/home/pi/Distiller-master/Distiller/' '/home/pi/'
-rm -R '/home/pi/Distiller-master/'
+mv '/home/pi/Distiller-Top_PID/Distiller/' '/home/pi/'
+rm -R '/home/pi/Distiller-Top_PID/'
 
 #переход в рабочий каталог
 cd "/home/pi/Distiller"
