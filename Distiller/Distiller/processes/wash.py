@@ -207,10 +207,8 @@ class Wash(threading.Thread):
         Tdeph = 100.0
         while thermometers.getValue("Верх") < Tdeph:
             #установить мощность, соответствующую температуре низа колонны
-            power.value=config['PARAMETERS']['P_H2O']['value']-config['PARAMETERS']['Kp']['value']*\
-                (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
-            Tdeph=config['PARAMETERS']['Tdeph_H2O']['value']+config['PARAMETERS']['Kdeph']['value']*\
-                (config['PARAMETERS']['T_H2O']['value']-thermometers.getValue('Низ'))
+            power.value=config['PARAMETERS']['Kp']['value']*\
+                (thermometers.getValue('Низ')-config['PARAMETERS']['dT']['value'])*0,95
             # Вывести на дисплей состояние
             sec=int(time.time()-tBgn)
             sec_str=u'{:02}:{:02}'\
